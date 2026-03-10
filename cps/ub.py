@@ -13,7 +13,7 @@ import time
 from datetime import datetime, timezone, timedelta
 import itertools
 import uuid
-from flask import session as flask_session
+from flask import session as flask_session, has_request_context, g
 from binascii import hexlify
 
 from .cw_login import AnonymousUserMixin, current_user
@@ -749,9 +749,11 @@ def receive_before_flush(session, flush_context, instances):
     for change in itertools.chain(session.new, session.dirty):
         if isinstance(change, (ReadBook, KoboStatistics, KoboBookmark)):
             if change.kobo_reading_state:
-                now = datetime.now(timezone.utc)
-                change.kobo_reading_state.last_modified = now
-                change.kobo_reading_state.priority_timestamp = now
+                ts = (g.kobo_reading_state_lm
+                      if has_request_context() and getattr(g, 'kobo_reading_state_lm', None)
+                      else datetime.now(timezone.utc))
+                change.kobo_reading_state.last_modified = ts
+                change.kobo_reading_state.priority_timestamp = ts
     # Maintain the last_modified_bit for the Shelf table.
     for change in itertools.chain(session.new, session.deleted):
         if isinstance(change, BookShelf):
