@@ -1,33 +1,59 @@
 name: validate-author
 
-# Fails CI if any commit on the PR head is authored by anyone other than new-usemame.
-# This is the only thing we need to add — CWA's tests.yml (Test Suite) already runs
-# Fast Tests, E2E, and Integration tests and works fine.
+# Enforce that every commit on a PR head was COMMITTED by new-usemame.
+# Author may differ — cherry-picks of upstream PRs legitimately preserve
+# the original author for credit (recorded again in the fork-PR body).
+# What matters for accountability is who applied the commit to our repo.
+#
+# Two acceptable committer identities:
+#   - 248195428+new-usemame@users.noreply.github.com   (CLI commits)
+#   - pj4wx2vj6n@privaterelay.appleid.com              (GitHub web merges)
+#
+# Any commit signed by a different committer fails the check, gating
+# auto-merge.
 
 on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  check-commit-author:
+  check-commit-committer:
+    name: validate-author
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Verify all commits authored by new-usemame
+
+      - name: Verify all commits committed by new-usemame
         run: |
-          BASE=${{ github.event.pull_request.base.sha }}
-          HEAD=${{ github.event.pull_request.head.sha }}
-          BAD=$(git log --format='%H %ae' "$BASE..$HEAD" | grep -v '248195428+new-usemame@users.noreply.github.com' || true)
+          set -euo pipefail
+          BASE='${{ github.event.pull_request.base.sha }}'
+          HEAD='${{ github.event.pull_request.head.sha }}'
+          ALLOWED_RE='^(248195428\+new-usemame@users\.noreply\.github\.com|pj4wx2vj6n@privaterelay\.appleid\.com)$'
+
+          BAD=""
+          while IFS= read -r line; do
+            sha=$(awk '{print $1}' <<<"$line")
+            ce=$(awk '{print $2}' <<<"$line")
+            if ! [[ "$ce" =~ $ALLOWED_RE ]]; then
+              BAD+=$'\n'"  $sha  committer=$ce"
+            fi
+          done < <(git log --format='%H %ce' "$BASE..$HEAD")
+
           if [ -n "$BAD" ]; then
-            echo "::error::PR contains commits not authored by new-usemame:"
-            echo "$BAD"
+            echo "::error::PR contains commits NOT committed by new-usemame:"
+            printf '%s\n' "$BAD"
             echo
             echo "Re-author with:"
-            echo "  git rebase --reset-author <base> -c user.name='new-usemame'"
-            echo "    -c user.email='248195428+new-usemame@users.noreply.github.com'"
+            echo "  git -c user.name='new-usemame' \\"
+            echo "      -c user.email='248195428+new-usemame@users.noreply.github.com' \\"
+            echo "      commit --amend --reset-author --no-edit"
             exit 1
           fi
-          echo "All commits authored by new-usemame ✓"
+          echo "All commits committed by new-usemame ✓"

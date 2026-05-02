@@ -70,17 +70,32 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/docker-image-build-dev.yml/dispatches \
             -d "{\"ref\":\"main\",\"inputs\":{\"ref\":\"${DEV_BUILD_SHA}\",\"branch\":\"main\"}}"
 
+      - name: Detect wiki PAT
+        id: wiki_pat
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "${GH_PAT}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GH_PAT secret not set; skipping wiki status sync."
+          fi
+
       - name: Clone wiki repo
+        if: steps.wiki_pat.outputs.available == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git wiki-tmp
 
       - name: Generate translation status table (in wiki repo)
+        if: steps.wiki_pat.outputs.available == 'true'
         run: |
           python scripts/generate_translation_status.py wiki-tmp/Contributing-Translations.md
 
       - name: Commit and push wiki update
+        if: steps.wiki_pat.outputs.available == 'true'
         run: |
           cd wiki-tmp
           git config --global user.name "github-actions[bot]"

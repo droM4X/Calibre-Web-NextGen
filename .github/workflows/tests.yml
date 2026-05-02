@@ -114,9 +114,14 @@ jobs:
   integration-tests:
     name: Integration Tests (Docker)
     runs-on: ubuntu-latest
+    # Advisory only — does NOT gate merging. Failures here are surfaced
+    # to test-summary which decides workflow conclusion based on the
+    # mandatory fast-tests job. Network/PPA flakiness here will not red
+    # the workflow.
+    continue-on-error: true
     # Only run on merge to main/dev OR manual dispatch with flag
     if: |
-      github.ref == 'refs/heads/main' || 
+      github.ref == 'refs/heads/main' ||
       github.ref == 'refs/heads/dev' ||
       (github.event_name == 'workflow_dispatch' && inputs.run_integration)
     

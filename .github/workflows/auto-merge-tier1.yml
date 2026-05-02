@@ -1,37 +1,164 @@
 name: auto-merge-tier1
 
-# When a PR is labeled `safe-tier-1` (or `safe-tier-2`), arm GitHub's auto-merge.
-# GitHub then waits for required status checks to be green before merging.
-# Operator can disarm by removing the label.
+# Tier-based auto-merge for safe-tier-1 / safe-tier-2 PRs.
+#
+# Runs in two modes:
+#   - on pull_request labeled / synchronize / reopened: re-evaluate the PR
+#   - on workflow_run completion of Test Suite OR validate-author: re-evaluate
+#     every open PR whose head SHA matches the just-completed run
+#
+# A PR is eligible to merge iff ALL of:
+#   1. State == OPEN, mergeable, no conflicts
+#   2. Has label `safe-tier-1` (or `safe-tier-2` and the operator has set
+#      repo variable AUTOPILOT_TIER2_ENABLED == 'true')
+#   3. Touches NO forbidden paths (auth/csrf/session/admin/migration/alembic)
+#   4. Every check on the head SHA reports a non-failing conclusion
+#      (success, skipped, or neutral). validate-author and Test Suite are
+#      both required to have run and reported success.
+#
+# Anything else: the workflow comments why and stops. It never bypasses
+# checks, never merges without a label, and will demote labels on a PR
+# that touches forbidden paths.
 
 on:
   pull_request:
-    types: [labeled, opened, reopened, synchronize]
+    types: [labeled, synchronize, reopened]
+  workflow_run:
+    workflows: ["Test Suite", "validate-author"]
+    types: [completed]
 
 permissions:
   pull-requests: write
   contents: write
+  checks: read
+  actions: read
+
+concurrency:
+  group: auto-merge-tier-${{ github.event.pull_request.number || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
 
 jobs:
-  arm-auto-merge:
+  evaluate:
     runs-on: ubuntu-latest
-    if: |
-      contains(github.event.pull_request.labels.*.name, 'safe-tier-1') ||
-      contains(github.event.pull_request.labels.*.name, 'safe-tier-2')
     steps:
-      - name: Enable auto-merge (squash)
+      - name: Resolve candidate PR numbers
+        id: prs
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --auto \
-            --squash \
-            --delete-branch
-      - name: Comment on PR
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Skip if the PR is from a fork — we can't auto-merge those safely.
+            if [ "${{ github.event.pull_request.head.repo.full_name }}" != "$REPO" ]; then
+              echo "PR head from a fork; refusing to auto-merge."
+              echo "numbers=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "numbers=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          else
+            HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
+            if [ -z "$HEAD_SHA" ]; then
+              echo "numbers=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            # Find every open PR whose head matches this run's SHA.
+            NUMBERS=$(gh pr list --repo "$REPO" --state open --search "head:$HEAD_SHA" --json number --jq '.[].number' | tr '\n' ' ')
+            echo "numbers=$NUMBERS" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Evaluate and (maybe) merge each candidate
+        if: steps.prs.outputs.numbers != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TIER2_ENABLED: ${{ vars.AUTOPILOT_TIER2_ENABLED }}
         run: |
-          gh pr comment ${{ github.event.pull_request.number }} \
-            --repo ${{ github.repository }} \
-            --body "🤖 Auto-merge armed for label \`${{ join(github.event.pull_request.labels.*.name, ', ') }}\`. Will merge as soon as required CI checks pass."
+          set -euo pipefail
+          # Forbidden path patterns — these PRs MUST go through human review,
+          # regardless of the LOC heuristic that put a tier label on them.
+          FORBIDDEN_RE='^(cps/(oauth|admin)|.*/(auth|csrf|session|alembic)|migrations?/|.*/migrations?/)'
+
+          comment_and_skip() {
+            local n="$1" reason="$2"
+            gh pr comment "$n" --repo "$REPO" --body "🤖 auto-merge skipped: $reason"
+            echo "skip #$n: $reason"
+          }
+
+          for n in ${{ steps.prs.outputs.numbers }}; do
+            echo "=== evaluating PR #$n ==="
+            META=$(gh pr view "$n" --repo "$REPO" --json state,mergeable,labels,files,headRefName,headRefOid,title,isDraft)
+            state=$(jq -r .state <<<"$META")
+            mergeable=$(jq -r .mergeable <<<"$META")
+            is_draft=$(jq -r .isDraft <<<"$META")
+            labels=$(jq -r '.labels[].name' <<<"$META" | tr '\n' ',')
+            head_sha=$(jq -r .headRefOid <<<"$META")
+
+            if [ "$state" != "OPEN" ]; then
+              echo "PR #$n state=$state, skipping"; continue
+            fi
+            if [ "$is_draft" = "true" ]; then
+              echo "PR #$n is draft, skipping"; continue
+            fi
+            if [ "$mergeable" != "MERGEABLE" ]; then
+              echo "PR #$n mergeable=$mergeable, skipping"; continue
+            fi
+
+            # Tier label gate
+            tier=""
+            if [[ ",$labels," == *",safe-tier-1,"* ]]; then
+              tier="safe-tier-1"
+            elif [[ ",$labels," == *",safe-tier-2,"* ]]; then
+              if [ "${TIER2_ENABLED:-false}" != "true" ]; then
+                echo "PR #$n has safe-tier-2 but AUTOPILOT_TIER2_ENABLED!=true, skipping"
+                continue
+              fi
+              tier="safe-tier-2"
+            else
+              echo "PR #$n no safe-tier label, skipping"; continue
+            fi
+
+            # Defensive: forbidden paths
+            files=$(jq -r '.files[].path' <<<"$META")
+            if printf '%s\n' "$files" | grep -qiE "$FORBIDDEN_RE"; then
+              echo "PR #$n touches forbidden paths; demoting label and skipping"
+              gh pr edit "$n" --repo "$REPO" --remove-label safe-tier-1 --remove-label safe-tier-2 --add-label needs-review || true
+              comment_and_skip "$n" "PR touches forbidden paths (auth/csrf/session/admin/migrations); demoted to needs-review."
+              continue
+            fi
+
+            # Required checks must have run AND succeeded
+            CHECKS=$(gh api "repos/$REPO/commits/$head_sha/check-runs" --jq '.check_runs')
+            required=("validate-author" "Fast Tests (Smoke + Unit)")
+            all_ok=1
+            for req in "${required[@]}"; do
+              run=$(jq -c --arg n "$req" '.[] | select(.name == $n)' <<<"$CHECKS" | tail -1)
+              if [ -z "$run" ]; then
+                echo "PR #$n missing required check '$req'"
+                all_ok=0
+                break
+              fi
+              status=$(jq -r .status <<<"$run")
+              concl=$(jq -r .conclusion <<<"$run")
+              if [ "$status" != "completed" ] || { [ "$concl" != "success" ] && [ "$concl" != "skipped" ] && [ "$concl" != "neutral" ]; }; then
+                echo "PR #$n required check '$req' status=$status conclusion=$concl"
+                all_ok=0
+                break
+              fi
+            done
+            if [ "$all_ok" -ne 1 ]; then
+              echo "PR #$n required checks not green yet, skipping"
+              continue
+            fi
+
+            # No other check may be in a hard-failing state
+            failing=$(jq -r '.[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled" or .conclusion == "action_required") | .name' <<<"$CHECKS" || true)
+            if [ -n "$failing" ]; then
+              echo "PR #$n has failing checks: $failing"
+              continue
+            fi
+
+            echo "PR #$n eligible for merge under $tier"
+            gh pr merge "$n" --repo "$REPO" --squash --delete-branch
+            gh pr comment "$n" --repo "$REPO" --body "🤖 auto-merged under tier \`$tier\`. validate-author and Fast Tests confirmed green on \`$head_sha\`."
+          done
