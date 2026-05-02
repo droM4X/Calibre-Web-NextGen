@@ -118,13 +118,29 @@ def cwa_update_available() -> tuple[bool, str, str]:
         def _normalize_version(value: str) -> str:
             return (value or "").lstrip("vV")
 
+        def _version_tuple(value: str) -> tuple:
+            # Best-effort numeric parse; non-numeric segments sort lower.
+            parts = []
+            for seg in value.split("."):
+                num = ""
+                for ch in seg:
+                    if ch.isdigit():
+                        num += ch
+                    else:
+                        break
+                parts.append(int(num) if num else 0)
+            return tuple(parts)
+
         current_normalized = _normalize_version(current_version)
         tag_normalized = _normalize_version(tag_name)
 
         if current_normalized in ("", "0.0.0") or tag_normalized in ("", "0.0.0"):
             return False, "0.0.0", "0.0.0"
 
-        return (tag_normalized != current_normalized), current_version, tag_name
+        # Only flag an update when the published tag is strictly newer than
+        # what's installed; a downgrade or equal version is not an update.
+        is_newer = _version_tuple(tag_normalized) > _version_tuple(current_normalized)
+        return is_newer, current_version, tag_name
     except Exception as e:
         print(f"[cwa-update-notification-service] Error checking for CWA updates: {e}", flush=True)
         return False, "0.0.0", "0.0.0"

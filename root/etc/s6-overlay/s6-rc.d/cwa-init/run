@@ -392,9 +392,16 @@ echo "[cwa-init] Installed version: $CWA_INSTALLED_VERSION"
 echo "[cwa-init] Attempting to fetch latest stable version from GitHub..."
 CWA_STABLE_VERSION=""
 
+# Repo to query for the latest release tag. Defaults to the
+# Calibre-Web-NextGen fork; override with CWA_RELEASE_REPO=owner/name
+# to track upstream or any other downstream.
+: "${CWA_RELEASE_REPO:=new-usemame/Calibre-Web-NextGen}"
+CWA_RELEASE_API_URL="https://api.github.com/repos/${CWA_RELEASE_REPO}/releases/latest"
+echo "[cwa-init] Release source: $CWA_RELEASE_REPO"
+
 if command -v jq >/dev/null 2>&1; then
   echo "[cwa-init] Using jq for JSON parsing..."
-  if CWA_STABLE_VERSION="$(timeout 5 curl -sS --max-time 3 --connect-timeout 2 https://api.github.com/repos/crocodilestick/calibre-web-automated/releases/latest 2>/dev/null | timeout 2 jq -r '.tag_name' 2>/dev/null)"; then
+  if CWA_STABLE_VERSION="$(timeout 5 curl -sS --max-time 3 --connect-timeout 2 "$CWA_RELEASE_API_URL" 2>/dev/null | timeout 2 jq -r '.tag_name' 2>/dev/null)"; then
     echo "[cwa-init] Successfully fetched stable version via jq: $CWA_STABLE_VERSION"
   else
     echo "[cwa-init] Failed to fetch stable version via jq (network/timeout issue)"
@@ -402,7 +409,7 @@ if command -v jq >/dev/null 2>&1; then
   fi
 else
   echo "[cwa-init] jq not available, using fallback parsing..."
-  if CWA_STABLE_VERSION="$(timeout 5 curl -sS --max-time 3 --connect-timeout 2 https://api.github.com/repos/crocodilestick/calibre-web-automated/releases/latest 2>/dev/null | timeout 2 sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)"; then
+  if CWA_STABLE_VERSION="$(timeout 5 curl -sS --max-time 3 --connect-timeout 2 "$CWA_RELEASE_API_URL" 2>/dev/null | timeout 2 sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)"; then
     echo "[cwa-init] Successfully fetched stable version via sed: $CWA_STABLE_VERSION"
   else
     echo "[cwa-init] Failed to fetch stable version via sed (network/timeout issue)"
