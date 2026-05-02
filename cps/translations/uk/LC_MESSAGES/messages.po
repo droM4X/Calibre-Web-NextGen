@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version:  Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-03-11 17:35+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2017-04-30 00:47+0300\n"
 "Last-Translator: ABIS Team <biblio.if.abis@gmail.com>\n"
 "Language-Team: \n"
@@ -25,7 +25,8 @@ msgstr "Статистика"
 
 #: cps/admin.py:128
 msgid "Calibre database unavailable. Please reconfigure the library path."
-msgstr "База даних Calibre недоступна. Будь ласка, переналаштуйте шлях до бібліотеки."
+msgstr ""
+"База даних Calibre недоступна. Будь ласка, переналаштуйте шлях до бібліотеки."
 
 #: cps/admin.py:180
 #, fuzzy
@@ -48,7 +49,9 @@ msgstr "Невідома команда"
 #: cps/admin.py:204
 msgid ""
 "Success! Books queued for Metadata Backup, please check Tasks for result"
-msgstr "Успішно! Книги додано до черги для резервного копіювання метаданих. Перевірте результати у розділі «Завдання»."
+msgstr ""
+"Успішно! Книги додано до черги для резервного копіювання метаданих. "
+"Перевірте результати у розділі «Завдання»."
 
 #: cps/admin.py:224
 msgid ""
@@ -59,7 +62,9 @@ msgstr ""
 #: cps/admin.py:252
 msgid ""
 "Success! Hardcover auto-fetch task started. Check Tasks panel for progress."
-msgstr "Успішно! Запущено завдання автоматичного завантаження книг у твердій палітурці. Перевірте хід виконання на панелі «Завдання»."
+msgstr ""
+"Успішно! Запущено завдання автоматичного завантаження книг у твердій "
+"палітурці. Перевірте хід виконання на панелі «Завдання»."
 
 #: cps/admin.py:257
 #, python-format
@@ -1004,84 +1009,84 @@ msgstr ""
 msgid "An Error has occurred"
 msgstr ""
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr ""
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 #, fuzzy
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Зберегти налаштування і відправити тестове повідомлення"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
 msgstr ""
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 #, fuzzy
 msgid "Invalid book selection."
 msgstr "Не правильна роль"
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 #, fuzzy
 msgid "Book not found."
 msgstr "Токен не знайдено"
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 #, fuzzy
 msgid "Selected book has no EPUB format."
 msgstr "Відмітити як не прочитане"
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 msgid "EPUB file not found on disk."
 msgstr ""
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 msgid "EPUB Fixer started for selected book."
 msgstr ""
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr ""
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr ""
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr ""
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr ""
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr ""
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr ""
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 msgid "Invalid Base64 image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 msgid "Invalid image data format."
 msgstr ""
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 #, fuzzy
 msgid "Profile picture updated successfully."
 msgstr "{} користувачі видалені успішно"
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr ""
 
@@ -1501,13 +1506,13 @@ msgstr ""
 msgid "Queue all books for metadata backup"
 msgstr ""
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
 "api_endpoint for kobo device"
 msgstr ""
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr ""
 

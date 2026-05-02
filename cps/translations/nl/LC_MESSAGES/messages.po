@@ -10,10 +10,10 @@ msgstr ""
 "Project-Id-Version: Calibre-Web (GPLV3)\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-03-11 17:35+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2026-04-26 13:31+0200\n"
-"Last-Translator: Michiel Cornelissen <michiel.cornelissen+gitbhun at "
-"proton.me>\n"
+"Last-Translator: Michiel Cornelissen <michiel.cornelissen+gitbhun at proton."
+"me>\n"
 "Language-Team: ed.driesen@telenet.be\n"
 "Language: nl\n"
 "MIME-Version: 1.0\n"
@@ -1047,80 +1047,80 @@ msgstr "⛔ Noch de Ingest Service noch de Metadata Change Detector draait"
 msgid "An Error has occurred"
 msgstr "Er is een fout opgetreden"
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr "Calibre-Web Automated - Bibliotheek Converteren"
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Calibre-Web Automated - EPUB Reparatie Service"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
 msgstr ""
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 msgid "Invalid book selection."
 msgstr "Ongeldige boek selectie"
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 msgid "Book not found."
 msgstr "Boek niet gevonden"
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 msgid "Selected book has no EPUB format."
 msgstr "Geselecteerde boek heeft geen EPUB formaat"
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 msgid "EPUB file not found on disk."
 msgstr "EPUB bestand is niet gevonden op de schijf"
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 msgid "EPUB Fixer started for selected book."
 msgstr "EPUB reparatie is gestart voor geselecteerde boek."
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr "Starten EPUB reparatie is mislukt voor geselecteerde boek."
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr "Je moet een beheerder zijn om deze pagina te bekijken."
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr "Zowel gebruikersnaam als afbeeldingsgegevens zijn vereist."
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr ""
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr ""
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr ""
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 #, fuzzy
 msgid "Invalid Base64 image data."
 msgstr "Ongeldige Base64 afbeeldinggegevens"
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 msgid "Invalid image data format."
 msgstr "Ongeldig afbeeldingsformaat"
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr "Fout bij validatie van afbeeldinggegevens"
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 msgid "Profile picture updated successfully."
 msgstr "Profielafbeelding succesvol geupdatet."
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr "CWA Profielafbeelding Beheer (in ontwikkeling)"
 
@@ -1556,7 +1556,7 @@ msgstr ""
 "Voeg alle boeken toe aan de wachtrij voor het maken van een metagegevens "
 "backup"
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 #, fuzzy
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
@@ -1565,7 +1565,7 @@ msgstr ""
 "Je kunt Calibre-Web niet vanaf de lokale computer openen om een geldige "
 "api_endpoint te krijgen voor je kobo toestel"
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr "Kobo Instellen"
 
@@ -2341,8 +2341,8 @@ msgstr "Kies e-mailadressen:"
 #, fuzzy
 msgid "Success! Book queued for sending to the selected address(es)!"
 msgstr ""
-"Het boek is in de wachtrij geplaatst om te worden verstuurd aan %"
-"(eReadermail)s"
+"Het boek is in de wachtrij geplaatst om te worden verstuurd aan "
+"%(eReadermail)s"
 
 #: cps/web.py:2065
 msgid "Please wait one minute to register next user"

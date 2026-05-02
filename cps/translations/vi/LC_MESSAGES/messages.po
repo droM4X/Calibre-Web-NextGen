@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version:  Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-03-11 17:35+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2022-09-20 21:36+0700\n"
 "Last-Translator: Ha Link <halink0803@gmail.com>\n"
 "Language-Team: \n"
@@ -1006,87 +1006,87 @@ msgstr ""
 msgid "An Error has occurred"
 msgstr ""
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr ""
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 #, fuzzy
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Calibre-Web test e-mail"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
 msgstr ""
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 #, fuzzy
 msgid "Invalid book selection."
 msgstr "Vai trò không hợp lệ"
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 #, fuzzy
 msgid "Book not found."
 msgstr "Không tìm thấy token"
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 #, fuzzy
 msgid "Selected book has no EPUB format."
 msgstr "Gộp những sách đã chọn"
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 #, fuzzy
 msgid "EPUB file not found on disk."
 msgstr "Định dạng %(format)s không được tìm thấy trên đĩa"
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 #, fuzzy
 msgid "EPUB Fixer started for selected book."
 msgstr "Gộp những sách đã chọn"
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr ""
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr ""
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr ""
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr ""
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr ""
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr ""
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 msgid "Invalid Base64 image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 #, fuzzy
 msgid "Invalid image data format."
 msgstr "Định dạng email address không hợp lệ"
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 #, fuzzy
 msgid "Profile picture updated successfully."
 msgstr "{} người dung đã đươc xoá thành công"
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr ""
 
@@ -1509,13 +1509,13 @@ msgstr ""
 msgid "Queue all books for metadata backup"
 msgstr ""
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
 "api_endpoint for kobo device"
 msgstr ""
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr "Thiết lập Kobo"
 

@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version:  Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-03-11 17:35+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2020-09-27 22:18+0800\n"
 "Last-Translator: xlivevil <xlivevil@aliyun.com>\n"
 "Language-Team: zh_Hans_CN <LL@li.org>\n"
@@ -1003,87 +1003,87 @@ msgstr "⛔ 导入服务和元数据更改检测器均未运行"
 msgid "An Error has occurred"
 msgstr "发生错误"
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr "Calibre-Web Automated - 转换图书库"
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 #, fuzzy
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Calibre-Web Automated - 发送到 Kindle EPUB 修复服务"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
 msgstr ""
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 #, fuzzy
 msgid "Invalid book selection."
 msgstr "无效角色"
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 #, fuzzy
 msgid "Book not found."
 msgstr "找不到令牌"
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 #, fuzzy
 msgid "Selected book has no EPUB format."
 msgstr "合并选中的书籍"
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 #, fuzzy
 msgid "EPUB file not found on disk."
 msgstr "硬盘上找不到 %(format)s 格式"
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 #, fuzzy
 msgid "EPUB Fixer started for selected book."
 msgstr "合并选中的书籍"
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr ""
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr "您必须是管理员才能访问此页面。"
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr "用户名和图像数据均为必填项。"
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr ""
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr ""
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr ""
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 msgid "Invalid Base64 image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 #, fuzzy
 msgid "Invalid image data format."
 msgstr "无效的邮箱格式"
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr ""
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 #, fuzzy
 msgid "Profile picture updated successfully."
 msgstr "成功删除 {} 个用户"
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr "CWA 头像管理（开发中）"
 
@@ -1504,7 +1504,7 @@ msgstr "执行 UnRar 时出错"
 msgid "Queue all books for metadata backup"
 msgstr "将所有书籍加入元数据备份队列"
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 #, fuzzy
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
@@ -1512,7 +1512,7 @@ msgid ""
 msgstr ""
 "请不要从 localhost 访问 Calibre-Web，以便 Kobo 设备能获取有效的 api_endpoint"
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr "Kobo 设置"
 

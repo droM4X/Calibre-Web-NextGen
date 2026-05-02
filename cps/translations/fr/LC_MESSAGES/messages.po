@@ -25,7 +25,7 @@ msgstr ""
 "Project-Id-Version: Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-03-11 17:35+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2025-11-17 21:51+0100\n"
 "Last-Translator: Tex <tex@grosist.fr>\n"
 "Language-Team: \n"
@@ -43,7 +43,9 @@ msgstr "Statistiques"
 
 #: cps/admin.py:128
 msgid "Calibre database unavailable. Please reconfigure the library path."
-msgstr "Base de données de Calibre indisponible. Veuillez reconfigurer le chemin de la bibliothèque."
+msgstr ""
+"Base de données de Calibre indisponible. Veuillez reconfigurer le chemin de "
+"la bibliothèque."
 
 #: cps/admin.py:180
 msgid "Server restarted, please reload page."
@@ -444,8 +446,8 @@ msgstr "Erreur de la base de données : %(error)s."
 msgid ""
 "Test e-mail queued for sending to %(email)s, please check Tasks for result"
 msgstr ""
-"Le courriel de test a été mis en file d'attente pour être envoyé à %(email)s, "
-"veuillez vérifier les Tâches pour voir le résultat"
+"Le courriel de test a été mis en file d'attente pour être envoyé à "
+"%(email)s, veuillez vérifier les Tâches pour voir le résultat"
 
 #: cps/admin.py:1756
 #, python-format
@@ -816,7 +818,8 @@ msgstr "Restauration déjà en cours."
 
 #: cps/admin.py:2975
 msgid "Restore failed: Calibre library path is not configured."
-msgstr "Restauration échouée : chemin de la bibliothèque Calibre non configuré."
+msgstr ""
+"Restauration échouée : chemin de la bibliothèque Calibre non configuré."
 
 #: cps/admin.py:2980
 #, python-format
@@ -835,14 +838,18 @@ msgstr "Échec de la restauration : %(err)s"
 
 #: cps/admin.py:3074
 msgid "Restore completed but app.db cleanup failed. See logs for details."
-msgstr "La restauration est terminée mais le nettoyage de app.db a échoué. Voir les journaux pour plus de détails."
+msgstr ""
+"La restauration est terminée mais le nettoyage de app.db a échoué. Voir les "
+"journaux pour plus de détails."
 
 #: cps/admin.py:3093
 #, python-format
 msgid ""
 "Restore complete. Backups and restore log saved to %(dir)s. All book-linked "
 "data was reset."
-msgstr "Restauration terminée. Sauvegardes et journal de restauration enregistrés dans %(dir)s. Toutes les données liées aux livres ont été réinitialisées."
+msgstr ""
+"Restauration terminée. Sauvegardes et journal de restauration enregistrés "
+"dans %(dir)s. Toutes les données liées aux livres ont été réinitialisées."
 
 #: cps/constants.py:207
 msgid "Czech"
@@ -1105,83 +1112,85 @@ msgstr ""
 msgid "An Error has occurred"
 msgstr "Une erreur s'est produite"
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr "Calibre-Web Automated - Convertir la bibliothèque"
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Calibre-Web Automated - Service de correction EPUB"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
-msgstr "Le correcteur EPUB pour un seul livre n'est pas pris en charge avec les bibliothèques Google Drive."
+msgstr ""
+"Le correcteur EPUB pour un seul livre n'est pas pris en charge avec les "
+"bibliothèques Google Drive."
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 msgid "Invalid book selection."
 msgstr "Sélection de livre invalide."
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 msgid "Book not found."
 msgstr "Livre introuvable."
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 msgid "Selected book has no EPUB format."
 msgstr "Le livre sélectionné n'a pas de format EPUB."
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 msgid "EPUB file not found on disk."
 msgstr "Fichier EPUB introuvable sur le disque."
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 msgid "EPUB Fixer started for selected book."
 msgstr "Correction EPUB démarrée pour le livre sélectionné."
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr "Échec du démarrage de la correction EPUB pour le livre sélectionné."
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr "Vous devez être un administrateur pour accéder à cette page."
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr "Le nom d’utilisateur et les données d’images sont requis."
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr "Format de données d'image non valide. Doit être une image valide."
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr ""
 "Type d'image non pris en charge. Seuls les formats PNG et JPEG sont "
 "autorisés."
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr ""
 "L'image est trop volumineuse. Veuillez utiliser une image inférieure à 500 "
 "Ko."
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 msgid "Invalid Base64 image data."
 msgstr "Données d'image Base64 non valides."
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 msgid "Invalid image data format."
 msgstr "Format de données d'image non valide."
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr "Erreur lors de la validation des données d'image."
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 msgid "Profile picture updated successfully."
 msgstr "Image de profil mise à jour."
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr "Manageur de photo de profil (travail en cours)"
 
@@ -1230,7 +1239,9 @@ msgstr "Stratégie de résolution non valide"
 msgid ""
 "Ingest folder is not writable. Check your /cwa-book-ingest volume "
 "permissions."
-msgstr "Le dossier d'ingestion n'est pas accessible en écriture. Vérifiez les permissions de votre volume /cwa-book-ingest."
+msgstr ""
+"Le dossier d'ingestion n'est pas accessible en écriture. Vérifiez les "
+"permissions de votre volume /cwa-book-ingest."
 
 #: cps/editbooks.py:121
 msgid "Missing or invalid book id for format upload"
@@ -1633,7 +1644,7 @@ msgid "Queue all books for metadata backup"
 msgstr ""
 "Mettre en file d’attente tous les livres pour la sauvegarde des métadonnées"
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
 "api_endpoint for kobo device"
@@ -1641,7 +1652,7 @@ msgstr ""
 "Veuillez accéder à Calibre-Web Automated depuis un serveur autre que "
 "localhost afin d'obtenir un api_endpoint valide pour votre appareil Kobo"
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr "Configuration Kobo"
 
@@ -2426,7 +2437,8 @@ msgstr "Aucune adresse e-mail sélectionnée"
 
 #: cps/web.py:2024
 msgid "Additional email addresses are disabled for your account."
-msgstr "Les adresses e-mail supplémentaires sont désactivées pour votre compte."
+msgstr ""
+"Les adresses e-mail supplémentaires sont désactivées pour votre compte."
 
 #: cps/web.py:2046
 msgid "Success! Book queued for sending to the selected address(es)!"
@@ -3287,7 +3299,8 @@ msgstr "Rechercher le mot-clé"
 
 #: cps/templates/book_edit.html:282
 msgid "Selected metadata fields were applied to the edit form."
-msgstr "Les champs de métadonnées sélectionnés ont été appliqués au formulaire."
+msgstr ""
+"Les champs de métadonnées sélectionnés ont été appliqués au formulaire."
 
 #: cps/templates/book_edit.html:288 cps/templates/book_edit.html:368
 msgid "Loading..."
@@ -3492,7 +3505,8 @@ msgstr "Sélectionner une étagère"
 #: cps/templates/book_table.html:346
 msgid "Please select a shelf to add the selected books to:"
 msgstr ""
-"Veuillez sélectionner une étagère à laquelle ajouter les livres sélectionnés :"
+"Veuillez sélectionner une étagère à laquelle ajouter les livres "
+"sélectionnés :"
 
 #: cps/templates/book_table.html:348
 msgid "-- Select a Shelf --"
@@ -3557,7 +3571,8 @@ msgstr ""
 "Ces chemins sont internes à CWA uniquement, vous pouvez changer ce qu'ils "
 "sont liés à votre guise sur le côté gauche, mais il n'y a aucune raison de\n"
 "        changer les chemins sur le côté droit.<br><br>Si vous souhaitez que "
-"votre fichier <code>metadata.db</code> se trouve à un endroit différent du reste\n"
+"votre fichier <code>metadata.db</code> se trouve à un endroit différent du "
+"reste\n"
 "        de votre bibliothèque, utilisez l'<b>option Séparer les fichiers de "
 "livres de la bibliothèque ci-dessous et entrez le chemin d'accès au reste de "
 "la bibliothèque</b>"
@@ -3617,7 +3632,8 @@ msgstr "Révoquer"
 
 #: cps/templates/config_db.html:117
 msgid "Last Resort: Restore Calibre Database (experimental)"
-msgstr "En dernier recours : restaurer la base de données Calibre (expérimental)"
+msgstr ""
+"En dernier recours : restaurer la base de données Calibre (expérimental)"
 
 #: cps/templates/config_db.html:118
 msgid ""
@@ -3627,14 +3643,15 @@ msgid ""
 "the app database, but will not affect user accounts or settings. <b>Both "
 "databases will be automatically backed up in /config/backup before any "
 "destructive action.</b> A restore log will be saved alongside the backups."
-msgstr "Si votre bibliothèque Calibre est corrompue et ne peut pas être ouverte, vous "
-"pouvez tenter de la restaurer à partir des fichiers OPF de votre bibliothèque. "
-"Cela <b>effacera toutes les données par livre</b> (progression de lecture, "
-"signets, liens d’étagère, téléchargements, etc.) dans la base de données de "
-"l’application, mais n’affectera pas les comptes utilisateurs ou les paramètres. "
-"<b>Les deux bases de données seront automatiquement sauvegardées dans "
-"/config/backup avant toute action destructive.</b> Un journal de restauration "
-"sera enregistré aux côtés des sauvegardes."
+msgstr ""
+"Si votre bibliothèque Calibre est corrompue et ne peut pas être ouverte, "
+"vous pouvez tenter de la restaurer à partir des fichiers OPF de votre "
+"bibliothèque. Cela <b>effacera toutes les données par livre</b> (progression "
+"de lecture, signets, liens d’étagère, téléchargements, etc.) dans la base de "
+"données de l’application, mais n’affectera pas les comptes utilisateurs ou "
+"les paramètres. <b>Les deux bases de données seront automatiquement "
+"sauvegardées dans /config/backup avant toute action destructive.</b> Un "
+"journal de restauration sera enregistré aux côtés des sauvegardes."
 
 #: cps/templates/config_db.html:121
 msgid "Are you sure? This cannot be undone."
@@ -3778,7 +3795,9 @@ msgstr "Port externe du serveur (pour les appels d’API transférés par port)"
 
 #: cps/templates/config_edit.html:216
 msgid "Sync Kobo read progress to Hardcover (Requires API key per user)"
-msgstr "Synchroniser la progression de lecture Kobo avec Hardcover (nécessite une clé API par utilisateur)"
+msgstr ""
+"Synchroniser la progression de lecture Kobo avec Hardcover (nécessite une "
+"clé API par utilisateur)"
 
 #: cps/templates/config_edit.html:220
 msgid "Sync Kobo annotations to Hardcover (Requires API key per user)"
@@ -4592,18 +4611,22 @@ msgid ""
 "When enabled, CWA exposes the /kosync endpoints and stores KOReader-"
 "compatible checksums in metadata.db for progress syncing. Requires the "
 "KOReader plugin on your device."
-msgstr "Lorsque cette option est activée, CWA expose les points de terminaison /kosync et "
-"stocke les sommes de contrôle compatibles KOReader dans metadata.db pour la synchronisation des progrès. "
-"Requiert le plugin KOReader sur votre appareil."
+msgstr ""
+"Lorsque cette option est activée, CWA expose les points de terminaison /"
+"kosync et stocke les sommes de contrôle compatibles KOReader dans metadata."
+"db pour la synchronisation des progrès. Requiert le plugin KOReader sur "
+"votre appareil."
 
 #: cps/templates/cwa_settings.html:185
 msgid ""
 "Note: Enabling this starts a checksum backfill service at startup which can "
 "temporarily lock metadata.db. To stop a running backfill, restart the "
 "container after disabling."
-msgstr "Remarque : L'activation de cette option lance un service de remplissage"
-"des sommes de contrôle au démarrage, ce qui peut temporairement verrouiller metadata.db. "
-"Pour arrêter un remplissage en cours, redémarrez le conteneur après l'avoir désactivé."
+msgstr ""
+"Remarque : L'activation de cette option lance un service de remplissagedes "
+"sommes de contrôle au démarrage, ce qui peut temporairement verrouiller "
+"metadata.db. Pour arrêter un remplissage en cours, redémarrez le conteneur "
+"après l'avoir désactivé."
 
 #: cps/templates/cwa_settings.html:192
 msgid "Enable Aggressive EPUB Fixer Mode (riskier)"
@@ -4833,8 +4856,9 @@ msgid ""
 "Limits the maximum size of cover images downloaded from metadata providers "
 "or URLs to prevent slow or stalled saves."
 msgstr ""
-"Limite la taille maximale des images de couverture téléchargées à partir des fournisseurs "
-"de métadonnées ou des URL pour éviter les sauvegardes lentes ou bloquées."
+"Limite la taille maximale des images de couverture téléchargées à partir des "
+"fournisseurs de métadonnées ou des URL pour éviter les sauvegardes lentes ou "
+"bloquées."
 
 #: cps/templates/cwa_settings.html:428
 msgid "Ingest Processing Timeout"
@@ -5769,7 +5793,8 @@ msgstr "Adresses e-mail supplémentaires :"
 
 #: cps/templates/detail.html:918
 msgid "Enter additional email addresses (separated by commas):"
-msgstr "Entrez les adresses e-mail supplémentaires (séparées par des virgules) :"
+msgstr ""
+"Entrez les adresses e-mail supplémentaires (séparées par des virgules) :"
 
 #: cps/templates/detail.html:919
 msgid "example@domain.com, another@domain.com"
@@ -6307,8 +6332,8 @@ msgid ""
 "Enable it in CWA Settings to activate the /kosync endpoints and checksum "
 "generation."
 msgstr ""
-"Activez-le dans les paramètres CWA pour activer les points de terminaison "
-"/kosync et la génération de sommes de contrôle."
+"Activez-le dans les paramètres CWA pour activer les points de terminaison /"
+"kosync et la génération de sommes de contrôle."
 
 #: cps/templates/kosync_plugin.html:115
 msgid "Open CWA Settings"
@@ -6485,7 +6510,9 @@ msgstr "Modèle système"
 
 #: cps/templates/magic_shelf_edit.html:332
 msgid "This is a pre-configured template shelf. You can edit it freely."
-msgstr "Il s'agit d'une étagère modèle préconfigurée. Vous pouvez la modifier librement."
+msgstr ""
+"Il s'agit d'une étagère modèle préconfigurée. Vous pouvez la modifier "
+"librement."
 
 #: cps/templates/magic_shelf_edit.html:399
 msgid "Share with Everyone (Public)"
@@ -7141,8 +7168,8 @@ msgid ""
 msgstr ""
 "Active ou désactive la fenêtre contextuelle Envoyer vers la liseuse, qui "
 "permet aux utilisateurs de saisir des adresses e-mail supplémentaires et "
-"d'envoyer uniquement à une sélection d'adresses enregistrées lors de "
-"l'envoi vers une liseuse."
+"d'envoyer uniquement à une sélection d'adresses enregistrées lors de l'envoi "
+"vers une liseuse."
 
 #: cps/templates/user_edit.html:232
 msgid ""

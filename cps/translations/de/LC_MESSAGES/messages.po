@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-05-02 04:42+0000\n"
+"POT-Creation-Date: 2026-05-02 13:50+0000\n"
 "PO-Revision-Date: 2026-04-06 17:03+0000\n"
 "Last-Translator: Manuel Drescher\n"
 "Language-Team: German\n"
@@ -1055,80 +1055,80 @@ msgstr ""
 msgid "An Error has occurred"
 msgstr "Ein Fehler ist aufgetreten"
 
-#: cps/cwa_functions.py:1811 cps/cwa_functions.py:1837
+#: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
 msgid "Calibre-Web Automated - Convert Library"
 msgstr "Calibre-Web Automated - Bibliothek konvertieren"
 
-#: cps/cwa_functions.py:1953 cps/cwa_functions.py:1977
+#: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
 msgid "Calibre-Web Automated - EPUB Fixer Service"
 msgstr "Calibre-Web Automated - EPUB-Fixer-Dienst"
 
-#: cps/cwa_functions.py:2031
+#: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
 msgstr ""
 "Single-book EPUB Fixer wird nicht mit Google Drive-Bibliotheken unterstützt."
 
-#: cps/cwa_functions.py:2038
+#: cps/cwa_functions.py:2062
 msgid "Invalid book selection."
 msgstr "Ungültige Buchauswahl."
 
-#: cps/cwa_functions.py:2044
+#: cps/cwa_functions.py:2068
 msgid "Book not found."
 msgstr "Buch wurde nicht gefunden."
 
-#: cps/cwa_functions.py:2050
+#: cps/cwa_functions.py:2074
 msgid "Selected book has no EPUB format."
 msgstr "Das ausgewählte Buch hat kein EPUB-Format."
 
-#: cps/cwa_functions.py:2054
+#: cps/cwa_functions.py:2078
 msgid "EPUB file not found on disk."
 msgstr "EPUB-Datei wurde nicht auf dem Datenträger gefunden."
 
-#: cps/cwa_functions.py:2069
+#: cps/cwa_functions.py:2093
 msgid "EPUB Fixer started for selected book."
 msgstr "EPUB-Fixer für das ausgewählte Buch gestartet."
 
-#: cps/cwa_functions.py:2072
+#: cps/cwa_functions.py:2096
 msgid "Failed to start EPUB Fixer for selected book."
 msgstr "EPUB Fixer konnte für das aktuelle Buch nicht gestartet werden."
 
-#: cps/cwa_functions.py:2119
+#: cps/cwa_functions.py:2147
 msgid "You must be an admin to access this page."
 msgstr "Du musst Administrator sein, um auf diese Seite zugreifen zu können."
 
-#: cps/cwa_functions.py:2134
+#: cps/cwa_functions.py:2162
 msgid "Both username and image data are required."
 msgstr "Sowohl der Benutzername als auch die Bilddaten sind erforderlich."
 
-#: cps/cwa_functions.py:2142
+#: cps/cwa_functions.py:2170
 msgid "Invalid image data format. Must be a valid image."
 msgstr "Ungültiges Bilddatenformat. Es muss ein gültiges Bild sein."
 
-#: cps/cwa_functions.py:2150
+#: cps/cwa_functions.py:2178
 msgid "Unsupported image type. Only PNG and JPEG are allowed."
 msgstr "Nicht unterstützter Bildtyp. Nur PNG und JPEG sind zulässig."
 
-#: cps/cwa_functions.py:2162
+#: cps/cwa_functions.py:2190
 msgid "Image is too large. Please use an image smaller than 500KB."
 msgstr "Bild ist zu groß. Bitte ein Bild kleiner als 500 KB verwenden."
 
-#: cps/cwa_functions.py:2166
+#: cps/cwa_functions.py:2194
 msgid "Invalid Base64 image data."
 msgstr "Ungültige Base64-Bilddaten."
 
-#: cps/cwa_functions.py:2170
+#: cps/cwa_functions.py:2198
 msgid "Invalid image data format."
 msgstr "Ungültiges Bilddatenformat."
 
-#: cps/cwa_functions.py:2175
+#: cps/cwa_functions.py:2203
 msgid "Error validating image data."
 msgstr "Fehler bei der Validierung der Bilddaten."
 
-#: cps/cwa_functions.py:2193
+#: cps/cwa_functions.py:2221
 msgid "Profile picture updated successfully."
 msgstr "Profilbild erfolgreich aktualisiert."
 
-#: cps/cwa_functions.py:2206
+#: cps/cwa_functions.py:2234
 msgid "CWA Profile Picture Management (WIP)"
 msgstr "CWA-Profilbildverwaltung (Laufende Arbeiten)"
 
@@ -1568,7 +1568,7 @@ msgstr "Fehler beim Ausführen von Calibre"
 msgid "Queue all books for metadata backup"
 msgstr "Alle Bücher für Metadaten-Backup einreihen"
 
-#: cps/kobo_auth.py:80
+#: cps/kobo_auth.py:87
 msgid ""
 "Please access Calibre-Web Automated from non localhost to get valid "
 "api_endpoint for kobo device"
@@ -1576,7 +1576,7 @@ msgstr ""
 "Bitte greifen Sie auf Calibre-Web Automated von einem anderen Host als "
 "\"localhost\" zu, um einen gültigen API-Endpunkt für Kobo-Geräte zu erhalten"
 
-#: cps/kobo_auth.py:106
+#: cps/kobo_auth.py:113
 msgid "Kobo Setup"
 msgstr "Kobo Setup"
 
