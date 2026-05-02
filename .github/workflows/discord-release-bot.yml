@@ -2,11 +2,7 @@ name: Post New Release Notes to Discord
 # Automatically posts new Release Notes to the project's discord
 
 on:
-  release:
-    types:
-      - published
-  workflow_dispatch:
-
+  workflow_dispatch:  # disabled auto-trigger — needs DockerHub/Discord secrets we don't have on the standalone repo
 jobs:
   github-releases-to-discord:
     runs-on: ubuntu-latest

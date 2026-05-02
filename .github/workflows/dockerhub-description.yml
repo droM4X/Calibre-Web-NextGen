@@ -2,13 +2,7 @@ name: Update Docker Hub Description
 # Automatically mirrors the README to the project's DockerHub page
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - README.md
-      - .github/workflows/dockerhub-description.yml
-  workflow_dispatch:
+  workflow_dispatch:  # disabled auto-trigger — needs DockerHub/Discord secrets we don't have on the standalone repo
 jobs:
   dockerHubDescription:
     runs-on: ubuntu-latest
