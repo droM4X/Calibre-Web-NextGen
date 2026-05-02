@@ -9,6 +9,7 @@ import atexit
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -623,8 +624,15 @@ class Enforcer:
 
 
     def replace_old_metadata(self, old_metadata: str, new_metadata: str) -> None:
-        """Switches the metadata in metadata_temp with the metadata in the Calibre-Library"""
-        os.system(f'cp "{new_metadata}" "{old_metadata}"')
+        """Switches the metadata in metadata_temp with the metadata in the Calibre-Library.
+
+        Uses shutil.copy (no shell) to avoid command-injection if a book's
+        directory or filename ever contains shell metacharacters that
+        survive Calibre's title sanitization (quotes, semicolons,
+        backticks, dollar signs). The previous implementation interpolated
+        these paths into an os.system 'cp "..." "..."' call.
+        """
+        shutil.copy(new_metadata, old_metadata)
 
 
     def print_library_list(self) -> None:
@@ -693,8 +701,24 @@ class Enforcer:
 
 
     def empty_metadata_temp(self):
-        """Empties the metadata_temp folder"""
-        os.system(f"rm -r {metadata_temp_dir}/*")
+        """Empties the metadata_temp folder.
+
+        Uses shutil instead of os.system 'rm -r' so the operation is
+        independent of shell semantics and the path is not interpolated
+        into a command line. metadata_temp_dir is currently a hardcoded
+        constant, but defense-in-depth in case that ever changes.
+        """
+        if not os.path.isdir(metadata_temp_dir):
+            return
+        for entry in os.listdir(metadata_temp_dir):
+            path = os.path.join(metadata_temp_dir, entry)
+            if os.path.isdir(path) and not os.path.islink(path):
+                shutil.rmtree(path, ignore_errors=True)
+            else:
+                try:
+                    os.unlink(path)
+                except OSError:
+                    pass
 
 
     def check_for_other_logs(self, processed_book_ids: set | None = None):
