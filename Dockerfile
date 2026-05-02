@@ -22,34 +22,34 @@
 # ==========================================================================
 ARG CALIBRE_RELEASE=9.1.0
 ARG KEPUBIFY_RELEASE=v4.0.4
+# Python is installed from python-build-standalone (CDN-backed GitHub releases)
+# rather than the deadsnakes PPA, which has a history of being unavailable.
+# Both x86_64 and aarch64 prebuilds are published by astral-sh.
+ARG PYTHON_BUILD_STANDALONE_RELEASE=20260414
+ARG PYTHON_VERSION=3.13.13
 
 FROM ghcr.io/linuxserver/baseimage-ubuntu:noble AS dependencies
 
 ARG CALIBRE_RELEASE
 ARG KEPUBIFY_RELEASE
+ARG PYTHON_BUILD_STANDALONE_RELEASE
+ARG PYTHON_VERSION
 
 # Set the default shell for the following RUN instructions to bash instead of sh
 SHELL ["/bin/bash", "-c"]
 
-# STEP 1 - Install Required Packages
+# STEP 1 - Install required apt packages (Python comes from PBS, see STEP 1.5)
 RUN \
-  # STEP 1.1 - Add deadsnakes PPA for Python 3.13 and install required apt packages
-  echo "**** add deadsnakes PPA for Python 3.13 ****" && \
+  echo "**** install build + runtime apt packages ****" && \
   apt-get update && \
-  apt-get install -y --no-install-recommends software-properties-common && \
-  add-apt-repository ppa:deadsnakes/ppa && \
-  apt-get update && \
-  echo "**** install build packages ****" && \
   apt-get install -y --no-install-recommends \
   build-essential \
+  clang \
   libldap2-dev \
   libsasl2-dev \
   gettext \
-  python3.13-dev \
-  python3.13-venv \
-  curl && \
-  echo "**** install runtime packages ****" && \
-  apt-get install -y --no-install-recommends \
+  curl \
+  ca-certificates \
   imagemagick \
   ghostscript \
   libldap2 \
@@ -59,12 +59,9 @@ RUN \
   libxslt1.1 \
   xdg-utils \
   inotify-tools \
-  python3.13 \
   nano \
   sqlite3 \
-  zip && \
-  # STEP 1.2 - Install additional Calibre required packages
-  apt-get install -y --no-install-recommends \
+  zip \
   libxtst6 \
   libxrandr2 \
   libxkbfile1 \
@@ -81,10 +78,9 @@ RUN \
   libglx-mesa0 \
   xz-utils \
   binutils && \
-  # Install lsof 4.99.5 from source to fix hanging issue with 4.95 (issue #654)
-  echo "**** install lsof 4.99.5 from source ****" && \
+  echo "**** install lsof 4.99.5 from source (fixes hanging issue with 4.95, #654) ****" && \
   LSOF_VERSION="4.99.5" && \
-  curl -L "https://github.com/lsof-org/lsof/archive/${LSOF_VERSION}.tar.gz" -o /tmp/lsof.tar.gz && \
+  curl -fL "https://github.com/lsof-org/lsof/archive/${LSOF_VERSION}.tar.gz" -o /tmp/lsof.tar.gz && \
   cd /tmp && \
   tar -xzf lsof.tar.gz && \
   cd "lsof-${LSOF_VERSION}" && \
@@ -93,13 +89,28 @@ RUN \
   cp lsof /usr/bin/lsof && \
   chmod 755 /usr/bin/lsof && \
   cd / && \
-  rm -rf /tmp/lsof* && \
-  # Create python3 symlink to point to python3.13
-  ln -sf /usr/bin/python3.13 /usr/bin/python3 && \
-  # Install pip for Python 3.13
-  curl -sS https://bootstrap.pypa.io/get-pip.py | python3.13
+  rm -rf /tmp/lsof*
 
-# STEP 2 - Set up Python virtual environment
+# STEP 1.5 - Install Python 3.13 from python-build-standalone (no deadsnakes PPA)
+RUN \
+  echo "**** install Python ${PYTHON_VERSION} from python-build-standalone (${PYTHON_BUILD_STANDALONE_RELEASE}) ****" && \
+  case "$(uname -m)" in \
+    x86_64)  PBS_ARCH="x86_64-unknown-linux-gnu" ;; \
+    aarch64) PBS_ARCH="aarch64-unknown-linux-gnu" ;; \
+    *) echo "Unsupported arch: $(uname -m)"; exit 1 ;; \
+  esac && \
+  PBS_URL="https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD_STANDALONE_RELEASE}/cpython-${PYTHON_VERSION}+${PYTHON_BUILD_STANDALONE_RELEASE}-${PBS_ARCH}-install_only.tar.gz" && \
+  curl -fL --retry 5 --retry-delay 3 "${PBS_URL}" -o /tmp/python.tar.gz && \
+  mkdir -p /opt && \
+  tar -xzf /tmp/python.tar.gz -C /opt && \
+  rm /tmp/python.tar.gz && \
+  ln -sf /opt/python/bin/python3.13 /usr/local/bin/python3.13 && \
+  ln -sf /opt/python/bin/python3.13 /usr/local/bin/python3 && \
+  ln -sf /opt/python/bin/pip3.13 /usr/local/bin/pip3.13 && \
+  python3.13 --version && \
+  python3.13 -m ensurepip --upgrade
+
+# STEP 2 - Set up Python virtual environment using the PBS interpreter
 RUN \
   python3.13 -m venv /lsiopy && \
   /lsiopy/bin/pip install -U --no-cache-dir \
@@ -185,17 +196,13 @@ COPY --from=dependencies /lsiopy /lsiopy
 COPY --from=dependencies /usr/bin/kepubify /usr/bin/kepubify
 COPY --from=dependencies /app/calibre /app/calibre
 COPY --from=dependencies /usr/bin/lsof /usr/bin/lsof
-COPY --from=dependencies /usr/bin/python3.13 /usr/bin/python3.13
-COPY --from=dependencies /usr/lib/python3.13 /usr/lib/python3.13
+# Self-contained Python 3.13 from python-build-standalone — no PPA needed at runtime
+COPY --from=dependencies /opt/python /opt/python
 
-# Install only runtime packages (no build tools)
+# Install only runtime apt packages (no Python — that came from PBS via the COPY above)
 RUN \
-  echo "**** add deadsnakes PPA for Python 3.13 runtime ****" && \
-  apt-get update && \
-  apt-get install -y --no-install-recommends software-properties-common && \
-  add-apt-repository ppa:deadsnakes/ppa && \
-  apt-get update && \
   echo "**** install runtime packages ****" && \
+  apt-get update && \
   apt-get install -y --no-install-recommends \
   imagemagick \
   ghostscript \
@@ -206,7 +213,6 @@ RUN \
   libxslt1.1 \
   xdg-utils \
   inotify-tools \
-  python3.13 \
   nano \
   sqlite3 \
   zip \
@@ -227,11 +233,14 @@ RUN \
   libgl1 \
   libglx-mesa0 \
   xz-utils \
+  ca-certificates \
   curl && \
-  # Create python3 symlink to point to python3.13
-  ln -sf /usr/bin/python3.13 /usr/bin/python3 && \
+  # Wire Python on PATH and as the default python3
+  ln -sf /opt/python/bin/python3.13 /usr/local/bin/python3.13 && \
+  ln -sf /opt/python/bin/python3.13 /usr/local/bin/python3 && \
+  ln -sf /opt/python/bin/pip3.13 /usr/local/bin/pip3.13 && \
+  python3.13 --version && \
   # Cleanup
-  apt-get -y purge software-properties-common && \
   apt-get -y autoremove && \
   rm -rf \
   /tmp/* \
