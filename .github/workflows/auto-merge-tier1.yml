@@ -1,0 +1,37 @@
+name: auto-merge-tier1
+
+# When a PR is labeled `safe-tier-1` (or `safe-tier-2`), arm GitHub's auto-merge.
+# GitHub then waits for required status checks to be green before merging.
+# Operator can disarm by removing the label.
+
+on:
+  pull_request:
+    types: [labeled, opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  arm-auto-merge:
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'safe-tier-1') ||
+      contains(github.event.pull_request.labels.*.name, 'safe-tier-2')
+    steps:
+      - name: Enable auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --auto \
+            --squash \
+            --delete-branch
+      - name: Comment on PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --body "🤖 Auto-merge armed for label \`${{ join(github.event.pull_request.labels.*.name, ', ') }}\`. Will merge as soon as required CI checks pass."

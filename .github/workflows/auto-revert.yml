@@ -1,0 +1,45 @@
+name: auto-revert
+
+# If a push to main causes the test workflow to fail, open a revert PR
+# with label `safe-tier-1` so it self-merges as soon as CI is green again.
+
+on:
+  workflow_run:
+    workflows: ["test"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  revert-on-red:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' && github.event.workflow_run.event == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure git as new-usemame
+        run: |
+          git config user.name 'new-usemame'
+          git config user.email '248195428+new-usemame@users.noreply.github.com'
+      - name: Open revert PR for the head commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BAD_SHA=${{ github.event.workflow_run.head_sha }}
+          BAD_TITLE=$(git log -1 --format='%s' $BAD_SHA)
+          BRANCH="auto-revert/${BAD_SHA:0:7}"
+          git checkout -b "$BRANCH" main
+          # Allow empty in case the commit was already reverted
+          git revert --no-edit "$BAD_SHA" || { echo "Revert failed; aborting"; exit 0; }
+          # Append [autopilot] to the commit message
+          git commit --amend -m "$(git log -1 --format='%B') [autopilot]"
+          git push origin "$BRANCH"
+          gh pr create \
+            --base main --head "$BRANCH" \
+            --title "revert: $BAD_TITLE [auto-revert]" \
+            --body "Automatic revert of ${BAD_SHA:0:7} after CI failure on main. See run ${{ github.event.workflow_run.html_url }}." \
+            --label "safe-tier-1"
