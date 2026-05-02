@@ -46,6 +46,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          EVENT_PATH: ${{ github.event_path }}
         run: |
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -57,13 +58,22 @@ jobs:
             fi
             echo "numbers=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
           else
+            # workflow_run path: read related PRs from the event payload's
+            # workflow_run.pull_requests[].number. The earlier
+            # implementation searched PRs by SHA via gh pr list, which
+            # silently returned nothing because the gh search filter for
+            # "head" matches a branch name, not a SHA. The whole
+            # workflow_run branch no-op'd on every CI completion; three
+            # tier-1 PRs had to be manually nudged on 2026-05-02 because
+            # of this. Fall back to the commits/<SHA>/pulls API if the
+            # event array is empty (rare — happens for non-PR triggered
+            # runs).
             HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
-            if [ -z "$HEAD_SHA" ]; then
-              echo "numbers=" >> "$GITHUB_OUTPUT"
-              exit 0
+            NUMBERS=$(jq -r '.workflow_run.pull_requests[]?.number' "$EVENT_PATH" 2>/dev/null | tr '\n' ' ' || true)
+            if [ -z "${NUMBERS// }" ] && [ -n "$HEAD_SHA" ]; then
+              NUMBERS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
+                --jq '.[] | select(.state == "open") | .number' 2>/dev/null | tr '\n' ' ' || true)
             fi
-            # Find every open PR whose head matches this run's SHA.
-            NUMBERS=$(gh pr list --repo "$REPO" --state open --search "head:$HEAD_SHA" --json number --jq '.[].number' | tr '\n' ' ')
             echo "numbers=$NUMBERS" >> "$GITHUB_OUTPUT"
           fi
 
