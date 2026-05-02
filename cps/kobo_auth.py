@@ -70,6 +70,13 @@ kobo_auth = Blueprint("kobo_auth", __name__, url_prefix="/kobo_auth")
 @kobo_auth.route("/generate_auth_token/<int:user_id>")
 @user_login_required
 def generate_auth_token(user_id):
+    # IDOR guard: only the user themselves OR an admin may mint a Kobo
+    # auth token for a given user_id. Without this, any authenticated
+    # user can request /kobo_auth/generate_auth_token/<other_user_id>
+    # and walk away with a token that authorizes Kobo sync as that user.
+    # Reported upstream as crocodilestick/Calibre-Web-Automated#1303.
+    if current_user.id != user_id and not current_user.role_admin():
+        abort(403)
     warning = False
     host_list = request.host.rsplit(':')
     if len(host_list) == 1:
@@ -112,6 +119,11 @@ def generate_auth_token(user_id):
 @kobo_auth.route("/deleteauthtoken/<int:user_id>", methods=["POST"])
 @user_login_required
 def delete_auth_token(user_id):
+    # IDOR guard: same model as generate_auth_token. Without this any
+    # authenticated user could revoke another user's Kobo auth token,
+    # locking them out of Kobo sync (a softer DoS variant of #1303).
+    if current_user.id != user_id and not current_user.role_admin():
+        abort(403)
     # Invalidate any previously generated Kobo Auth token for this user
     ub.session.query(ub.RemoteAuthToken).filter(ub.RemoteAuthToken.user_id == user_id)\
         .filter(ub.RemoteAuthToken.token_type==1).delete()
