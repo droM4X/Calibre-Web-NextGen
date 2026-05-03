@@ -1,22 +1,50 @@
-# Calibre-Web Automated _(formerly Calibre-Web Automator)_
+# Calibre-Web-NextGen
 
-![Calibre-Web Automated](README_images/CWA-banner.png "Calibre-Web Automated")
+> Community-maintained build of [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated) (CWA). Drop-in replacement: same software, same `docker-compose.yml`, with the community-written fixes that have been sitting open in upstream's PR queue already merged in.
 
-## Making Calibre-Web your _dream_, all-in-one self-hosted digital library solution.
+[![Latest release](https://img.shields.io/github/v/release/new-usemame/Calibre-Web-NextGen)](https://github.com/new-usemame/Calibre-Web-NextGen/releases/latest)
+[![Container](https://img.shields.io/badge/ghcr.io-calibre--web--nextgen-blue?logo=docker)](https://github.com/new-usemame/Calibre-Web-NextGen/pkgs/container/calibre-web-nextgen)
+[![Open issues](https://img.shields.io/github/issues/new-usemame/Calibre-Web-NextGen)](https://github.com/new-usemame/Calibre-Web-NextGen/issues)
 
-![Docker Pulls](https://img.shields.io/docker/pulls/crocodilestick/calibre-web-automated)
-![GitHub Release](https://img.shields.io/github/v/release/crocodilestick/calibre-web-automated)
-![GitHub commits since latest release](https://img.shields.io/github/commits-since/crocodilestick/calibre-web-automated/latest)
-![OAuth 2.0 + OIDC](https://img.shields.io/badge/OAuth-2.0%20%2B%20OIDC-blue?style=flat&logo=oauth)
+## What this is
 
-# Supporting the Project ❤️
+Upstream CWA review has been paused for several months; the PR + issue queue has been piling up. This fork picks the safe community fixes out of that backlog, ships them in regular releases, and writes fixes for high-impact bugs without an open PR. Same install, same data layout, same UI. We don't own upstream and aren't trying to take over — every backported patch is mergeable back if upstream review resumes. Door's open.
 
-CWA is and always will be free and open source. If it makes your library life easier and you're able to support development, contributions go directly to:
-- Testing hardware (ereader devices & tablets ect.)
-- Development tools and infrastructure
-- Coffee ☕ (lots of coffee)
+## Drop-in upgrade from upstream CWA
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/crocodilestick)
+```yaml
+services:
+  calibre-web-automated:
+-   image: crocodilestick/calibre-web-automated:latest
++   image: ghcr.io/new-usemame/calibre-web-nextgen:latest
+```
+
+`docker compose pull && docker compose up -d`. No data migration. Library / settings / users / OAuth / KOReader sync all carry over.
+
+## Currently shipped (vs upstream `:latest`)
+
+- **Safari**: metadata search works (was silent 400 since 4.0.6); delete button works (was killed by upstream Feb 4 commit)
+- **Kobo**: bookmark sync no longer crashes on missing `Location`; `/kobo_auth/generate_auth_token` IDOR closed (upstream issue #1303)
+- **Reverse proxy**: user-profile updates honor path prefix
+- **Docker**: healthcheck `curl -fsL` so `/ → /login` 302 stops tripping orchestrators
+- **OPDS**: `.cbr` / `.cbz` use IANA mimetypes
+- **Security**: 14 CWA admin/log routes were unauthenticated → now `@admin_required`; `cover_enforcer` shell-injection patched
+- **i18n**: backlog of community translation PRs merged (ja, fr, cs, hu, zh_Hans, zh_Hant)
+- **Metadata**: Open Library + Google Books providers + per-provider status + in-modal API-key panel
+
+Per-release detail: [Releases](https://github.com/new-usemame/Calibre-Web-NextGen/releases). Full divergence list: [`CHANGES-vs-upstream.md`](CHANGES-vs-upstream.md) *(coming soon)*.
+
+## Contributing / reporting
+
+- Bug? [Open an issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new). Reproduction steps + version tag = ideal.
+- PR? See [`CONTRIBUTING.md`](CONTRIBUTING.md) *(coming soon)*. Existing CWA contributors with ghosted PRs upstream — reach out for commit access.
+- Governance: [`GOVERNANCE.md`](GOVERNANCE.md) *(coming soon)*. Maintained by [@new-usemame](https://github.com/new-usemame); commit access granted to consistent contributors.
+
+## Credit
+
+Calibre-Web-Automated: [@crocodilestick](https://github.com/crocodilestick) + CWA contributors. Calibre-Web: [@janeczku](https://github.com/janeczku) + contributors. Calibre: [@kovidgoyal](https://github.com/kovidgoyal). Every backported patch is credited to its original author by handle in the release notes.
+
+---
 
 ## _Quick Access_
 
