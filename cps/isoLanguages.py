@@ -37,9 +37,32 @@ except ImportError as ex:
 
 
 def get_language_names(locale):
+    """Resolve the localised language-name dictionary for *locale*.
+
+    Tolerates None, strings (e.g. "en", "en_US", "eng"), and babel.core.Locale
+    instances. Background-fetch paths (auto_metadata, scheduled jobs) and
+    one-off provider invocations frequently pass None or a bare string; the
+    previous implementation crashed with AttributeError because
+    locale.language was accessed unguarded on those.
+    """
+    if locale is None:
+        return None
+    if isinstance(locale, str):
+        # Direct match first ("en"), then leading 2-letter component for
+        # composites like "en_US" / "en-GB".
+        names = _LANGUAGE_NAMES.get(locale)
+        if names is None:
+            head = locale.split("_", 1)[0].split("-", 1)[0]
+            if head and head != locale:
+                names = _LANGUAGE_NAMES.get(head)
+        return names
+    # babel.core.Locale (or any object with .language): try str() first
+    # ("en_US") then the bare .language attribute ("en").
     names = _LANGUAGE_NAMES.get(str(locale))
     if names is None:
-        names = _LANGUAGE_NAMES.get(locale.language)
+        lang_attr = getattr(locale, "language", None)
+        if lang_attr:
+            names = _LANGUAGE_NAMES.get(lang_attr)
     return names
 
 
@@ -47,7 +70,8 @@ def get_language_name(locale, lang_code):
     UNKNOWN_TRANSLATION = "Unknown"
     names = get_language_names(locale)
     if names is None:
-        log.error(f"Missing language names for locale: {str(locale)}/{locale.language}")
+        # Don't probe locale.language here — locale may be None or str.
+        log.warning("No language-names dictionary for locale: %r", locale)
         return UNKNOWN_TRANSLATION
 
     name = names.get(lang_code, UNKNOWN_TRANSLATION)
