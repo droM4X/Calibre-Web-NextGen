@@ -283,6 +283,20 @@
         </div>
         <div class="text-center padded-bottom" id="metadata_provider">
         </div>
+        <div class="text-center padded-bottom">
+          <button type="button" class="btn btn-default btn-xs" id="meta-keys-toggle" aria-expanded="false" aria-controls="meta-keys-panel">
+            <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+            {{_('API Keys')}}
+          </button>
+        </div>
+        <div id="meta-keys-panel" class="panel panel-default" style="display:none; margin-bottom:15px;" role="region" aria-labelledby="meta-keys-toggle">
+          <div class="panel-body">
+            <p class="text-muted" style="margin-bottom:10px;">
+              {{_('Some metadata sources need an API key. Adding a key here improves cover quality and unblocks rate-limited services. Keys are stored once for the whole instance — admins only.')}}
+            </p>
+            <div id="meta-keys-list">{{_("Loading...")}}</div>
+          </div>
+        </div>
 
         <div id="meta-info">
           {{_("Loading...")}}

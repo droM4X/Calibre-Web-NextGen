@@ -232,6 +232,41 @@ $(function () {
     $("#identifier-table").append(line);
   }
 
+  function renderProviderStatus(providers) {
+    if (!providers || !providers.length) return "";
+    var STATUS_COPY = {
+      ok:           { cls: "text-success",  icon: "ok-circle"   },
+      empty:        { cls: "text-muted",    icon: "minus-sign"  },
+      rate_limited: { cls: "text-warning",  icon: "time"        },
+      blocked:      { cls: "text-danger",   icon: "ban-circle"  },
+      missing_key:  { cls: "text-warning",  icon: "lock"        },
+      error:        { cls: "text-danger",   icon: "exclamation-sign" },
+      disabled:     { cls: "text-muted",    icon: "off"         }
+    };
+    var visible = providers.filter(function (p) { return p.status !== "disabled"; });
+    if (!visible.length) return "";
+    var html = '<div class="provider-status" style="margin-bottom:10px; font-size:90%;">';
+    visible.forEach(function (p) {
+      var spec = STATUS_COPY[p.status] || STATUS_COPY.error;
+      var label;
+      if (p.status === "ok") {
+        label = p.count + " result" + (p.count === 1 ? "" : "s");
+      } else if (p.status === "empty") {
+        label = p.message || "no results";
+      } else {
+        label = p.message || p.status;
+      }
+      html +=
+        '<div class="' + spec.cls + '">' +
+          '<span class="glyphicon glyphicon-' + spec.icon + '" aria-hidden="true"></span> ' +
+          '<strong>' + p.name + '</strong>: ' + $('<div>').text(label).html() +
+          (p.duration_ms ? ' <span class="text-muted">(' + p.duration_ms + ' ms)</span>' : '') +
+        '</div>';
+    });
+    html += "</div>";
+    return html;
+  }
+
   function doSearch(keyword) {
     if (keyword) {
       $("#meta-info").text(msg.loading);
@@ -244,9 +279,15 @@ $(function () {
         },
         dataType: "json",
         success: function success(data) {
-          if (data.length) {
-            $("#meta-info").html('<ul id="book-list" class="media-list"></ul>');
-            data.forEach(function (book, idx) {
+          // Tolerate both the new {results, providers} shape and the older
+          // bare-array shape (in case a stale cached JS hits a new server).
+          var results  = (data && data.results)   ? data.results   : (Array.isArray(data) ? data : []);
+          var providers = (data && data.providers) ? data.providers : [];
+          var providerHtml = renderProviderStatus(providers);
+
+          if (results.length) {
+            $("#meta-info").html(providerHtml + '<ul id="book-list" class="media-list"></ul>');
+            results.forEach(function (book, idx) {
               var $book = $(templates.bookResult({ book: book, index: idx }));
               $book.find("button").on("click", function () {
                 populateForm(book, idx);
@@ -256,10 +297,8 @@ $(function () {
             });
           } else {
             $("#meta-info").html(
-              '<p class="text-danger">' +
-                msg.no_result +
-                "!</p>" +
-                $("#meta-info")[0].innerHTML
+              providerHtml +
+              '<p class="text-danger">' + msg.no_result + "!</p>"
             );
           }
         },
@@ -358,6 +397,104 @@ $(function () {
       $(this).data("initial", $(this).prop("checked"));
     });
     doSearch(keyword);
+  });
+
+  function renderKeysPanel(entries) {
+    if (!entries || !entries.length) {
+      $("#meta-keys-list").html('<p class="text-muted">' + _("No key-supporting providers found.") + "</p>");
+      return;
+    }
+    var $list = $("<div></div>");
+    entries.forEach(function (entry) {
+      var inputId = "meta-key-input-" + entry.id;
+      var statusBadge = entry.configured
+        ? '<span class="label label-success">' + _("Configured") + "</span>"
+        : '<span class="label label-default">' + _("Not configured") + "</span>";
+      var actionButton = entry.can_edit
+        ? '<button type="button" class="btn btn-primary btn-sm meta-key-save" data-provider="' + entry.id + '">' + _("Save") + "</button>"
+        : '<span class="text-muted">' + _("Admin only") + "</span>";
+      var inputAttrs = entry.can_edit ? "" : ' disabled';
+      var placeholder = entry.configured
+        ? _("Leave blank to keep the existing key, or paste a new one to replace it. Type 'clear' to remove.")
+        : _("Paste your API key here");
+      var row = $(
+        '<div class="meta-key-row" style="margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.07);">' +
+          '<div style="margin-bottom:6px;">' +
+            '<strong>' + entry.name + '</strong> ' + statusBadge +
+            ' &middot; <a href="' + entry.signup + '" target="_blank" rel="noopener">' + _("Get key") + ' &rarr;</a>' +
+          '</div>' +
+          '<div class="text-muted" style="font-size:88%; margin-bottom:6px;">' + entry.help + '</div>' +
+          '<div class="input-group">' +
+            '<input type="text" class="form-control meta-key-input" id="' + inputId + '" placeholder="' + placeholder + '" autocomplete="off"' + inputAttrs + '>' +
+            '<span class="input-group-btn">' + actionButton + '</span>' +
+          '</div>' +
+          '<div class="meta-key-feedback text-success" style="display:none; margin-top:6px;"></div>' +
+        '</div>'
+      );
+      $list.append(row);
+    });
+    $("#meta-keys-list").empty().append($list);
+  }
+
+  function loadKeysPanel() {
+    $.ajax({
+      url: getPath() + "/metadata/keys",
+      type: "GET",
+      dataType: "json",
+      success: renderKeysPanel,
+      error: function () {
+        $("#meta-keys-list").html('<p class="text-danger">' + _("Failed to load API key inventory.") + "</p>");
+      }
+    });
+  }
+
+  $(document).on("click", "#meta-keys-toggle", function () {
+    var $panel = $("#meta-keys-panel");
+    var willShow = $panel.is(":hidden");
+    $(this).attr("aria-expanded", willShow ? "true" : "false");
+    if (willShow) {
+      $panel.show();
+      loadKeysPanel();
+    } else {
+      $panel.hide();
+    }
+  });
+
+  $(document).on("click", ".meta-key-save", function () {
+    var $btn = $(this);
+    var providerId = $btn.data("provider");
+    var $row = $btn.closest(".meta-key-row");
+    var $input = $row.find(".meta-key-input");
+    var $feedback = $row.find(".meta-key-feedback");
+    var raw = ($input.val() || "").trim();
+    if (!raw) {
+      $feedback.removeClass("text-success").addClass("text-danger")
+        .text(_("Enter a key, or type 'clear' to remove an existing one.")).show();
+      return;
+    }
+    var payloadValue = (raw.toLowerCase() === "clear") ? "" : raw;
+    $btn.prop("disabled", true).text("…");
+    $.ajax({
+      url: getPath() + "/metadata/keys/" + providerId,
+      type: "POST",
+      contentType: "application/json; charset=utf-8",
+      data: JSON.stringify({ value: payloadValue, csrf_token: $('input[name="csrf_token"]').val() }),
+      headers: { "X-CSRFToken": $('input[name="csrf_token"]').val() },
+      dataType: "json",
+      success: function (resp) {
+        $input.val("");
+        $feedback.removeClass("text-danger").addClass("text-success")
+          .text(resp.configured ? _("Key saved.") : _("Key cleared."))
+          .show();
+        // Refresh the inventory so the badge re-renders.
+        loadKeysPanel();
+      },
+      error: function (xhr) {
+        var msgText = (xhr.responseJSON && xhr.responseJSON.error) || _("Save failed.");
+        $feedback.removeClass("text-success").addClass("text-danger").text(msgText).show();
+        $btn.prop("disabled", false).text(_("Save"));
+      }
+    });
   });
 
   $("#get_meta").click(function () {

@@ -19,7 +19,7 @@ from sqlalchemy.exc import InvalidRequestError, OperationalError
 from sqlalchemy.orm.attributes import flag_modified
 
 from cps.services.Metadata import Metadata
-from . import constants, logger, ub, web_server
+from . import config, constants, logger, ub, web_server
 from .usermanagement import user_login_required
 
 
@@ -70,6 +70,17 @@ cl = list_classes(new_list)
 cl.sort(key=lambda x: x.__class__.__name__)
 
 
+# Optional verbose logging across every metadata provider — flip via env
+# CWA_METADATA_DEBUG=1 to bump the family of cps.metadata_provider.* loggers
+# to DEBUG without touching the global log level.
+if os.environ.get("CWA_METADATA_DEBUG", "").lower() in ("1", "true", "yes"):
+    import logging
+    for provider_module in new_list:
+        logging.getLogger("cps.metadata_provider." + provider_module).setLevel(logging.DEBUG)
+    logging.getLogger("cps.search_metadata").setLevel(logging.DEBUG)
+    log.info("CWA_METADATA_DEBUG=1: metadata-provider logs bumped to DEBUG")
+
+
 # Helper to load global provider enablement map from CWA settings
 def _get_global_provider_enabled_map() -> dict:
     try:
@@ -92,6 +103,81 @@ def _get_global_provider_enabled_map() -> dict:
         log.warning(f"Error loading provider enabled map: {e}")
         return {}
     # Remove redundant return
+
+# Providers that take a single API token / key plus the config column that
+# stores it and a public signup URL. Used by the metadata-search modal's
+# 🔑 Keys panel so users don't have to leave the modal to plug in a key.
+PROVIDER_KEY_REGISTRY = {
+    "hardcover": {
+        "name":   "Hardcover",
+        "config": "config_hardcover_token",
+        "signup": "https://hardcover.app/account/api",
+        "help":   "Free Hardcover account; click 'API Tokens' on your profile page.",
+    },
+    "google": {
+        "name":   "Google Books",
+        "config": "config_google_books_api_key",
+        "signup": "https://console.cloud.google.com/apis/library/books.googleapis.com",
+        "help":   "Enable 'Books API' in any Google Cloud project, then create an API key under Credentials.",
+    },
+    "goodreads": {
+        "name":   "Goodreads",
+        "config": "config_goodreads_api_key",
+        "signup": "https://www.goodreads.com/api/keys",
+        "help":   "Goodreads' developer API was discontinued in 2020. Existing keys still work for legacy integrations.",
+    },
+}
+
+
+def _is_admin_user() -> bool:
+    try:
+        return bool(current_user.role_admin())
+    except Exception:
+        return False
+
+
+@meta.route("/metadata/keys")
+@user_login_required
+def metadata_keys():
+    """Return the API-key inventory for providers that support one.
+
+    Never returns the actual key value — only whether a key is configured.
+    Used to populate the modal's 🔑 Keys panel.
+    """
+    payload = []
+    can_edit = _is_admin_user()
+    for pid, spec in PROVIDER_KEY_REGISTRY.items():
+        configured_value = getattr(config, spec["config"], None)
+        payload.append({
+            "id":         pid,
+            "name":       spec["name"],
+            "configured": bool(configured_value),
+            "signup":     spec["signup"],
+            "help":       spec["help"],
+            "can_edit":   can_edit,
+        })
+    return make_response(jsonify(payload))
+
+
+@meta.route("/metadata/keys/<prov_id>", methods=["POST"])
+@user_login_required
+def metadata_keys_save(prov_id):
+    """Set or clear a provider's API key. Admin-only."""
+    if not _is_admin_user():
+        return make_response(jsonify({"error": "admin required"}), 403)
+    spec = PROVIDER_KEY_REGISTRY.get(prov_id)
+    if not spec:
+        return make_response(jsonify({"error": "unknown provider"}), 404)
+    body = request.get_json(silent=True) or {}
+    value = (body.get("value") or "").strip()
+    try:
+        setattr(config, spec["config"], value or None)
+        config.save()
+    except Exception as exc:
+        log.error("Failed to save API key for %s: %s", prov_id, exc)
+        return make_response(jsonify({"error": "save failed"}), 500)
+    return make_response(jsonify({"id": prov_id, "configured": bool(value)}))
+
 
 @meta.route("/metadata/provider")
 @user_login_required
@@ -150,32 +236,144 @@ def metadata_change_active_provider(prov_name):
     return ""
 
 
+def _classify_empty_provider(provider) -> tuple:
+    """Decide why an enabled provider returned 0 results.
+
+    Several providers fail silently (return [] without raising) when a
+    required key is missing. We surface that to the UI as 'missing_key' so
+    the user gets a "go set an API key" hint instead of a generic
+    "no results" message.
+    """
+    pid = getattr(provider, "__id__", "")
+    if pid == "hardcover":
+        token = getattr(config, "config_hardcover_token", None)
+        if not token:
+            return ("missing_key",
+                    "Set a Hardcover API key in Admin → Configuration → "
+                    "Feature Configuration to enable this source.")
+    if pid == "google":
+        # Google returns [] both for no-results and for 429. We can't tell
+        # from the wire, but if the user has no key configured then a 429 is
+        # the dominant cause on shared IPs.
+        if not getattr(config, "config_google_books_api_key", None):
+            return ("empty",
+                    "No matches. If this happens consistently, Google Books "
+                    "may be rate-limiting your IP — set a Google Books API key "
+                    "in Configuration to lift the quota.")
+    return ("empty", "No results for this query")
+
+
+def _classify_provider_failure(exc: Exception) -> tuple:
+    """Map a provider exception to a (status, message) UI hint pair.
+
+    Returns one of:
+      ("blocked",       "...")  – upstream is actively refusing us (403/503)
+      ("rate_limited",  "...")  – we hit a quota (429)
+      ("missing_key",   "...")  – provider needs an API key we don't have
+      ("error",         "...")  – everything else
+    """
+    text = str(exc) or exc.__class__.__name__
+    lowered = text.lower()
+    if "429" in text or "too many requests" in lowered or "quota" in lowered:
+        return ("rate_limited", text)
+    if "503" in text or "service unavailable" in lowered:
+        return ("blocked", text)
+    if "401" in text or "403" in text or "forbidden" in lowered or "unauthorized" in lowered:
+        return ("missing_key", text)
+    if "token missing" in lowered or "api key" in lowered:
+        return ("missing_key", text)
+    return ("error", text)
+
+
 @meta.route("/metadata/search", methods=["POST"])
 @user_login_required
 def metadata_search():
+    """Run all enabled providers in parallel and return a structured response.
+
+    Response shape:
+        {
+          "results":   [ MetaRecord, ... ],   # flattened, dedup left to UI
+          "providers": [
+            { "id": "google",      "name": "Google",
+              "status": "ok"|"empty"|"rate_limited"|"blocked"|"missing_key"|"error"|"disabled",
+              "count":  <int>,
+              "message": "<short, user-facing reason>",
+              "duration_ms": <int> },
+            ...
+          ]
+        }
+    """
     query = request.form.to_dict().get("query")
-    data = list()
+    results: list = []
+    provider_status: list = []
     active = current_user.view_settings.get("metadata", {})
     locale = get_locale()
     global_enabled = _get_global_provider_enabled_map()
-    if query:
-        static_cover = url_for("static", filename="generic_cover.svg")
-        # ret = cl[0].search(query, static_cover, locale)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            meta = {
-                executor.submit(copy_current_request_context(c.search), query, static_cover, locale): c
-                for c in cl
-                if active.get(c.__id__, True) and bool(global_enabled.get(c.__id__, True))
-            }
-            for future in concurrent.futures.as_completed(meta):
-                try:
-                    result = future.result()
-                except Exception as exc:
-                    provider = meta.get(future)
-                    provider_name = provider.__class__.__name__ if provider else "Unknown"
-                    log.warning("Metadata provider %s failed: %s", provider_name, exc)
-                    continue
-                if not result:
-                    continue
-                data.extend([asdict(x) for x in result if x])
-    return  make_response(jsonify(data))
+
+    # Build the static "what each provider returned" structure first so the UI
+    # can show a row even for providers we don't run (disabled per-user or
+    # globally). This keeps modal copy stable across reload.
+    runnable = {}
+    for provider in cl:
+        is_active = active.get(provider.__id__, True)
+        is_global = bool(global_enabled.get(provider.__id__, True))
+        if not is_active or not is_global:
+            provider_status.append({
+                "id": provider.__id__,
+                "name": provider.__name__,
+                "status": "disabled",
+                "count": 0,
+                "message": "Disabled" if is_active else "Off (per-user toggle)",
+                "duration_ms": 0,
+            })
+            continue
+        runnable[provider.__id__] = provider
+
+    if not query or not runnable:
+        return make_response(jsonify({"results": results, "providers": provider_status}))
+
+    static_cover = url_for("static", filename="generic_cover.svg")
+
+    import time
+    started_at = {pid: time.monotonic() for pid in runnable}
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_provider = {
+            executor.submit(copy_current_request_context(provider.search), query, static_cover, locale): provider
+            for provider in runnable.values()
+        }
+        for future in concurrent.futures.as_completed(future_to_provider):
+            provider = future_to_provider[future]
+            elapsed_ms = int((time.monotonic() - started_at.get(provider.__id__, time.monotonic())) * 1000)
+            try:
+                provider_results = future.result() or []
+            except Exception as exc:
+                status, message = _classify_provider_failure(exc)
+                log.warning(
+                    "Metadata provider %s failed (%s) in %dms: %s",
+                    provider.__class__.__name__, status, elapsed_ms, exc,
+                )
+                provider_status.append({
+                    "id": provider.__id__,
+                    "name": provider.__name__,
+                    "status": status,
+                    "count": 0,
+                    "message": message,
+                    "duration_ms": elapsed_ms,
+                })
+                continue
+            results.extend([asdict(x) for x in provider_results if x])
+            count = len(provider_results)
+            status, message = ("ok", "") if count else _classify_empty_provider(provider)
+            provider_status.append({
+                "id": provider.__id__,
+                "name": provider.__name__,
+                "status": status,
+                "count": count,
+                "message": message,
+                "duration_ms": elapsed_ms,
+            })
+    # Stable sort so rendering is deterministic even though futures complete
+    # out of order.
+    provider_status.sort(key=lambda p: p["name"].lower())
+    return make_response(jsonify({"results": results, "providers": provider_status}))

@@ -12,7 +12,7 @@ from datetime import datetime
 
 import requests
 
-from cps import logger
+from cps import config, logger
 from cps.isoLanguages import get_lang3, get_language_name
 from cps.services.Metadata import MetaRecord, MetaSourceInfo, Metadata
 
@@ -38,9 +38,25 @@ class Google(Metadata):
             if title_tokens:
                 tokens = [quote(t.encode("utf-8")) for t in title_tokens]
                 query = "+".join(tokens)
+            url = Google.SEARCH_URL + query
+            api_key = getattr(config, "config_google_books_api_key", None)
+            if api_key:
+                # Authenticated requests use the project's quota
+                # (default 100k req/day) instead of the per-IP anonymous quota
+                # (1k/day, easily exhausted on shared servers).
+                url += "&key=" + quote(api_key.strip().encode("utf-8"))
             try:
-                results = requests.get(Google.SEARCH_URL + query, timeout=15)
+                results = requests.get(url, timeout=15)
                 results.raise_for_status()
+            except requests.HTTPError as e:
+                if getattr(e.response, "status_code", None) == 429:
+                    log.warning(
+                        "Google Books quota exceeded (HTTP 429). "
+                        "Set config_google_books_api_key to lift the limit."
+                    )
+                else:
+                    log.warning(e)
+                return []
             except Exception as e:
                 log.warning(e)
                 return []
