@@ -298,6 +298,15 @@
           </div>
         </div>
 
+        <div id="meta-sort-bar" class="text-right" style="display:none; margin-bottom:8px;">
+          <label for="meta-sort" style="margin-right:6px; font-weight:normal;">{{_('Sort by:')}}</label>
+          <select id="meta-sort" class="form-control input-sm" style="display:inline-block; width:auto;">
+            <option value="default">{{_('Provider order (default)')}}</option>
+            <option value="cover_desc">{{_('Cover size — largest first')}}</option>
+            <option value="cover_asc">{{_('Cover size — smallest first')}}</option>
+          </select>
+        </div>
+
         <div id="meta-info">
           {{_("Loading...")}}
         </div>
@@ -312,7 +321,7 @@
 
 {% block js %}
 <script type="text/template" id="template-book-result">
-  <li class="media" data-related="<%= book.source.id %>">
+  <li class="media" data-related="<%= book.source.id %>" data-meta-index="<%= index %>">
     <div class="media-image">
       <div class="media-image-wrapper">
         <img
@@ -408,12 +417,47 @@
   function coverDimensions(el) {
     var existing_cover = document.querySelector("#detailcover")
     el.nextElementSibling.innerText = el.naturalWidth + 'x' + el.naturalHeight
-    if (existing_cover.naturalHeight*existing_cover.naturalWidth >  el.naturalWidth * el.naturalHeight){
+    if (existing_cover && existing_cover.naturalHeight*existing_cover.naturalWidth >  el.naturalWidth * el.naturalHeight){
       el.nextElementSibling.classList.add("smaller")
-    } else if (existing_cover.naturalHeight*existing_cover.naturalWidth < el.naturalWidth * el.naturalHeight){
+    } else if (existing_cover && existing_cover.naturalHeight*existing_cover.naturalWidth < el.naturalWidth * el.naturalHeight){
       el.nextElementSibling.classList.add("larger")
     }
+    var li = el.closest('li.media');
+    if (li) {
+      li.dataset.coverPixels = el.naturalWidth * el.naturalHeight;
+      // If the modal is currently sorted by cover size, re-apply on each
+      // image-load so cards float into place as their dimensions resolve.
+      if (window.__metaSortMode && window.__metaSortMode !== 'default') {
+        applyMetaSort();
+      }
+    }
   }
+  function applyMetaSort() {
+    var mode = window.__metaSortMode || 'default';
+    var list = document.getElementById('book-list');
+    if (!list) return;
+    var items = Array.prototype.slice.call(list.querySelectorAll('li.media'));
+    if (!items.length) return;
+    if (mode === 'default') {
+      items.sort(function (a, b) {
+        return parseInt(a.dataset.metaIndex || '0', 10) - parseInt(b.dataset.metaIndex || '0', 10);
+      });
+    } else {
+      items.sort(function (a, b) {
+        var ap = parseInt(a.dataset.coverPixels || '0', 10);
+        var bp = parseInt(b.dataset.coverPixels || '0', 10);
+        // Items missing a cover (pixels=0) always sink to the bottom.
+        if (ap === 0 && bp !== 0) return 1;
+        if (bp === 0 && ap !== 0) return -1;
+        return mode === 'cover_desc' ? (bp - ap) : (ap - bp);
+      });
+    }
+    items.forEach(function (li) { list.appendChild(li); });
+  }
+  $(document).on('change', '#meta-sort', function () {
+    window.__metaSortMode = this.value;
+    applyMetaSort();
+  });
   $(document).on('click','.meta_identifier a',
     function (e) {
       e.preventDefault()

@@ -19,6 +19,7 @@ from sqlalchemy.exc import InvalidRequestError, OperationalError
 from sqlalchemy.orm.attributes import flag_modified
 
 from cps.services.Metadata import Metadata
+from cps.services.cover_booster import boost_covers
 from . import config, constants, logger, ub, web_server
 from .usermanagement import user_login_required
 
@@ -376,4 +377,13 @@ def metadata_search():
     # Stable sort so rendering is deterministic even though futures complete
     # out of order.
     provider_status.sort(key=lambda p: p["name"].lower())
+
+    # Upgrade thumbnail-sized covers to high-DPI variants (Kobo Libra Color
+    # etc.) by ISBN/title lookup against iTunes Search API. No-op when the
+    # cover is already known to be high-res or no ISBN/title match exists.
+    try:
+        boost_covers(results)
+    except Exception as exc:  # pragma: no cover - defensive: never break search
+        log.warning("cover boost pass failed: %s", exc)
+
     return make_response(jsonify({"results": results, "providers": provider_status}))

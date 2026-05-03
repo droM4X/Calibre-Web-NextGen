@@ -6,6 +6,7 @@
 # See CONTRIBUTORS for full list of authors.
 
 # Google Books api document: https://developers.google.com/books/docs/v1/using
+import re
 from typing import Dict, List, Optional
 from urllib.parse import quote
 from datetime import datetime
@@ -115,19 +116,41 @@ class Google(Metadata):
 
     @staticmethod
     def _parse_cover(result: Dict, generic_cover: str) -> str:
-        if result["volumeInfo"].get("imageLinks"):
-            cover_url = result["volumeInfo"]["imageLinks"]["thumbnail"]
-            
-            # strip curl in cover
-            cover_url = cover_url.replace("&edge=curl", "")
-            
-            # Request a cover sized for high-DPI e-readers (Kobo Libra Color
-            # is 1264x1680). Google Books returns the source image when the
-            # requested fife dimensions exceed what's available.
-            cover_url += "&fife=w1280-h1920"
-            
-            return cover_url.replace("http://", "https://")
-        return generic_cover
+        image_links = result["volumeInfo"].get("imageLinks") or {}
+        if not image_links:
+            return generic_cover
+
+        # Prefer the largest source URL Google supplies; thumbnail is the
+        # smallest. extraLarge is rarely present but worth checking when it is.
+        cover_url = (
+            image_links.get("extraLarge")
+            or image_links.get("large")
+            or image_links.get("medium")
+            or image_links.get("small")
+            or image_links.get("thumbnail")
+            or image_links.get("smallThumbnail")
+        )
+        if not cover_url:
+            return generic_cover
+
+        # Strip the small-thumbnail decorations Google injects by default.
+        cover_url = cover_url.replace("&edge=curl", "")
+        cover_url = re.sub(r"&zoom=\d+", "", cover_url)
+
+        # fife=w<W>-h<H> asks the Google Books image proxy for that size.
+        # Google returns the source image when the requested dimensions
+        # exceed what's available, so a generous request is a strict win.
+        # 1600x2400 covers the Kobo Libra Color (1264x1680) plus 2x retina
+        # phone/tablet displays without forcing a browser upscale.
+        if "fife=" in cover_url:
+            cover_url = re.sub(
+                r"fife=w\d+(?:-h\d+)?", "fife=w1600-h2400", cover_url
+            )
+        else:
+            sep = "&" if "?" in cover_url else "?"
+            cover_url = f"{cover_url}{sep}fife=w1600-h2400"
+
+        return cover_url.replace("http://", "https://")
 
     @staticmethod
     def _parse_languages(result: Dict, locale: str) -> List[str]:

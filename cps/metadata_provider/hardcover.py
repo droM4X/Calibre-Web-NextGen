@@ -184,6 +184,18 @@ class Hardcover(Metadata):
             if "data" not in response_data:
                 log.warning("Invalid response structure: missing 'data' field")
                 return []
+        except requests.exceptions.HTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            if status == 401:
+                log.warning(
+                    "Hardcover rejected the saved token (HTTP 401 'Unable to verify token'). "
+                    "The configured value is not a valid Hardcover API token. "
+                    "Generate a fresh one at https://hardcover.app/account/api and paste it "
+                    "into Admin > Basic Configuration > Hardcover API Key (or the per-user field)."
+                )
+            else:
+                log.warning(f"HTTP request failed: {e}")
+            return []
         except requests.exceptions.RequestException as e:
             log.warning(f"HTTP request failed: {e}")
             return []

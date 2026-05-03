@@ -295,7 +295,13 @@ $(function () {
               applyMetaSelections($book);
               $("#book-list").append($book);
             });
+            // Reveal the sort dropdown and reset to default ordering on every
+            // fresh search so users start from a known state.
+            $("#meta-sort").val("default");
+            window.__metaSortMode = "default";
+            $("#meta-sort-bar").show();
           } else {
+            $("#meta-sort-bar").hide();
             $("#meta-info").html(
               providerHtml +
               '<p class="text-danger">' + msg.no_result + "!</p>"
