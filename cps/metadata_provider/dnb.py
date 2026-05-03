@@ -7,8 +7,10 @@
 
 # Version from AutoCaliWeb - Created by - UsamaFoad & gelbphoenix
 
+import os
 import re
 import datetime
+from functools import lru_cache
 from typing import List, Optional
 from urllib.parse import quote
 from urllib.request import Request, urlopen
@@ -24,6 +26,71 @@ from cps import isoLanguages
 from flask_babel import get_locale
 
 log = logger.create()
+
+
+# Cover-validation strategy. portal.dnb.de's cover endpoint resets the TLS
+# connection (instead of returning HTTP 404) for ISBNs without covers,
+# surfacing as SSLError(SSLEOFError). Pre-fix, every search ran a
+# synchronous 10-second GET per ISBN, racking up ~100s of wasted latency
+# and ERROR-level log spam.
+#
+# Modes:
+#   "skip" (default) — return the URL unconditionally; let the browser
+#                      handle missing covers via the modal's <img onerror>
+#                      fallback. Fast, zero log noise.
+#   "head"           — quick HEAD probe (4s timeout, retries=0); accept
+#                      2xx/3xx, treat connection-class errors as INFO.
+#   "get"            — legacy GET-then-sniff-content-type behaviour, kept
+#                      for ops who want to filter HTML wrappers and were
+#                      relying on it.
+_COVER_VALIDATION_MODE = (os.environ.get("CWA_DNB_COVER_VALIDATION") or "skip").strip().lower()
+if _COVER_VALIDATION_MODE not in ("skip", "head", "get"):
+    log.warning("CWA_DNB_COVER_VALIDATION=%r not recognised; falling back to 'skip'", _COVER_VALIDATION_MODE)
+    _COVER_VALIDATION_MODE = "skip"
+
+_COVER_PROBE_TIMEOUT_SECONDS = float(os.environ.get("CWA_DNB_COVER_PROBE_TIMEOUT", "4"))
+_COVER_VALID_IMAGE_TYPES = ("image/jpeg", "image/jpg", "image/png", "image/webp", "image/bmp")
+
+
+@lru_cache(maxsize=2048)
+def _probe_dnb_cover(cover_url: str, mode: str) -> Optional[str]:
+    """Probe a DNB cover URL and return it if usable, else None.
+
+    Cached per (URL, mode) for the lifetime of the process so a re-search of
+    the same ISBN is free. Connection-class failures (SSL EOF, conn reset)
+    are an *expected* signal that DNB has no cover for the ISBN; we log
+    them at DEBUG only.
+    """
+    try:
+        if mode == "head":
+            response = requests.head(cover_url, timeout=_COVER_PROBE_TIMEOUT_SECONDS, allow_redirects=True)
+            if 200 <= response.status_code < 300:
+                return cover_url
+            log.debug("DNB cover HEAD %s -> HTTP %s", cover_url, response.status_code)
+            return None
+        # mode == "get"
+        response = requests.get(cover_url, timeout=_COVER_PROBE_TIMEOUT_SECONDS)
+        response.raise_for_status()
+        content_type = (response.headers.get("content-type") or "").split(";")[0].strip().lower()
+        if content_type in _COVER_VALID_IMAGE_TYPES:
+            return cover_url
+        if "text/html" in content_type and response.content[:4] in (b"\xff\xd8\xff", b"\x89PNG"):
+            return cover_url
+        log.debug("DNB cover %s rejected: content-type=%r", cover_url, content_type)
+        return None
+    except requests.exceptions.HTTPError as exc:
+        status = getattr(getattr(exc, "response", None), "status_code", None)
+        log.debug("DNB cover not found (HTTP %s): %s", status, cover_url)
+        return None
+    except (requests.exceptions.SSLError,
+            requests.exceptions.ConnectionError,
+            requests.exceptions.Timeout) as exc:
+        # portal.dnb.de resets TLS for missing-cover ISBNs — expected.
+        log.debug("DNB cover probe transport-level error for %s: %s", cover_url, exc)
+        return None
+    except Exception as exc:  # pragma: no cover  - defensive
+        log.warning("DNB cover probe unexpected error for %s: %s", cover_url, exc)
+        return None
 
 
 class DNB(Metadata):
@@ -474,52 +541,26 @@ class DNB(Metadata):
         return None
 
     def _get_validated_cover_url(self, book_data, generic_cover):
-        """Get and validate DNB cover URL, handling HTML responses"""
-        if not book_data.get('isbn'):
+        """Resolve the DNB cover URL for *book_data*.
+
+        See the `_COVER_VALIDATION_MODE` block at module top for strategy.
+        Default ('skip') returns the URL unconditionally and lets the modal's
+        <img onerror> fallback handle missing covers — fast and silent. The
+        opt-in 'head' / 'get' modes preserve the legacy validation behaviour
+        for ops who want strict server-side filtering.
+        """
+        isbn = book_data.get('isbn')
+        if not isbn:
             return generic_cover
 
-        cover_url = self.COVERURL % book_data['isbn']
+        cover_url = self.COVERURL % isbn
 
-        try:
-            response = requests.get(cover_url, timeout=10)
-            response.raise_for_status()
+        if _COVER_VALIDATION_MODE == "skip":
+            return cover_url
 
-            content_type = response.headers.get('content-type').lower()
-            #content_type = content_type.split(';')[0].strip() # Test remove charset=utf-8
-
-            #log.info(f"DNB cover response content-type: {content_type}")
-
-            # Clean content-type by removing charset and other parameters
-            main_content_type = content_type.split(';')[0].strip()
-
-            # Check if it's a valid image type
-            if main_content_type in ('image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp'):
-                # Modify the response headers to remove charset
-                response.headers['content-type'] = main_content_type
-                #log.info("Test: _get_validated_cover_url: if main_content_type")
-                #log.info(cover_url)
-                #log.info(response.headers['content-type'])
-                return cover_url
-            elif 'text/html' in content_type:
-                # Handle HTML wrapper case as before
-                log.info("main_content_type: text/html")
-                # Verify the response actually contains image data
-                if len(response.content) > 0 and response.content[:4] in [b'\xff\xd8\xff', b'\x89PNG']:
-                    log.info("response.content>0 and ..etc")
-                    actual_image_url = self._extract_image_url_from_html(response.text, cover_url)
-                    if actual_image_url and actual_image_url != cover_url:
-                        log.info(actual_image_url)
-                        return actual_image_url
-
-        except requests.exceptions.HTTPError as e:
-            if e.response.status_code == 404:
-                log.info(f"DNB cover not found for ISBN: {book_data.get('isbn')}")
-            else:
-                log.error(f"DNB cover validation failed: {e}")
-        except Exception as e:
-            log.error(f"DNB cover validation failed: {e}")
-
-        return generic_cover
+        # Cached probe so re-search for the same ISBN within a process is free.
+        validated = _probe_dnb_cover(cover_url, _COVER_VALIDATION_MODE)
+        return validated or generic_cover
 
     def _create_meta_record(self, book_data, generic_cover):
         """Create MetaRecord from parsed book data"""
