@@ -149,8 +149,17 @@ class Amazon(Metadata):
                             cover_src = m.group(1)
                             break
                     if not cover_src:
-                        # Fallback to the standard image
+                        # Try data-old-hires (Amazon's pre-rendered hi-res variant)
+                        landing = soup2.find("img", attrs={"id": "landingImage"})
+                        if landing:
+                            cover_src = landing.get("data-old-hires", "") or landing.get("src", "") or ""
+                    if not cover_src:
+                        # Last resort: a-dynamic-image src is always small (e.g. _SY475_)
                         cover_src = soup2.find("img", attrs={"class": "a-dynamic-image"})["src"]
+                    # Strip Amazon's dynamic-sizing token (e.g. ._SY475_.) so we
+                    # serve the original full-resolution variant.
+                    if cover_src:
+                        cover_src = re.sub(r'(\._[A-Z0-9,_]+_\.)', '.', cover_src)
                     match.cover = cover_src
                 except (AttributeError, TypeError):
                     match.cover = ""

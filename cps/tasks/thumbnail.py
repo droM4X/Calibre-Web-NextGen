@@ -23,8 +23,14 @@ except (ImportError, RuntimeError) as e:
     use_IM = False
 
 
+_BASE_THUMBNAIL_HEIGHT = int(os.environ.get("CWA_THUMBNAIL_BASE_HEIGHT", "420"))
+
+
 def get_resize_height(resolution):
-    return int(255 * resolution)
+    # Heights at the three resolution multipliers (small=1, medium=2, large=4):
+    #   default 420 -> 420 / 840 / 1680  (matches Kobo Libra Color long axis)
+    #   override via CWA_THUMBNAIL_BASE_HEIGHT for low-storage deployments.
+    return int(_BASE_THUMBNAIL_HEIGHT * resolution)
 
 
 def get_resize_width(resolution, original_width, original_height):

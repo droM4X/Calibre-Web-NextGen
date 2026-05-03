@@ -105,8 +105,10 @@ class Google(Metadata):
             # strip curl in cover
             cover_url = cover_url.replace("&edge=curl", "")
             
-            # request 800x900 cover image (higher resolution)
-            cover_url += "&fife=w800-h900"
+            # Request a cover sized for high-DPI e-readers (Kobo Libra Color
+            # is 1264x1680). Google Books returns the source image when the
+            # requested fife dimensions exceed what's available.
+            cover_url += "&fife=w1280-h1920"
             
             return cover_url.replace("http://", "https://")
         return generic_cover
