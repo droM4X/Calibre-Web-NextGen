@@ -20,6 +20,16 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #15 | [#1322](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1322) | @Sycha | `.cbr` / `.cbz` → IANA mimetypes | `fc8ba00` | v4.0.7 |
 | #16 | [#1096](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1096) | @SethMilliken | Safari metadata-search CSRF token | `6721638` | v4.0.7 |
 | #17 | [#1213](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1213) | @hsttlrjeff | Kobo `HandleStateRequest` `.get("Location")` + `last_modified` | `1fd6c50` | v4.0.7 |
+| #39 | [#1280](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1280) | @dbraendle | Set timestamp to current time for newly imported books | `f4b3535` | v4.0.16 |
+| #41 | [#1231](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1231) | @burakemirsezen | Restore missing back button in epub reader | `1bdc4cc` | v4.0.16 |
+| #42 | [#1226](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1226) | @antifuchs | Use `mkdir` rather than `install` to create the ingest directory | `7b86b41` | v4.0.16 |
+| #44 | [#1236](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1236) | @scottjamesrogers | Fall back to original file when metadata export fails during email send | `b57e283` | v4.0.16 |
+| #45 | [#1131](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1131) | @SethMilliken | cwasync: fix get-progress sync error for some older KOReader versions | `b868d85` | v4.0.16 |
+| #38 | [#1233](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1233) | @scottjamesrogers | Magic shelf: add Series outerjoin so author-sort returns books | `6bafcdc` | v4.0.16 |
+| #43 | [#1318](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1318) | @shavitmichael | Support kepub files in the web epub reader | `338f916` | v4.0.16 |
+| #48 | [#1166](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1166) | @black-dragon74 | Kobo: pass highlight color through as a Hardcover annotation tag | `bc9e37f` | v4.0.16 |
+| #37 | [#1290](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1290) | @haraldpdl | Run ingest-service python workers under `s6-setuidgid abc` (not root) | `f2616d6` | v4.0.16 |
+| #40 | [#1279](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1279) | @dbraendle | Use `lazy='subquery'` for Books relationships to prevent DetachedInstanceError | `bc9386c` | v4.0.16 |
 
 ## Original fork patches (no upstream PR existed)
 
@@ -46,6 +56,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #21 | Production-ready GHCR multi-arch release pipeline | `7a26106` | v4.0.7 |
 | #27 | Drop deadsnakes PPA, install Python 3.13 from python-build-standalone | `2e5d781` | v4.0.7 |
 | #28 | Updater: point release check at this fork; only flag true upgrades | `5997519` | v4.0.8 |
+| #36 | Dependabot: route bumps to `needs-review` rather than `safe-tier-1` | `efc9c02` | v4.0.16 |
 
 ### Features (fork-original, not yet upstream)
 
@@ -59,7 +70,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #34 | docs(readme): user-facing fork front-matter | `aa89fd7` | (docs only) |
 | #49 | Fix "Cover-file is not a valid image file" on URL covers (Hardcover/Google/iTunes): chown back to PUID:PGID after enforcer + diagnostics on cover-save failures | `4df03f0` | v4.0.13 |
 | #51 | Fix "Generate Kobo Auth Token Fails" blank-page (mirrors upstream issue #1328 — reporter @blahblah57): replace `.join(Data).all()` + N+1 lazy-load with `joinedload(Books.data)`, gate on `config_kepubifypath`, and guard per-book convert in try/except | `e82fdc5` | v4.0.14 |
-| #52 | Fix infinite ingestion loop on `NETWORK_SHARE_MODE=true` / Docker Desktop / inotify-ENOSPC fallback (mirrors upstream issue #1326 — reporter @mysterfr): polling watcher's mtime-age fallback was re-emitting `CLOSE_WRITE` every poll cycle for any file older than `--stabilize`, despite the `stable_count` sentinel being set after first emit. Gate the emit on the sentinel + extract `scan_once` for testability; new regression suite under `tests/integration/test_watch_fallback.py`. | `TBD` | v4.0.15 |
+| #52 | Fix infinite ingestion loop on `NETWORK_SHARE_MODE=true` / Docker Desktop / inotify-ENOSPC fallback (mirrors upstream issue #1326 — reporter @mysterfr): polling watcher's mtime-age fallback was re-emitting `CLOSE_WRITE` every poll cycle for any file older than `--stabilize`, despite the `stable_count` sentinel being set after first emit. Gate the emit on the sentinel + extract `scan_once` for testability; new regression suite under `tests/integration/test_watch_fallback.py`. | `8a3a424` | v4.0.15 |
 
 ## Container image
 
