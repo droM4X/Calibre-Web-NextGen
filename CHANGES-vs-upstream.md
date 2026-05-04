@@ -59,13 +59,14 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #34 | docs(readme): user-facing fork front-matter | `aa89fd7` | (docs only) |
 | #49 | Fix "Cover-file is not a valid image file" on URL covers (Hardcover/Google/iTunes): chown back to PUID:PGID after enforcer + diagnostics on cover-save failures | `4df03f0` | v4.0.13 |
 | #51 | Fix "Generate Kobo Auth Token Fails" blank-page (mirrors upstream issue #1328 — reporter @blahblah57): replace `.join(Data).all()` + N+1 lazy-load with `joinedload(Books.data)`, gate on `config_kepubifypath`, and guard per-book convert in try/except | `e82fdc5` | v4.0.14 |
+| #52 | Fix infinite ingestion loop on `NETWORK_SHARE_MODE=true` / Docker Desktop / inotify-ENOSPC fallback (mirrors upstream issue #1326 — reporter @mysterfr): polling watcher's mtime-age fallback was re-emitting `CLOSE_WRITE` every poll cycle for any file older than `--stabilize`, despite the `stable_count` sentinel being set after first emit. Gate the emit on the sentinel + extract `scan_once` for testability; new regression suite under `tests/integration/test_watch_fallback.py`. | `TBD` | v4.0.15 |
 
 ## Container image
 
 Published to `ghcr.io/new-usemame/calibre-web-nextgen` instead of upstream's `crocodilestick/calibre-web-automated`. Same data layout, same compose file shape — drop-in swap.
 
-## Mergeable-back guarantee
+## Patch hygiene
 
-Every entry in this file's "Backports" section is a clean cherry-pick of an upstream PR with the original author preserved as committer in the squash-merge message. If upstream coordination resumes and the maintainer wants to take any of these back, they can `git cherry-pick <sha>` from this fork's main and the patch will apply cleanly.
+Every entry in the "Backports" section is a clean cherry-pick of an upstream PR with the original author preserved as committer in the squash-merge message. Original-fork patches in the bottom section are landed as their own commits with focused titles. The squash-merge SHAs above are stable references on this fork's `main`.
 
 For "Original fork patches": the diffs are small and isolated; PR descriptions in this fork link the line-by-line rationale. Upstream is welcome to take them.

@@ -82,10 +82,64 @@ def get_stat(path: str) -> Optional[Tuple[int, int]]:
         return None
 
 
+# Sentinel value for FileStat.stable_count meaning "we've already emitted CLOSE_WRITE
+# for this file at its current size/mtime; don't re-emit until the stat changes."
+# Without this guard the mtime-age fallback in the emit condition refires every poll
+# cycle for any file older than --stabilize, causing infinite ingestion loops on
+# polling-only setups (NETWORK_SHARE_MODE, Docker Desktop, inotify-ENOSPC fallback).
+FIRED_SENTINEL = -999999
+
+
 def print_event(event: str, path: str) -> None:
     # Emit in a format the shell while-read loop can parse: "EVENT PATH"
     sys.stdout.write(f"{event} {path}\n")
     sys.stdout.flush()
+
+
+def scan_once(
+    root: str,
+    recursive: bool,
+    extensions: Optional[Set[str]],
+    index: Dict[FileKey, FileStat],
+    stabilize: float,
+    emit,
+) -> None:
+    """Run a single polling pass over `root`, mutating `index` in-place and
+    calling `emit(event, path)` for files that should fire. Extracted from
+    main() so tests can drive the state machine deterministically.
+    """
+    seen: Set[FileKey] = set()
+    for fp in iter_files(root, recursive, extensions):
+        fk = FileKey(fp)
+        seen.add(fk)
+        st = get_stat(fp)
+        if not st:
+            continue
+        size, mtime_ns = st
+        prev = index.get(fk)
+        if prev is None:
+            index[fk] = FileStat(size=size, mtime_ns=mtime_ns, stable_count=0)
+            continue
+
+        if prev.size == size and prev.mtime_ns == mtime_ns:
+            if prev.stable_count != FIRED_SENTINEL:
+                prev.stable_count = min(prev.stable_count + 1, 2)
+        else:
+            prev.size = size
+            prev.mtime_ns = mtime_ns
+            prev.stable_count = 0
+
+        if prev.stable_count == FIRED_SENTINEL:
+            continue
+
+        if prev.stable_count >= 2 or (time.time() - (prev.mtime_ns / 1e9)) >= stabilize:
+            emit("CLOSE_WRITE", fp)
+            prev.stable_count = FIRED_SENTINEL
+
+    if len(index) > 0 and len(seen) < len(index):
+        for fk in list(index.keys()):
+            if fk not in seen:
+                index.pop(fk, None)
 
 
 def main(argv: Optional[Iterable[str]] = None) -> int:
@@ -125,39 +179,7 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
                 time.sleep(max(0.0, args.interval - (now - last_scan_at)))
             last_scan_at = time.time()
 
-            seen: Set[FileKey] = set()
-            for fp in iter_files(root, args.recursive, exts):
-                fk = FileKey(fp)
-                seen.add(fk)
-                st = get_stat(fp)
-                if not st:
-                    continue
-                size, mtime_ns = st
-                prev = index.get(fk)
-                if prev is None:
-                    # New file observed; require stabilization before emitting
-                    index[fk] = FileStat(size=size, mtime_ns=mtime_ns, stable_count=0)
-                    continue
-
-                if prev.size == size and prev.mtime_ns == mtime_ns:
-                    prev.stable_count = min(prev.stable_count + 1, 2)
-                else:
-                    prev.size = size
-                    prev.mtime_ns = mtime_ns
-                    prev.stable_count = 0
-
-                # If stable long enough (two scans) OR sufficiently old mtime, emit event
-                if prev.stable_count >= 2 or (time.time() - (prev.mtime_ns / 1e9)) >= args.stabilize:
-                    # Emit a close_write-style event
-                    print_event("CLOSE_WRITE", fp)
-                    # Reset stable_count so we don't fire repeatedly for unchanged files
-                    prev.stable_count = -999999  # sentinel to avoid refire unless it changes again
-
-            # Clean up removed files from index to keep memory small
-            if len(index) > 0 and len(seen) < len(index):
-                for fk in list(index.keys()):
-                    if fk not in seen:
-                        index.pop(fk, None)
+            scan_once(root, args.recursive, exts, index, args.stabilize, print_event)
 
     except KeyboardInterrupt:
         return 0
