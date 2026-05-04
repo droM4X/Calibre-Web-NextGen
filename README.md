@@ -61,7 +61,7 @@ Upstream CWA is a great project. The maintainer hasn't merged a PR in months, an
 - Generate Kobo Auth Token returning a blank page
 - Several admin routes that were unauthenticated and shouldn't have been
 
-This fork picks the safe community fixes out of upstream's backlog, ships them in regular releases, and writes fresh fixes for high-impact bugs that don't have an open PR yet. Same software, same data layout, same UI, same compose file. **We don't own upstream and we're not trying to take over** — every backported patch is mergeable back if upstream review resumes. Door's open.
+Calibre-Web-NextGen picks the safe community fixes out of upstream's backlog, ships them in regular releases, and writes fresh fixes for high-impact bugs that don't have an open PR yet. Same software, same data layout, same UI, same compose file — just actively maintained. Patches stay clean enough that upstream can pick them back up any time.
 
 ---
 
@@ -371,7 +371,7 @@ Bug fixes are conservative; we don't add features upstream wouldn't accept. If a
 
 - **Bug?** [Open an issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new). Reproduction steps + version tag + `docker logs` snippet = ideal.
 - **PR?** PRs welcome. The bar is "doesn't break anything that works today" — if it touches auth, schema, or deps, expect a closer review. Per-commit identity is enforced (`new-usemame` for fork-original, original handle for backports).
-- **Original CWA contributors with stalled PRs upstream?** Reach out — happy to ship your work here while keeping it mergeable back to upstream.
+- **Original CWA contributors with stalled PRs upstream?** Reach out — happy to ship your work here.
 - **Real-time chat:** the upstream [CWA Discord](https://discord.gg/EjgSeek94R) is still the place. We're not trying to fragment the community.
 
 Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Contributing details: [`CONTRIBUTING.md`](CONTRIBUTING.md).
