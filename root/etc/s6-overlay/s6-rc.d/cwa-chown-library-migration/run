@@ -1,0 +1,60 @@
+#!/usr/bin/with-contenv bash
+# One-time chown migration so the abc-uid ingest worker (introduced when
+# cwa-ingest-service started prefixing every python3 invocation with
+# `s6-setuidgid abc`) can write into author/series subdirectories that
+# pre-existing CWA deployments left as root:root.
+#
+# Without this migration, users upgrading from <= v4.0.16 hit
+#   cp: cannot create regular file '/calibre-library/<Author>/<Title>/...':
+#   Permission denied
+# the moment they try to ingest a new book by an author who already has a
+# root-owned directory in the library.
+#
+# Behavior:
+#   - Gated by /config/.cwa-chown-library-done sentinel — runs once per
+#     installation, then no-ops on every subsequent boot.
+#   - Skipped when NETWORK_SHARE_MODE is enabled, because chown over an
+#     NFS export is slow and may be refused by the share's policy. The
+#     sentinel is still written so the skip is recorded; NFS users get a
+#     log line telling them to run the chown manually if ingest later
+#     fails with EACCES.
+#   - Best-effort: any chown failure is logged but does not block boot.
+
+set -e
+
+MARKER=/config/.cwa-chown-library-done
+LIBRARY=/calibre-library
+INGEST=/cwa-book-ingest
+
+if [ -f "$MARKER" ]; then
+    echo "[cwa-chown-library-migration] sentinel present, skipping"
+    exit 0
+fi
+
+if [ "${NETWORK_SHARE_MODE,,}" = "true" ] || [ "${NETWORK_SHARE_MODE}" = "1" ] \
+   || [ "${NETWORK_SHARE_MODE,,}" = "yes" ] || [ "${NETWORK_SHARE_MODE,,}" = "on" ]; then
+    echo "[cwa-chown-library-migration] NETWORK_SHARE_MODE=true — skipping migration"
+    echo "[cwa-chown-library-migration] If post-upgrade ingest fails with EACCES, manually run:"
+    echo "[cwa-chown-library-migration]   docker exec <container> chown -R abc:abc $LIBRARY $INGEST"
+    mkdir -p /config 2>/dev/null || true
+    touch "$MARKER" 2>/dev/null || true
+    exit 0
+fi
+
+echo "[cwa-chown-library-migration] aligning $LIBRARY and $INGEST ownership to abc:abc..."
+
+if [ -d "$LIBRARY" ]; then
+    chown -R abc:abc "$LIBRARY" 2>/dev/null || \
+        echo "[cwa-chown-library-migration] WARN: chown $LIBRARY had partial failures"
+    echo "[cwa-chown-library-migration] $LIBRARY: aligned"
+fi
+
+if [ -d "$INGEST" ]; then
+    chown -R abc:abc "$INGEST" 2>/dev/null || \
+        echo "[cwa-chown-library-migration] WARN: chown $INGEST had partial failures"
+    echo "[cwa-chown-library-migration] $INGEST: aligned"
+fi
+
+mkdir -p /config 2>/dev/null || true
+touch "$MARKER"
+echo "[cwa-chown-library-migration] migration complete; sentinel: $MARKER"
