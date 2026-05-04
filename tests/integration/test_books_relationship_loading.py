@@ -113,15 +113,21 @@ def _make_engine_and_session(db_path: Path):
     runtime queries reference `calibre.books`, `calibre.data`, etc.
 
     Registers the same custom SQL functions Calibre defines so triggers
-    don't abort."""
+    don't abort.
+
+    NOTE: this fixture deliberately does NOT clear cps.* from sys.modules
+    before importing. Some modules under cps/ (notably
+    cps.progress_syncing.models) use a circular-import pattern that
+    resolves cleanly on the first package import but breaks if modules
+    are forcibly reloaded mid-suite — downstream tests fail with
+    `AttributeError: partially initialized module ... has no attribute
+    BookFormatChecksum`. The Books-relationship loading strategy is read
+    from whatever cps.db is committed on this branch, which is what the
+    runtime uses anyway."""
     from sqlalchemy import create_engine, event, text
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.pool import StaticPool
 
-    # Force re-import so cps.db reflects the current branch's strategy
-    for mod in list(sys.modules):
-        if mod.startswith("cps."):
-            del sys.modules[mod]
     from cps import db as cps_db  # noqa: E402
 
     engine = create_engine(
