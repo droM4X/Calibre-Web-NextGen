@@ -6,6 +6,13 @@ updates:
       interval: weekly
     commit-message:
       prefix: "chore(deps)"
+    # Dependabot PRs cannot satisfy the safe-tier-1 auto-merge gate:
+    #   1. Tier policy (CLAUDE.md) restricts safe-tier-1 to .po/.md/README*;
+    #      .github/workflows/*.yml bumps don't qualify.
+    #   2. validate-author requires committer == new-usemame, but
+    #      dependabot's commits use noreply@github.com.
+    # Route them to operator review so the version jump gets a human eye.
     labels:
-      - safe-tier-1
+      - needs-review
+      - dependabot
     open-pull-requests-limit: 5
