@@ -56,6 +56,7 @@ from flask import g, Blueprint, abort, request
 from .cw_login import login_user, current_user
 from flask_babel import gettext as _
 from flask_limiter import RateLimitExceeded
+from sqlalchemy.orm import joinedload
 
 from . import logger, config, calibre_db, db, helper, ub, lm, limiter
 from .render_template import render_title_template
@@ -101,12 +102,22 @@ def generate_auth_token(user_id):
         ub.session.add(auth_token)
         ub.session_commit()
 
-    books = calibre_db.session.query(db.Books).join(db.Data).all()
+    if config.config_kepubifypath:
+        try:
+            books = (calibre_db.session.query(db.Books)
+                     .options(joinedload(db.Books.data))
+                     .all())
+        except Exception as ex:
+            log.warning("Could not enumerate books for kepub auto-conversion: %s", ex)
+            books = []
 
-    for book in books:
-        formats = [data.format for data in book.data]
-        if 'KEPUB' not in formats and config.config_kepubifypath and 'EPUB' in formats:
-            helper.convert_book_format(book.id, config.config_calibre_dir, 'EPUB', 'KEPUB', current_user.name)
+        for book in books:
+            try:
+                formats = [data.format for data in book.data]
+                if 'KEPUB' not in formats and 'EPUB' in formats:
+                    helper.convert_book_format(book.id, config.config_calibre_dir, 'EPUB', 'KEPUB', current_user.name)
+            except Exception as ex:
+                log.warning("Skipping kepub auto-conversion for book %s: %s", getattr(book, "id", "?"), ex)
 
     return render_title_template(
         "generate_kobo_auth_url.html",
