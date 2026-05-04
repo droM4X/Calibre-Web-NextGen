@@ -382,7 +382,7 @@ Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Contributing details: [`CONTRIBUTI
 
 This fork stands on a tower of work by other people:
 
-- **Calibre-Web-Automated** — [@crocodilestick](https://github.com/crocodilestick) and CWA contributors. The core software this fork builds on. If upstream review resumes, every patch in this fork is cleanly cherry-pickable back.
+- **Calibre-Web-Automated** — [@crocodilestick](https://github.com/crocodilestick) and CWA contributors. The core software this build is based on; original PR authors are credited by handle in every backport commit.
 - **Calibre-Web** — [@janeczku](https://github.com/janeczku) and the Calibre-Web team. The web UI that makes self-hosted ebook libraries actually pleasant.
 - **Calibre** — [@kovidgoyal](https://github.com/kovidgoyal). The 20-year foundation under all of this.
 
