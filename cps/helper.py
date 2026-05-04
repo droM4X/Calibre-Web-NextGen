@@ -1038,6 +1038,7 @@ def save_cover_from_url(url, book_path):
     max_cover_bytes, max_cover_mb = _get_cover_download_limit()
     img = None
     download_start = time.monotonic()
+    log.debug("Cover fetch start: url=%s", url)
     try:
         if cli_param.allow_localhost:
             img = requests.get(url, timeout=(10, 30), allow_redirects=False, stream=True)  # ToDo: Error Handling
@@ -1060,7 +1061,10 @@ def save_cover_from_url(url, book_path):
             if len(content) > max_cover_bytes:
                 return False, _("Cover image exceeds maximum size of %(size)s MB", size=max_cover_mb)
         img._content = bytes(content)
-        log.debug("Cover download ok: %s bytes in %.3fs", len(img._content), time.monotonic() - download_start)
+        log.info("Cover download ok: url=%s status=%s content-type=%s bytes=%s elapsed=%.3fs",
+                 url, getattr(img, "status_code", "?"),
+                 img.headers.get("content-type"), len(img._content),
+                 time.monotonic() - download_start)
         return save_cover(img, book_path)
     except (socket.gaierror,
             requests.exceptions.HTTPError,
@@ -1089,24 +1093,35 @@ def save_cover_from_filestorage(filepath, saved_filename, img):
     if not os.path.exists(filepath):
         try:
             os.makedirs(filepath)
-        except OSError:
-            log.error("Failed to create path for cover")
+        except OSError as e:
+            log.error("Failed to create cover path %s: %s", filepath, e)
             return False, _("Failed to create path for cover")
+    target = os.path.join(filepath, saved_filename)
     try:
         # upload of jpg file without wand
         if isinstance(img, requests.Response):
-            with open(os.path.join(filepath, saved_filename), 'wb') as f:
+            content_len = len(img.content) if img.content is not None else 0
+            ct = img.headers.get("content-type") if hasattr(img, "headers") else None
+            if content_len == 0:
+                log.error("Cover save aborted: empty response body (url=%s, content-type=%s, http=%s)",
+                          getattr(getattr(img, "request", None), "url", "?"), ct,
+                          getattr(img, "status_code", "?"))
+                return False, _("Cover-file is not a valid image file, or could not be stored")
+            with open(target, 'wb') as f:
                 f.write(img.content)
         else:
             if hasattr(img, "metadata"):
                 # upload of jpg/png... via url
-                img.save(filename=os.path.join(filepath, saved_filename))
+                img.save(filename=target)
                 img.close()
             else:
                 # upload of jpg/png... from hdd
-                img.save(os.path.join(filepath, saved_filename))
-    except (IOError, OSError):
-        log.error("Cover-file is not a valid image file, or could not be stored")
+                img.save(target)
+    except (IOError, OSError) as e:
+        log.error("Cover save failed (filesystem) target=%s: %s: %s", target, type(e).__name__, e)
+        return False, _("Cover-file is not a valid image file, or could not be stored")
+    except Exception as e:
+        log.error("Cover save failed (unexpected) target=%s: %s: %s", target, type(e).__name__, e)
         return False, _("Cover-file is not a valid image file, or could not be stored")
     return True, None
 
@@ -1136,8 +1151,15 @@ def save_cover(img, book_path):
                 imgc.format = 'jpeg'
                 imgc.transform_colorspace("srgb")
                 img = imgc
-            except (BlobError, MissingDelegateError):
-                log.error("Invalid cover file content")
+            except (BlobError, MissingDelegateError) as e:
+                log.error("Invalid cover file content (content-type=%s, bytes=%s): %s: %s",
+                          content_type, len(img.content) if hasattr(img, "content") else "?",
+                          type(e).__name__, e)
+                return False, _("Invalid cover file content")
+            except Exception as e:
+                log.error("Cover conversion failed (content-type=%s, bytes=%s): %s: %s",
+                          content_type, len(img.content) if hasattr(img, "content") else "?",
+                          type(e).__name__, e)
                 return False, _("Invalid cover file content")
     else:
         if content_type not in ['image/jpeg', 'image/jpg']:
