@@ -57,6 +57,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #32 | DNB: drop synchronous cover-validation; switch to `<img onerror>` graceful fallback | `dab1589` | v4.0.11 |
 | #33 | Metadata: cover-resolution booster + sort-by-cover-size in fetch dialog | `e5b7666` | v4.0.12 |
 | #34 | docs(readme): user-facing fork front-matter | `aa89fd7` | (docs only) |
+| #49 | Fix "Cover-file is not a valid image file" on URL covers (Hardcover/Google/iTunes): chown back to PUID:PGID after enforcer + diagnostics on cover-save failures | `4df03f0` | v4.0.13 |
 
 ## Container image
 
