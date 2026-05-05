@@ -15,6 +15,7 @@ except ImportError:
     from werkzeug.exceptions import UnprocessableEntity as FailedDependency
 
 from . import config, app, logger, services
+from .cw_login import current_user
 
 
 log = logger.create()
@@ -33,13 +34,24 @@ def error_http(error):
 
 
 def internal_error(error):
+    # Always log the full traceback server-side so operators can debug.
+    log.error("500 Internal Server Error: %s", traceback.format_exc())
+    # Only expose the stacktrace in the rendered page to authenticated admins —
+    # traceback.format_exc() can contain internal paths, library versions,
+    # function names, and variable values that leak useful info to attackers.
+    error_stack = ""
+    try:
+        if current_user.is_authenticated and current_user.role_admin():
+            error_stack = traceback.format_exc().split("\n")
+    except Exception:
+        pass
     return render_template('http_error.html',
                            error_code="500 Internal Server Error",
                            error_name='The server encountered an internal error and was unable to complete your '
                                       'request. There is an error in the application.',
                            issue=True,
                            unconfigured=False,
-                           error_stack=traceback.format_exc().split("\n"),
+                           error_stack=error_stack,
                            instance=config.config_calibre_web_title
                            ), 500
 
