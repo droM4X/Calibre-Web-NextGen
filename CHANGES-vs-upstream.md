@@ -72,6 +72,38 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #51 | Fix "Generate Kobo Auth Token Fails" blank-page (mirrors upstream issue #1328 — reporter @blahblah57): replace `.join(Data).all()` + N+1 lazy-load with `joinedload(Books.data)`, gate on `config_kepubifypath`, and guard per-book convert in try/except | `e82fdc5` | v4.0.14 |
 | #52 | Fix infinite ingestion loop on `NETWORK_SHARE_MODE=true` / Docker Desktop / inotify-ENOSPC fallback (mirrors upstream issue #1326 — reporter @mysterfr): polling watcher's mtime-age fallback was re-emitting `CLOSE_WRITE` every poll cycle for any file older than `--stabilize`, despite the `stable_count` sentinel being set after first emit. Gate the emit on the sentinel + extract `scan_once` for testability; new regression suite under `tests/integration/test_watch_fallback.py`. | `8a3a424` | v4.0.15 |
 
+## Backports from janeczku/calibre-web (2026-04 wave)
+
+CWA detached from the original Calibre-Web upstream (`janeczku/calibre-web`) at some point before this fork started. The original upstream is alive and pushing fixes — most notably a security wave in April 2026 by @jvoisin and @haraldpdl that CWA never picked up. We sync these fixes directly into our `main` so users on `ghcr.io/new-usemame/calibre-web-nextgen` get them without waiting for upstream's next release tag (releases on calibre-web tend to be 5–6 months apart).
+
+### Security
+
+| Fork commit | Janeczku commit | Author | Description |
+|---|---|---|---|
+| `a387c5c7` | [`4bb553f5`](https://github.com/janeczku/calibre-web/commit/4bb553f5) | @jvoisin | XXE: lxml parsers in `cps/epub.py`, `cps/epub_helper.py`, `cps/fb2.py` use `XMLParser(resolve_entities=False, no_network=True)` |
+| `0ec5f440` | [`19da54a7`](https://github.com/janeczku/calibre-web/commit/19da54a7) | @jvoisin | LDAP injection: escape RFC 4515 metacharacters in `bind_user` before passing into LDAP filter |
+| `0cb70e61` | [`e21f9437`](https://github.com/janeczku/calibre-web/commit/e21f9437) | @jvoisin | OAuth relink: reject the bind when an OAuth identity is already attached to a different authenticated user |
+| `4248fe7a` | [`a6c55dea`](https://github.com/janeczku/calibre-web/commit/a6c55dea) | @jvoisin | `/show/<book_id>` access bypass: switch from `get_book` to `get_filtered_book` so per-user content-hiding rules apply |
+| `a04435f1` | [`0615637f`](https://github.com/janeczku/calibre-web/commit/0615637f) | @jvoisin | `debug_info`: exclude any config key containing `token` or `secret` from the admin debug dump |
+| `01649f8e` | [`4c1d7a9f`](https://github.com/janeczku/calibre-web/commit/4c1d7a9f) | @jvoisin | Shelf reorder POST now requires edit permission, not just view permission |
+| `b716b0bd` | [`94899056`](https://github.com/janeczku/calibre-web/commit/94899056) | upstream | `chmod 0600` on freshly generated `.key` Fernet key file |
+| `119e591c` | [`fd744af7`](https://github.com/janeczku/calibre-web/commit/fd744af7) | @jvoisin | 500 page: log the full traceback server-side, but only render it to authenticated admins |
+
+`fixes/fix_kobo` (Kobo IDOR on `generate_auth_token` / `deleteauthtoken`) was independently fixed in our PR #18 (`9f50bb2`); upstream and fork landed on identical guards.
+
+### Stability and hygiene
+
+| Fork commit | Janeczku commit | Author | Description |
+|---|---|---|---|
+| `cdaa94d2` | [`ab17992e`](https://github.com/janeczku/calibre-web/commit/ab17992e) | @haraldpdl | `Books.atom_timestamp` returns `last_modified` (with fallback to `timestamp`) so OPDS sync clients see post-import metadata and cover changes |
+| `5187a274` | [`674b47bd`](https://github.com/janeczku/calibre-web/commit/674b47bd) | @haraldpdl | `do_download_file`: clean up `/tmp/calibre_web` staged copies via `after_this_request` hook so embed-metadata downloads don't fill the disk |
+| `b7eebe1d` | [`570371cc`](https://github.com/janeczku/calibre-web/commit/570371cc) | @haraldpdl | `do_calibre_export`: add `--dont-save-cover` so we don't write an unused `<uuid>.jpg` next to every download |
+| `1dedd55b` | [`9c87f0fb`](https://github.com/janeczku/calibre-web/commit/9c87f0fb) | upstream | `gdrive.py`: call `.hexdigest()` on the md5 hash before comparing to the gdrive checksum string |
+
+The ComicVine/Douban None-iteration crash that janeczku fixed in `0ca6e861` does not occur in this fork — `cps/search_metadata.py:350` already coalesces provider results with `future.result() or []`, and `cps/metadata_provider/comicvine.py:50` already returns `[]` on HTTP error.
+
+Regression coverage for the testable subset of these backports lives in `tests/unit/test_janeczku_backports.py` (21 tests covering XXE, LDAP escape, debug_info redaction, atom_timestamp priority, embed-helper argv, and key-file permissions).
+
 ## Container image
 
 Published to `ghcr.io/new-usemame/calibre-web-nextgen` instead of upstream's `crocodilestick/calibre-web-automated`. Same data layout, same compose file shape — drop-in swap.
