@@ -20,7 +20,7 @@ import requests
 import unidecode
 from uuid import uuid4
 
-from flask import send_from_directory, make_response, abort, url_for, Response
+from flask import send_from_directory, make_response, abort, url_for, Response, after_this_request
 from flask_babel import gettext as _
 from flask_babel import lazy_gettext as N_
 from flask_babel import get_locale
@@ -1309,6 +1309,21 @@ def do_download_file(book, book_format, client, data, headers):
             log.error(f"Failed to calculate/store checksum for book {book.id}: {e}")
             # Don't fail the download if checksum calculation fails
 
+    # Clean up staged copies in /tmp/calibre_web after the response is sent
+    # (kepubify / calibre-export branches) so the temp dir does not grow unbounded.
+    # A bulk OPDS or Kobo sync can otherwise fill the host filesystem in minutes;
+    # comic formats (CBZ/CBR) amplify the effect since each staged file can run
+    # to hundreds of MB or several GB. Once full, downloads silently 404 and a
+    # container restart does not recover the space.
+    if filename == get_temp_dir():
+        _tmp_path = os.path.join(filename, download_name + "." + book_format)
+        @after_this_request
+        def _cleanup_staged_download(resp):
+            try:
+                os.remove(_tmp_path)
+            except OSError as ex:
+                log.warning('Failed to remove staged download %s: %s', _tmp_path, ex)
+            return resp
     response = make_response(send_from_directory(filename, download_name + "." + book_format))
     # ToDo Check headers parameter
     for element in headers:

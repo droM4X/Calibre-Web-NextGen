@@ -1889,7 +1889,9 @@ def _repair_epub_container_if_needed(book_id, original_path):
 @viewer_required
 def serve_book(book_id, book_format, anyname):
     book_format = book_format.split(".")[0]
-    book = calibre_db.get_book(book_id)
+    book = calibre_db.get_filtered_book(book_id)
+    if not book:
+        return "File not in Database"
     data = calibre_db.get_book_format(book_id, book_format.upper())
     if not data:
         return "File not in Database"
