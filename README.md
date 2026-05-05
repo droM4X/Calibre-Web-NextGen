@@ -21,7 +21,9 @@ docker compose pull && docker compose up -d
 
 Library, settings, users, OAuth tokens, and KOReader sync state are preserved. Switching back is the reverse one-line change.
 
-If something breaks, please [report it on the issue tracker](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new) (the **Issues** tab above). New here? See [Quick start](#quick-start).
+- **Bug?** [File it here.](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new?template=bug_report.md)
+- **Feature idea?** [Open a request.](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new?template=feature_request.md) Anything goes, no checklist required — even half-formed ideas are welcome and help prioritize what to look at next.
+- **New here?** See [Quick start](#quick-start) below.
 
 ---
 
@@ -356,9 +358,10 @@ Backports are conservative. Anything that touches auth, schema, or dependencies 
 
 ## Contributing
 
-- Bug reports: open an [issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new). Reproduction steps, version tag, and a `docker logs` snippet help a lot.
-- Pull requests: welcome. The merge bar is "doesn't break anything that currently works." Changes touching auth, schema, or dependencies get a closer review. Backports keep the original author's handle in the commit message.
-- If you authored a CWA PR that's still open upstream and you'd like it shipped here too, please open an issue or send the PR our way.
+- **Bug reports:** [open a bug issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new?template=bug_report.md). Reproduction steps, version tag, and a `docker logs` snippet help a lot.
+- **Feature requests:** [open a feature issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new?template=feature_request.md). The bar is low — bug reports get prioritized for code work, but feature requests shape what gets looked at when the bug queue is quiet, and they help upstream see what users actually want. Don't worry about whether it's "in scope"; just file it.
+- **Pull requests:** welcome. The merge bar is "doesn't break anything that currently works." Changes touching auth, schema, or dependencies get a closer review. Backports keep the original author's handle in the commit message.
+- **CWA PR authors with stalled work upstream:** if you'd like your PR shipped here too, open an issue or send the PR our way.
 
 Governance: [`GOVERNANCE.md`](GOVERNANCE.md). Contributing details: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
