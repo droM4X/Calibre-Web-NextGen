@@ -56,6 +56,9 @@ def _strip_xml_leading_noise(data):
     return data
 
 
+_safe_parser = etree.XMLParser(resolve_entities=False, no_network=True)
+
+
 def get_content_opf(file_path, ns=None):
     if ns is None:
         ns = default_ns
@@ -64,12 +67,12 @@ def get_content_opf(file_path, ns=None):
     # Some EPUBs include a BOM or stray whitespace before the XML declaration,
     # which causes lxml to error with: "XML declaration allowed only at the start".
     txt = _strip_xml_leading_noise(txt)
-    tree = etree.fromstring(txt)
+    tree = etree.fromstring(txt, parser=_safe_parser)
     cf_name = tree.xpath('n:rootfiles/n:rootfile/@full-path', namespaces=ns)[0]
     cf = epubZip.read(cf_name)
     cf = _strip_xml_leading_noise(cf)
 
-    return etree.fromstring(cf), cf_name
+    return etree.fromstring(cf, parser=_safe_parser), cf_name
 
 
 def create_new_metadata_backup(book,  custom_columns, export_language, translated_cover_name, lang_type=3):
