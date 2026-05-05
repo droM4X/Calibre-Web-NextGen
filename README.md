@@ -2,6 +2,8 @@
 
 A bug-fix build of [Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated) (CWA). Same data layout, same configuration, same UI. The differences are listed in [`CHANGES-vs-upstream.md`](CHANGES-vs-upstream.md) and per release on the [Releases page](https://github.com/new-usemame/Calibre-Web-NextGen/releases).
 
+Built on **[Calibre-Web-Automated](https://github.com/crocodilestick/Calibre-Web-Automated)** by [@crocodilestick](https://github.com/crocodilestick), which is built on **[Calibre-Web](https://github.com/janeczku/calibre-web)** by [@janeczku](https://github.com/janeczku) and contributors, which is built on **[Calibre](https://github.com/kovidgoyal/calibre)** by [@kovidgoyal](https://github.com/kovidgoyal). Original PR authors are credited by handle on every backport — see full [Credits](#credits) at the bottom.
+
 [![Latest release](https://img.shields.io/github/v/release/new-usemame/Calibre-Web-NextGen)](https://github.com/new-usemame/Calibre-Web-NextGen/releases/latest)
 [![Container](https://img.shields.io/badge/ghcr.io-calibre--web--nextgen-blue?logo=docker)](https://github.com/new-usemame/Calibre-Web-NextGen/pkgs/container/calibre-web-nextgen)
 [![Open issues](https://img.shields.io/github/issues/new-usemame/Calibre-Web-NextGen)](https://github.com/new-usemame/Calibre-Web-NextGen/issues)
