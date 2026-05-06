@@ -71,6 +71,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #49 | Fix "Cover-file is not a valid image file" on URL covers (Hardcover/Google/iTunes): chown back to PUID:PGID after enforcer + diagnostics on cover-save failures | `4df03f0` | v4.0.13 |
 | #51 | Fix "Generate Kobo Auth Token Fails" blank-page (mirrors upstream issue #1328 — reporter @blahblah57): replace `.join(Data).all()` + N+1 lazy-load with `joinedload(Books.data)`, gate on `config_kepubifypath`, and guard per-book convert in try/except | `e82fdc5` | v4.0.14 |
 | #52 | Fix infinite ingestion loop on `NETWORK_SHARE_MODE=true` / Docker Desktop / inotify-ENOSPC fallback (mirrors upstream issue #1326 — reporter @mysterfr): polling watcher's mtime-age fallback was re-emitting `CLOSE_WRITE` every poll cycle for any file older than `--stabilize`, despite the `stable_count` sentinel being set after first emit. Gate the emit on the sentinel + extract `scan_once` for testability; new regression suite under `tests/integration/test_watch_fallback.py`. | `8a3a424` | v4.0.15 |
+| #65 | Cover quality: Amazon image-CDN booster path (ISBN-keyed, edition-correct covers up to ~2000px from public CloudFront, no scraping) + Apple Books as a first-class metadata provider + tighter iTunes match guard (no more wrong-edition substitution when ISBN-lookup misses). 33 unit tests. Solves the "Wuthering Heights Wordsworth Classics cover not available from any source" class of issue. | `TBD` | TBD |
 
 ## Backports from janeczku/calibre-web (2026-04 wave)
 
