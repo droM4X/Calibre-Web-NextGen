@@ -121,6 +121,14 @@ class _Settings(_Base):
 
     config_kobo_proxy = Column(Boolean, default=False)
 
+    # Kobo cover aspect-ratio padding. Pads server-side so the device shows
+    # full-screen artwork instead of letterboxing tall publisher covers.
+    # Defaults: off; Libra Color/2 ratio (1264:1680); edge-mirror fill.
+    config_kobo_cover_padding_enabled = Column(Boolean, default=False)
+    config_kobo_cover_padding_aspect = Column(String, default="kobo_libra_color")
+    config_kobo_cover_padding_fill_mode = Column(String, default="edge_mirror")
+    config_kobo_cover_padding_color = Column(String, default="")
+
     config_ldap_provider_url = Column(String, default='example.org')
     config_ldap_port = Column(SmallInteger, default=389)
     config_ldap_authentication = Column(SmallInteger, default=constants.LDAP_AUTH_SIMPLE)

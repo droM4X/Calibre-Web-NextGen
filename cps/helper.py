@@ -953,6 +953,43 @@ def get_book_cover_internal(book, resolution=None):
         return get_cover_on_failure()
 
 
+def get_kobo_cover_source_path(book_uuid, resolution):
+    """Resolve the on-disk JPEG path that would be served to Kobo for this
+    book at the requested resolution — returned as (directory, filename,
+    full_path) so callers can mtime it, read it, or send_from_directory it.
+
+    Returns None when no usable JPEG exists yet (e.g. thumbnails not
+    generated, cover.jpg missing, or Google Drive-backed library where
+    we'd need to fetch via the GD API). Callers should fall back to
+    helper.get_book_cover_with_uuid in that case.
+
+    Used by the Kobo cover-padding wrapper so it can read source bytes
+    directly without going through the Response wrapper that
+    get_book_cover_internal returns.
+    """
+    book = calibre_db.get_book_by_uuid(book_uuid)
+    if not book or not book.has_cover:
+        return None
+    if config.config_use_google_drive:
+        # GD-backed libraries fetch via the API, which is opaque to the
+        # padding service. Fall back to the unpadded path.
+        return None
+
+    cache = fs.FileSystem()
+    if resolution:
+        jpg_thumb = get_book_cover_thumbnail_by_format(book, resolution, 'jpg')
+        if jpg_thumb and cache.get_cache_file_exists(jpg_thumb.filename, CACHE_TYPE_THUMBNAILS):
+            directory = cache.get_cache_file_dir(jpg_thumb.filename, CACHE_TYPE_THUMBNAILS)
+            full = os.path.join(directory, jpg_thumb.filename)
+            return directory, jpg_thumb.filename, full
+
+    cover_dir = os.path.join(config.get_book_path(), book.path)
+    cover_full = os.path.join(cover_dir, "cover.jpg")
+    if os.path.isfile(cover_full):
+        return cover_dir, "cover.jpg", cover_full
+    return None
+
+
 def get_book_cover_thumbnail(book, resolution):
     if book and book.has_cover:
         return (ub.session

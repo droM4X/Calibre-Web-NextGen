@@ -27,6 +27,7 @@ from flask import (
     redirect,
     abort,
     Response,
+    send_from_directory,
 )
 from .cw_login import current_user
 from werkzeug.datastructures import Headers
@@ -39,10 +40,12 @@ import requests
 from . import config, logger, kobo_auth, db, calibre_db, helper, shelf as shelf_lib, ub, csrf, kobo_sync_status, magic_shelf
 from . import isoLanguages
 from .epub import get_epub_layout
-from .constants import COVER_THUMBNAIL_SMALL, COVER_THUMBNAIL_MEDIUM, COVER_THUMBNAIL_LARGE
+from .constants import COVER_THUMBNAIL_SMALL, COVER_THUMBNAIL_MEDIUM, COVER_THUMBNAIL_LARGE, CACHE_TYPE_THUMBNAILS
 from .kobo_cover_cache import build_cover_image_id, normalize_cover_uuid
 from .helper import get_download_link
 from .services import SyncToken as SyncToken, hardcover
+from .services import cover_padding as kobo_cover_padding
+from .fs import FileSystem
 from .web import download_required
 from .kobo_auth import requires_kobo_auth, get_auth_token
 
@@ -562,18 +565,36 @@ def _normalize_cover_uuid(image_id):
     return normalize_cover_uuid(image_id)
 
 
+def _current_padding_settings():
+    """Snapshot of the admin's Kobo-padding config. Centralized so the
+    sync-metadata path and the cover-serving path agree on the same hash."""
+    return kobo_cover_padding.PaddingSettings(
+        enabled=bool(getattr(config, "config_kobo_cover_padding_enabled", False)),
+        target_aspect=getattr(config, "config_kobo_cover_padding_aspect", "kobo_libra_color") or "kobo_libra_color",
+        fill_mode=getattr(config, "config_kobo_cover_padding_fill_mode", "edge_mirror") or "edge_mirror",
+        manual_color=getattr(config, "config_kobo_cover_padding_color", "") or "",
+    )
+
+
 def _get_cover_image_id(book):
     base_id = str(book.uuid)
     try:
         cover_path = None
         if not config.config_use_google_drive:
             cover_path = os.path.join(config.get_book_path(), book.path, "cover.jpg")
-        return build_cover_image_id(
+        image_id = build_cover_image_id(
             base_id,
             use_google_drive=config.config_use_google_drive,
             last_modified=book.last_modified,
             cover_path=cover_path,
         )
+        # When server-side padding is on, append its settings hash so a
+        # device whose cached cover was rendered with old settings
+        # re-fetches after the admin changes the aspect or fill style.
+        padding = _current_padding_settings()
+        if padding.enabled:
+            image_id = f"{image_id}-p{padding.settings_hash()}"
+        return image_id
     except Exception as exc:
         log.debug("Kobo Sync: failed to build cover image id for book %s: %s", book.id, exc)
         return base_id
@@ -1110,6 +1131,47 @@ def get_current_bookmark_response(current_bookmark):
     return resp
 
 
+def _serve_padded_cover_if_enabled(book_uuid, resolution):
+    """Return a Response with the aspect-ratio-padded cover, or None when
+    padding is disabled / not applicable / produced an error. Callers fall
+    back to the normal helper.get_book_cover_with_uuid path on None.
+
+    Padded variants live under the same thumbnails cache dir but with a
+    `kobopad-...` filename prefix that encodes book uuid + resolution +
+    source mtime + settings hash.
+    """
+    settings = _current_padding_settings()
+    if not settings.enabled or not kobo_cover_padding.use_IM:
+        return None
+
+    source = helper.get_kobo_cover_source_path(book_uuid, resolution)
+    if not source:
+        return None
+    src_dir, src_filename, src_full = source
+
+    try:
+        src_mtime = int(os.path.getmtime(src_full))
+    except OSError:
+        return None
+
+    cache = FileSystem()
+    cache_dir = cache.get_cache_dir(CACHE_TYPE_THUMBNAILS)
+    cache_filename = kobo_cover_padding.cache_filename_for(
+        book_uuid, resolution, src_mtime, settings,
+    )
+
+    target = kobo_cover_padding.pad_path_to_cache(
+        src_full, cache_dir, cache_filename, settings,
+    )
+    if not target:
+        log.debug("Kobo Sync: padding pipeline produced no file for %s; "
+                  "falling back to unpadded cover", book_uuid)
+        return None
+
+    log.debug("Kobo Sync: serving padded cover %s", cache_filename)
+    return send_from_directory(cache_dir, cache_filename)
+
+
 @kobo.route("/<book_uuid>/<width>/<height>/<isGreyscale>/image.jpg", defaults={'Quality': ""})
 @kobo.route("/<book_uuid>/<width>/<height>/<Quality>/<isGreyscale>/image.jpg")
 @requires_kobo_auth
@@ -1125,6 +1187,11 @@ def HandleCoverImageRequest(book_uuid, width, height, Quality, isGreyscale):
     except ValueError:
         log.error("Requested height %s of book %s is invalid" % (book_uuid, height))
         resolution = COVER_THUMBNAIL_SMALL
+
+    padded_response = _serve_padded_cover_if_enabled(book_uuid, resolution)
+    if padded_response is not None:
+        return padded_response
+
     book_cover = helper.get_book_cover_with_uuid(book_uuid, resolution=resolution)
     if book_cover:
         log.debug("Serving local cover image of book %s" % book_uuid)

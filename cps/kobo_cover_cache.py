@@ -25,15 +25,25 @@ def normalize_cover_uuid(image_id):
     except (ValueError, AttributeError, TypeError):
         pass
 
-    parts = str(image_id).rsplit("-", 1)
+    candidate = str(image_id)
+
+    # Strip the optional `-p<hex>` padding-settings suffix added when
+    # server-side Kobo cover padding is enabled.
+    if "-p" in candidate:
+        head, _, tail = candidate.rpartition("-p")
+        if tail and all(c in "0123456789abcdef" for c in tail.lower()):
+            candidate = head
+
+    # Strip the `-<mtime-digits>` cache-busting suffix.
+    parts = candidate.rsplit("-", 1)
     if len(parts) == 2 and parts[1].isdigit():
-        base_id = parts[0]
-        try:
-            uuidlib.UUID(base_id)
-            return base_id
-        except (ValueError, AttributeError, TypeError):
-            return image_id
-    return image_id
+        candidate = parts[0]
+
+    try:
+        uuidlib.UUID(candidate)
+        return candidate
+    except (ValueError, AttributeError, TypeError):
+        return image_id
 
 
 def build_cover_image_id(base_id, *, use_google_drive, last_modified, cover_path):
