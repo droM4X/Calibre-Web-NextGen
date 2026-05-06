@@ -25,6 +25,7 @@ def main():
     from .admin import admi
     from .gdrive import gdrive
     from .editbooks import editbook
+    from .cover_picker import cover_picker
     from .about import about
     from .search import search
     from .search_metadata import meta
@@ -81,6 +82,7 @@ def main():
     app.register_blueprint(meta)
     app.register_blueprint(gdrive)
     app.register_blueprint(editbook)
+    app.register_blueprint(cover_picker)
     app.register_blueprint(kosync)
     app.register_blueprint(duplicates)
     if kobo_available:

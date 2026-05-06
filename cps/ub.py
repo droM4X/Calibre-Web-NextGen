@@ -558,6 +558,24 @@ class Bookmark(Base):
     bookmark_key = Column(String)
 
 
+class BookCoverLock(Base):
+    """Per-book flag that prevents the cover from being overwritten by the
+    metadata-fetch path on the edit page. Set/cleared from the cover-picker
+    page at /book/<id>/cover. Resolves janeczku/calibre-web#2165 ("Option
+    to keep existing book cover when fetching metadata", 8 hearts).
+
+    Lock is per book, not per user — a cover is a property of the book,
+    not of the viewer. ``locked_by`` and ``locked_at`` are audit metadata
+    only; reads check ``locked``.
+    """
+    __tablename__ = 'book_cover_lock'
+
+    book_id = Column(Integer, primary_key=True)
+    locked = Column(Boolean, nullable=False, default=False)
+    locked_by = Column(Integer)
+    locked_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 # Baseclass representing books that are archived on the user's Kobo device.
 class ArchivedBook(Base):
     __tablename__ = 'archived_book'

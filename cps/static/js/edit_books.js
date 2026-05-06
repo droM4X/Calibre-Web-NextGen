@@ -259,6 +259,83 @@ $("#btn-upload-cover").on("change", function () {
     $("#upload-cover").text(filename);
 });
 
+// ---- Inline live preview for the cover_url field ----
+// Debounced AJAX HEAD probe via /metadata/cover/preview. Surfaces
+// dimensions + a friendly error before the user submits the form, so
+// the field stops feeling "unreliable" — failures are visible at paste
+// time, not after a full save round-trip. Endpoint URL comes from the
+// data-cover-preview-endpoint attribute on the input itself so the
+// preview path stays portable across reverse-proxy prefixes.
+(function () {
+    var $field = $("#cover_url");
+    if ($field.length === 0) return;
+    var endpoint = $field.attr("data-cover-preview-endpoint");
+    if (!endpoint) return;
+    var $preview = $("#cover_url_preview");
+    var $previewImg = $("#cover_url_preview_img");
+    var $previewMeta = $("#cover_url_preview_meta");
+    var $feedback = $("#cover_url_preview_feedback");
+    var debounce = null;
+    var lastTried = "";
+    var csrf = $('meta[name="csrf-token"]').attr("content")
+            || $('input[name="csrf_token"]').first().val()
+            || "";
+
+    function setFeedback(text, kind) {
+        $feedback.attr("class", "cwa-cover-url-feedback" + (kind ? " " + kind : ""));
+        $feedback.text(text || "");
+    }
+
+    function clearPreview() {
+        $preview.attr("hidden", true);
+        $previewImg.attr("src", "");
+        $previewMeta.text("");
+    }
+
+    function showPreview(payload, url) {
+        $previewImg.attr("src", url);
+        var bits = [];
+        if (payload.width && payload.height) bits.push(payload.width + "×" + payload.height);
+        if (payload.size_bytes) bits.push(Math.round(payload.size_bytes / 1024) + " KB");
+        if (payload.content_type) bits.push(payload.content_type);
+        $previewMeta.text(bits.join(" · "));
+        $preview.removeAttr("hidden");
+    }
+
+    $field.on("input", function () {
+        clearTimeout(debounce);
+        var url = ($field.val() || "").trim();
+        if (url === lastTried) return;
+        if (url.length < 8) {
+            clearPreview();
+            setFeedback("");
+            return;
+        }
+        debounce = setTimeout(function () {
+            lastTried = url;
+            setFeedback("Checking…", null);
+            $.ajax({
+                url: endpoint,
+                type: "POST",
+                contentType: "application/json",
+                headers: csrf ? { "X-CSRFToken": csrf } : {},
+                data: JSON.stringify({ url: url }),
+            }).done(function (payload) {
+                if (payload && payload.valid) {
+                    setFeedback("Looks good — preview shown.", "is-ok");
+                    showPreview(payload, url);
+                } else {
+                    setFeedback((payload && payload.error_message) || "Could not validate URL.", "is-error");
+                    clearPreview();
+                }
+            }).fail(function () {
+                setFeedback("Could not validate URL.", "is-error");
+                clearPreview();
+            });
+        }, 400);
+    });
+})();
+
 $("#book_edit_frm").on("submit", function () {
     if (typeof tinymce !== "undefined" && typeof tinymce.triggerSave === "function") {
         tinymce.triggerSave();

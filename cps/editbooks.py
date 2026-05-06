@@ -63,6 +63,18 @@ def edit_required(f):
     return inner
 
 
+def _book_cover_is_locked(book_id) -> bool:
+    """Honor the per-book BookCoverLock flag set from the focused
+    cover-picker page. Resolves janeczku/calibre-web#2165 — when locked,
+    the metadata-fetch save path skips the cover_url field instead of
+    silently overwriting a deliberately-chosen cover."""
+    try:
+        record = ub.session.query(ub.BookCoverLock).filter_by(book_id=book_id).first()
+    except Exception:  # pragma: no cover - defensive; missing migrations etc.
+        return False
+    return bool(record and record.locked)
+
+
 @editbook.route("/ajax/delete/<int:book_id>", methods=["POST"])
 @user_login_required
 def delete_book_from_details(book_id):
@@ -879,6 +891,14 @@ def do_edit_book(book_id, upload_formats=None):
             if not current_user.role_edit():
                 edit_error = True
                 flash(_("User has no rights to upload cover"), category="error")
+            elif _book_cover_is_locked(book.id):
+                # Resolves janeczku/calibre-web#2165 (8 hearts):
+                # users explicitly opt-in to a cover lock from the focused
+                # cover-picker page; once set, the metadata-fetch save path
+                # must not silently replace the cover with whatever the
+                # last picked record carried.
+                edit_error = True
+                flash(_("Cover is locked. Unlock it on the cover-picker page first."), category="error")
             elif to_save["cover_url"].endswith('/static/generic_cover.svg'):
                 book.has_cover = 0
             else:

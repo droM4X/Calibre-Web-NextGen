@@ -45,3 +45,35 @@ body.modal-open #remove-from-shelves + .tags {
 #exclude_tag + .btn-group .dropdown-menu {
     max-width: 40vw;
 }
+
+/* Inline cover-URL live preview on the edit-metadata page (PR: focused
+   cover picker — see notes/COVER-PICKER-DESIGN.md). Compact preview
+   thumbnail + dimensions + a friendly error before save round-trip. */
+.cwa-cover-url-preview {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 6px;
+    padding: 6px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+.cwa-cover-url-preview img {
+    max-width: 70px;
+    max-height: 100px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #fff;
+}
+.cwa-cover-url-preview > div {
+    font-size: 12px;
+    color: #555;
+}
+.cwa-cover-url-feedback {
+    font-size: 12px;
+    margin-top: 4px;
+    min-height: 1.2em;
+}
+.cwa-cover-url-feedback.is-ok    { color: #468847; }
+.cwa-cover-url-feedback.is-error { color: #b94a48; }
+.cwa-cover-picker__entry         { margin-top: 4px; }

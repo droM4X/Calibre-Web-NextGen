@@ -1,0 +1,301 @@
+# -*- coding: utf-8 -*-
+# Calibre-Web Automated – fork of Calibre-Web
+# Copyright (C) 2024-2026 Calibre-Web-NextGen contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See CONTRIBUTORS for full list of authors.
+
+"""Flask blueprint for the focused cover-picker UI.
+
+A user-facing surface dedicated to setting/replacing a book's cover. The
+existing metadata-search modal stays untouched; this is a separate path
+for users who only want to swap a cover. See notes/COVER-PICKER-DESIGN.md
+for the full rationale.
+
+Routes (all gated by edit permission):
+
+    GET  /book/<book_id>/cover                  -> picker page
+    POST /book/<book_id>/cover/candidates       -> JSON: gather candidates
+    POST /book/<book_id>/cover/preview          -> JSON: validate URL
+    POST /book/<book_id>/cover/extract          -> JSON: data-URL of embedded
+    POST /book/<book_id>/cover/apply            -> applies chosen cover
+    POST /book/<book_id>/cover/lock             -> toggle BookCoverLock
+
+The blueprint is thin — orchestration lives in cps.services.cover_picker
+and cps.services.cover_url_validator. Adding a new candidate source
+means adding a metadata provider in cps/metadata_provider/, not editing
+this file.
+"""
+from __future__ import annotations
+
+import base64
+from datetime import datetime, timezone
+from functools import wraps
+from typing import Optional
+
+from flask import Blueprint, abort, flash, jsonify, make_response, redirect, request, url_for
+from flask_babel import gettext as _
+from flask_babel import get_locale
+
+from . import calibre_db, config, helper, logger, ub
+from .cw_login import current_user
+from .render_template import render_title_template
+from .services import cover_extract, cover_picker as cover_picker_svc, cover_url_validator
+from .usermanagement import user_login_required
+
+
+log = logger.create()
+
+cover_picker = Blueprint("cover_picker", __name__)
+
+
+def edit_required(f):
+    """Mirrors editbooks.edit_required — admin or edit-role only."""
+    @wraps(f)
+    def inner(*args, **kwargs):
+        if current_user.role_edit() or current_user.role_admin():
+            return f(*args, **kwargs)
+        abort(403)
+    return inner
+
+
+def _load_book(book_id: int):
+    """Fetch book + 404 if absent. Matches editbooks.py conventions."""
+    book = calibre_db.get_filtered_book(book_id)
+    if not book:
+        abort(404)
+    return book
+
+
+def _book_query_for_search(book) -> str:
+    """Build the metadata-search query the picker fires off behind the
+    scenes. Title + first author hits the right edition for most books;
+    if an ISBN is present in the book identifiers we use that for
+    higher-precision results."""
+    isbn_ids = [i.val for i in (book.identifiers or []) if (i.type or "").lower() in ("isbn", "isbn_10", "isbn_13")]
+    if isbn_ids:
+        return isbn_ids[0]
+    title = book.title or ""
+    authors = [a.name for a in (book.authors or [])]
+    return (title + " " + (authors[0] if authors else "")).strip()
+
+
+def _is_provider_enabled_for_user(provider) -> bool:
+    """Honor both per-user and global provider toggles, same as
+    cps.search_metadata.metadata_search."""
+    try:
+        from .search_metadata import _get_global_provider_enabled_map
+        global_enabled = _get_global_provider_enabled_map()
+    except Exception:
+        global_enabled = {}
+    user_settings = current_user.view_settings.get("metadata", {}) if current_user else {}
+    return bool(global_enabled.get(provider.__id__, True)) and bool(user_settings.get(provider.__id__, True))
+
+
+@cover_picker.route("/book/<int:book_id>/cover", methods=["GET"])
+@user_login_required
+@edit_required
+def cover_picker_page(book_id):
+    """Render the picker page. Candidates are loaded asynchronously so
+    the page itself returns instantly; the JS hits the candidates
+    endpoint immediately on load."""
+    book = _load_book(book_id)
+    locked = _get_lock_state(book_id)
+    return render_title_template(
+        "cover_picker.html",
+        book=book,
+        cover_locked=locked,
+        title=_(u"Change cover — %(title)s", title=book.title),
+        page="coverpicker",
+    )
+
+
+@cover_picker.route("/book/<int:book_id>/cover/candidates", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_candidates(book_id):
+    """Run the provider pool + cover_booster; return candidate list +
+    per-provider status. Same JSON shape pattern as /metadata/search."""
+    book = _load_book(book_id)
+    body = request.get_json(silent=True) or {}
+    query = (body.get("query") or "").strip() or _book_query_for_search(book)
+
+    from .search_metadata import (
+        cl as providers,
+        _classify_empty_provider,
+        _classify_provider_failure,
+    )
+
+    static_cover = url_for("static", filename="generic_cover.svg")
+
+    candidates, statuses = cover_picker_svc.gather_cover_candidates(
+        providers=providers,
+        query=query,
+        static_cover=static_cover,
+        locale=get_locale(),
+        is_provider_enabled=_is_provider_enabled_for_user,
+        classify_failure=_classify_provider_failure,
+        classify_empty=_classify_empty_provider,
+        extract_embedded=lambda: cover_extract.extract_embedded_cover(book),
+    )
+
+    return jsonify({
+        "candidates": [c.to_dict() for c in candidates],
+        "providers": [s.to_dict() for s in statuses],
+        "query": query,
+    })
+
+
+@cover_picker.route("/book/<int:book_id>/cover/preview", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_preview(book_id):
+    """Validate a URL the user pasted (in the picker URL panel OR the
+    inline cover_url field on the edit page). Same code path; the inline
+    field hits /metadata/cover/preview for the global variant."""
+    _load_book(book_id)  # 404s if book is missing or hidden
+    body = request.get_json(silent=True) or {}
+    result = cover_url_validator.validate_cover_url(body.get("url") or "")
+    return jsonify(result.to_dict())
+
+
+@cover_picker.route("/book/<int:book_id>/cover/extract", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_extract(book_id):
+    """Re-render the embedded-cover candidate as a data URL. Used when
+    the picker page wants to refresh just the embedded cover after an
+    upload changed the book file."""
+    book = _load_book(book_id)
+    extracted = cover_extract.extract_embedded_cover(book)
+    if extracted is None:
+        return jsonify({"available": False})
+    data_url = "data:" + extracted.mime_type + ";base64," + base64.b64encode(extracted.data).decode("ascii")
+    return jsonify({
+        "available": True,
+        "cover_url": data_url,
+        "source_format": extracted.source_format,
+    })
+
+
+@cover_picker.route("/book/<int:book_id>/cover/apply", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_apply(book_id):
+    """Apply a chosen cover. Accepts a JSON payload describing the
+    source: a remote URL, a candidate from the grid (just a URL really),
+    an uploaded file (multipart), or 'embedded' to apply the embedded
+    cover from the book file.
+
+    Returns JSON {ok, error?} for AJAX callers; the picker page swaps
+    the preview image without a full reload on success.
+    """
+    book = _load_book(book_id)
+    if _get_lock_state(book_id):
+        return _json_error("locked", _(u"This book's cover is locked. Unlock it first."), 409)
+
+    # Multipart upload from the picker's file panel.
+    if request.files.get("file"):
+        ok, message = _apply_uploaded_file(book, request.files["file"])
+        return _apply_response(ok, message, book)
+
+    body = request.get_json(silent=True) or {}
+    kind = body.get("kind") or "url"
+
+    if kind == "url":
+        url = (body.get("url") or "").strip()
+        if not url:
+            return _json_error("empty_url", _(u"Provide a cover URL."), 400)
+        ok, message = helper.save_cover_from_url(url, book.path)
+        return _apply_response(ok, message, book)
+
+    if kind == "embedded":
+        extracted = cover_extract.extract_embedded_cover(book)
+        if extracted is None:
+            return _json_error("no_embedded", _(u"This book doesn't have an embedded cover we can extract."), 400)
+        ok, message = _apply_bytes(book, extracted.data, extracted.extension)
+        return _apply_response(ok, message, book)
+
+    return _json_error("bad_kind", _(u"Unknown cover source."), 400)
+
+
+@cover_picker.route("/book/<int:book_id>/cover/lock", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_lock(book_id):
+    """Toggle (or explicitly set) the BookCoverLock for this book. Body:
+    {locked: true|false}. Returns the new state."""
+    _load_book(book_id)
+    body = request.get_json(silent=True) or {}
+    desired = bool(body.get("locked"))
+    record = ub.session.query(ub.BookCoverLock).filter_by(book_id=book_id).first()
+    now = datetime.now(timezone.utc)
+    if record is None:
+        record = ub.BookCoverLock(
+            book_id=book_id, locked=desired,
+            locked_by=current_user.id, locked_at=now,
+        )
+        ub.session.add(record)
+    else:
+        record.locked = desired
+        record.locked_by = current_user.id
+        record.locked_at = now
+    try:
+        ub.session.commit()
+    except Exception as exc:  # pragma: no cover - defensive
+        log.error("cover_picker_lock commit failed: %s", exc)
+        ub.session.rollback()
+        return _json_error("commit_failed", _(u"Could not save lock state."), 500)
+    return jsonify({"locked": record.locked})
+
+
+# ---- helpers --------------------------------------------------------------
+
+
+def _get_lock_state(book_id: int) -> bool:
+    record = ub.session.query(ub.BookCoverLock).filter_by(book_id=book_id).first()
+    return bool(record and record.locked)
+
+
+def _apply_uploaded_file(book, file_storage):
+    """Apply a user-uploaded image file to the book. Reuses
+    helper.save_cover so the conversion + size limit checks match the
+    existing upload-cover-from-disk path on the edit page."""
+    return helper.save_cover(file_storage, book.path)
+
+
+def _apply_bytes(book, raw: bytes, extension: str):
+    """Apply raw image bytes (e.g. from the embedded-cover extract). Wraps
+    the bytes in a FileStorage-like object so the existing helper.save_cover
+    path can process them without changes."""
+    import io
+    from werkzeug.datastructures import FileStorage
+    mime = {
+        ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+        ".png": "image/png", ".webp": "image/webp",
+        ".gif": "image/gif", ".bmp": "image/bmp",
+    }.get(extension.lower(), "application/octet-stream")
+    storage = FileStorage(
+        stream=io.BytesIO(raw),
+        filename=f"embedded_cover{extension}",
+        content_type=mime,
+    )
+    return helper.save_cover(storage, book.path)
+
+
+def _apply_response(ok: bool, message, book):
+    if ok:
+        try:
+            book.has_cover = 1
+            calibre_db.session.commit()
+            helper.replace_cover_thumbnail_cache(book.id)
+        except Exception as exc:  # pragma: no cover - defensive
+            log.warning("post-apply cover housekeeping failed: %s", exc)
+        return jsonify({
+            "ok": True,
+            "cover_url": url_for("web.get_cover", book_id=book.id, resolution="og") + f"?ts={int(datetime.now(timezone.utc).timestamp())}",
+        })
+    return _json_error("save_failed", str(message) if message else _(u"Cover save failed."), 400)
+
+
+def _json_error(code: str, message: str, status: int):
+    return make_response(jsonify({"ok": False, "error_code": code, "error_message": message}), status)

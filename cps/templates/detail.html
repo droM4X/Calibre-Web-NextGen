@@ -556,6 +556,10 @@
                                            class="btn btn-primary action-icon-btn" role="button" title="{{ _('Edit Metadata') }}" aria-label="{{ _('Edit Metadata') }}">
                                             <span class="glyphicon glyphicon-pencil"></span>
                                         </a>
+                                        <a href="{{ url_for('cover_picker.cover_picker_page', book_id=entry.id) }}"
+                                           class="btn btn-primary action-icon-btn" role="button" title="{{ _('Change cover') }}" aria-label="{{ _('Change cover') }}">
+                                            <span class="glyphicon glyphicon-picture"></span>
+                                        </a>
                                     {% endif %}
                                     {% if current_user.role_edit() and current_user.role_delete_books() %}
                                         <button type="button" class="btn btn-danger action-icon-btn" id="delete"

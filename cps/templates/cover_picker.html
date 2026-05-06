@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="cwa-cover-picker discover" id="cover-picker-root"
+     data-book-id="{{ book.id }}"
+     data-cover-locked="{{ '1' if cover_locked else '0' }}">
+
+  <div class="row cwa-cover-picker__header">
+    <div class="col-sm-12">
+      <a href="{{ url_for('edit-book.show_edit_book', book_id=book.id) }}" class="cwa-cover-picker__back">
+        <span class="glyphicon glyphicon-chevron-left"></span> {{ _('Back to edit metadata') }}
+      </a>
+      <h2 class="cwa-cover-picker__title">{{ _('Change cover') }}</h2>
+      <p class="cwa-cover-picker__subtitle text-muted">
+        {{ _('Pick a cover from any source we support, paste a URL, upload a file, or use the cover embedded in the book itself.') }}
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-3 col-sm-4 cwa-cover-picker__current">
+      <div class="cwa-cover-picker__current-card">
+        <div class="cwa-cover-picker__current-label">{{ _('Current cover') }}</div>
+        <img id="cwa-cover-picker-current-img"
+             src="{{ url_for('web.get_cover', book_id=book.id, resolution='og', c=book|last_modified) }}"
+             alt="{{ book.title }}"
+             onerror="this.onerror=null; this.src='{{ url_for('static', filename='generic_cover.svg') }}'; this.classList.add('cover-fallback');"/>
+        <div class="cwa-cover-picker__current-meta">
+          <strong>{{ book.title }}</strong><br>
+          {% for author in book.authors %}{{ author.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+        </div>
+
+        <div class="cwa-cover-picker__lock">
+          <label class="cwa-cover-picker__lock-toggle">
+            <input type="checkbox" id="cwa-cover-picker-lock"
+                   {% if cover_locked %}checked{% endif %}>
+            <span>{{ _('Lock cover') }}</span>
+          </label>
+          <div class="cwa-cover-picker__lock-help text-muted">
+            {{ _('When locked, fetching metadata will not overwrite this cover.') }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-9 col-sm-8 cwa-cover-picker__sources">
+
+      <div class="cwa-cover-picker__panels">
+
+        <details class="cwa-cover-picker__panel" id="cwa-cover-picker-url-panel">
+          <summary>{{ _('Use a URL') }}</summary>
+          <div class="cwa-cover-picker__panel-body">
+            <div class="form-group">
+              <input type="text" class="form-control" id="cwa-cover-picker-url-input"
+                     placeholder="https://...">
+            </div>
+            <div id="cwa-cover-picker-url-feedback" class="cwa-cover-picker__feedback"></div>
+            <div class="cwa-cover-picker__url-actions" id="cwa-cover-picker-url-actions" hidden>
+              <img id="cwa-cover-picker-url-thumb" alt=""/>
+              <div class="cwa-cover-picker__url-meta" id="cwa-cover-picker-url-meta"></div>
+              <button class="btn btn-primary" id="cwa-cover-picker-url-apply" type="button">
+                {{ _('Use this cover') }}
+              </button>
+            </div>
+          </div>
+        </details>
+
+        <details class="cwa-cover-picker__panel" id="cwa-cover-picker-upload-panel">
+          <summary>{{ _('Upload a file') }}</summary>
+          <div class="cwa-cover-picker__panel-body">
+            <input type="file" id="cwa-cover-picker-upload-input"
+                   accept=".jpg,.jpeg,.png,.webp,.bmp,.gif">
+            <button class="btn btn-primary" id="cwa-cover-picker-upload-apply" type="button" disabled>
+              {{ _('Upload as cover') }}
+            </button>
+            <div id="cwa-cover-picker-upload-feedback" class="cwa-cover-picker__feedback"></div>
+          </div>
+        </details>
+
+        <details class="cwa-cover-picker__panel" id="cwa-cover-picker-keys-panel">
+          <summary>{{ _('API keys') }}</summary>
+          <div class="cwa-cover-picker__panel-body" id="cwa-cover-picker-keys-body">
+            <p class="text-muted">
+              {{ _('Some metadata sources need an API key. Adding one here improves cover quality and unblocks rate-limited services. Keys are stored once for the whole instance — admins only.') }}
+            </p>
+            <div id="cwa-cover-picker-keys-list">
+              <div class="text-muted">{{ _('Loading…') }}</div>
+            </div>
+          </div>
+        </details>
+
+      </div>
+
+      <div class="cwa-cover-picker__grid-section">
+        <div class="cwa-cover-picker__grid-toolbar">
+          <h4>{{ _('Candidates') }}</h4>
+          <div class="cwa-cover-picker__grid-status" id="cwa-cover-picker-status">
+            <span class="cwa-cover-picker__status-pill cwa-cover-picker__status-pill--loading">
+              {{ _('Searching…') }}
+            </span>
+          </div>
+          <div class="cwa-cover-picker__grid-actions">
+            <button class="btn btn-default btn-sm" id="cwa-cover-picker-refresh" type="button">
+              <span class="glyphicon glyphicon-refresh"></span> {{ _('Refresh') }}
+            </button>
+          </div>
+        </div>
+        <div class="cwa-cover-picker__grid" id="cwa-cover-picker-grid">
+          <div class="cwa-cover-picker__grid-empty text-muted">{{ _('Loading candidates…') }}</div>
+        </div>
+        <div class="cwa-cover-picker__provider-status" id="cwa-cover-picker-provider-status"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="cwa-cover-picker-confirm" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">{{ _('Replace cover with this candidate?') }}</h4>
+      </div>
+      <div class="modal-body">
+        <div class="cwa-cover-picker__confirm-grid">
+          <div class="cwa-cover-picker__confirm-side">
+            <div class="cwa-cover-picker__confirm-label">{{ _('Current') }}</div>
+            <img id="cwa-cover-picker-confirm-current" alt="">
+          </div>
+          <div class="cwa-cover-picker__confirm-side">
+            <div class="cwa-cover-picker__confirm-label">{{ _('New') }}</div>
+            <img id="cwa-cover-picker-confirm-new" alt="">
+            <div class="cwa-cover-picker__confirm-meta" id="cwa-cover-picker-confirm-meta"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ _('Cancel') }}</button>
+        <button type="button" class="btn btn-primary" id="cwa-cover-picker-confirm-apply">
+          {{ _('Use this cover') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block header %}
+<link href="{{ url_for('static', filename='css/cover_picker.css') }}" rel="stylesheet" media="screen">
+{% endblock %}
+
+{% block js %}
+<script>
+window.cwaCoverPicker = {
+  bookId: {{ book.id }},
+  endpoints: {
+    candidates: "{{ url_for('cover_picker.cover_picker_candidates', book_id=book.id) }}",
+    preview:    "{{ url_for('cover_picker.cover_picker_preview',    book_id=book.id) }}",
+    extract:    "{{ url_for('cover_picker.cover_picker_extract',    book_id=book.id) }}",
+    apply:      "{{ url_for('cover_picker.cover_picker_apply',      book_id=book.id) }}",
+    lock:       "{{ url_for('cover_picker.cover_picker_lock',       book_id=book.id) }}",
+    keysList:   "{{ url_for('metadata.metadata_keys') }}",
+    keysSave:   "{{ url_for('metadata.metadata_keys_save', prov_id='__PROV__') }}",
+    coverGet:   "{{ url_for('web.get_cover', book_id=book.id, resolution='og') }}",
+  },
+  csrfToken: "{{ csrf_token() if csrf_token is defined else '' }}",
+  bookTitle: {{ book.title|tojson|safe }},
+  i18n: {
+    searching: {{ _('Searching…')|tojson|safe }},
+    noResults: {{ _('No candidates found yet. Try a different search or refresh.')|tojson|safe }},
+    applying:  {{ _('Applying…')|tojson|safe }},
+    applied:   {{ _('Cover updated.')|tojson|safe }},
+    error:     {{ _('Something went wrong. Try again.')|tojson|safe }},
+  },
+};
+</script>
+<script src="{{ url_for('static', filename='js/cover_picker.js') }}"></script>
+{% endblock %}

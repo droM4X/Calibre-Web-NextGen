@@ -160,6 +160,18 @@ def metadata_keys():
     return make_response(jsonify(payload))
 
 
+@meta.route("/metadata/cover/preview", methods=["POST"])
+@user_login_required
+def metadata_cover_preview():
+    """Validate a cover URL the user pasted on the edit page (or in the
+    cover-picker URL panel without a book scope). Same code path the
+    save handler uses, so successful preview = successful save."""
+    from cps.services.cover_url_validator import validate_cover_url
+    body = request.get_json(silent=True) or {}
+    result = validate_cover_url(body.get("url") or "")
+    return make_response(jsonify(result.to_dict()))
+
+
 @meta.route("/metadata/keys/<prov_id>", methods=["POST"])
 @user_login_required
 def metadata_keys_save(prov_id):

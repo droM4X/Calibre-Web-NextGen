@@ -143,8 +143,21 @@
     {# Decouple cover changes from global uploads: allow users with edit rights to change covers #}
     {% if current_user.role_edit() %}
     <div class="form-group">
+      <a class="btn btn-default cwa-cover-picker__entry" href="{{ url_for('cover_picker.cover_picker_page', book_id=book.id) }}">
+        <span class="glyphicon glyphicon-picture"></span> {{ _('Open focused cover picker') }}
+      </a>
+      <p class="text-muted" style="font-size: 12px; margin: 4px 0 0 0;">
+        {{ _('Pick a cover from any source, paste a URL, upload a file, or use the embedded cover.') }}
+      </p>
+    </div>
+    <div class="form-group">
       <label for="cover_url">{{_('Fetch Cover from URL (JPEG - Image will be downloaded and stored in database)')}}</label>
-      <input type="text" class="form-control" name="cover_url" id="cover_url" value="">
+      <input type="text" class="form-control" name="cover_url" id="cover_url" value="" data-cover-preview-endpoint="{{ url_for('metadata.metadata_cover_preview') }}">
+      <div id="cover_url_preview" class="cwa-cover-url-preview" hidden>
+        <img id="cover_url_preview_img" alt="">
+        <div id="cover_url_preview_meta"></div>
+      </div>
+      <div id="cover_url_preview_feedback" class="cwa-cover-url-feedback"></div>
     </div>
       <div class="form-group" aria-label="Upload cover from local drive">
         <label class="btn btn-primary btn-file" for="btn-upload-cover">{{ _('Upload Cover from Local Disk') }}</label>
