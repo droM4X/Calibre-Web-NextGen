@@ -125,7 +125,12 @@ def add_security_headers(resp):
     if request.endpoint == "admin.hardcover_review_matches":
         csp += " https:"
     csp += " data:"
-    if request.endpoint == "edit-book.show_edit_book" or config.config_use_google_drive:
+    if request.endpoint in ("edit-book.show_edit_book", "cover_picker.cover_picker_page") or config.config_use_google_drive:
+        # The metadata-search modal (edit-book) and the focused cover-picker
+        # page both render thumbnails directly from external provider CDNs
+        # (Hardcover, Apple Books, Amazon image CDN, OpenLibrary, Kobo,
+        # Douban, etc.). Allow those img-src origins for these two endpoints
+        # only — all other pages keep the strict same-origin policy.
         csp += " *"
     if request.endpoint == "web.read_book":
         csp += " blob: ; style-src-elem 'self' blob: 'unsafe-inline'"

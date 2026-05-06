@@ -101,7 +101,10 @@ def validate_cover_url(url: str) -> ValidationResult:
                                 error_message="Cover-URL validation is unavailable on this server.")
 
     try:
-        head = cw_advocate.head(url, timeout=_DEFAULT_TIMEOUT, allow_redirects=True)
+        # cw_advocate.api.py exports request/get/post/options but NOT a
+        # top-level head(); calling cw_advocate.head() raises AttributeError.
+        # Use the generic request() shim instead.
+        head = cw_advocate.request("HEAD", url, timeout=_DEFAULT_TIMEOUT, allow_redirects=True)
     except UnacceptableAddressException:
         return ValidationResult(valid=False, url=url, error_code="ssrf_blocked",
                                 error_message="That URL points to an internal or local address. Use a public URL.")

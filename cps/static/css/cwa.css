@@ -48,26 +48,39 @@ body.modal-open #remove-from-shelves + .tags {
 
 /* Inline cover-URL live preview on the edit-metadata page (PR: focused
    cover picker — see notes/COVER-PICKER-DESIGN.md). Compact preview
-   thumbnail + dimensions + a friendly error before save round-trip. */
+   thumbnail + dimensions + a friendly error before save round-trip.
+   Theme-aware: caliBlur (body.blur) gets darker chrome, light theme
+   keeps the original light treatment. */
 .cwa-cover-url-preview {
+    --cup-bg: #f5f5f5;
+    --cup-text: #555;
+    --cup-thumb-border: #ddd;
+    --cup-thumb-bg: #fff;
     display: flex;
     align-items: center;
     gap: 10px;
     margin-top: 6px;
     padding: 6px;
-    background: #f5f5f5;
+    background: var(--cup-bg);
     border-radius: 4px;
+    color: var(--cup-text);
+}
+body.blur .cwa-cover-url-preview {
+    --cup-bg: #2c2c2c;
+    --cup-text: #d0d0d0;
+    --cup-thumb-border: #404040;
+    --cup-thumb-bg: #1a1a1a;
 }
 .cwa-cover-url-preview img {
     max-width: 70px;
     max-height: 100px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--cup-thumb-border);
     border-radius: 3px;
-    background: #fff;
+    background: var(--cup-thumb-bg);
 }
 .cwa-cover-url-preview > div {
     font-size: 12px;
-    color: #555;
+    color: var(--cup-text);
 }
 .cwa-cover-url-feedback {
     font-size: 12px;
@@ -76,4 +89,6 @@ body.modal-open #remove-from-shelves + .tags {
 }
 .cwa-cover-url-feedback.is-ok    { color: #468847; }
 .cwa-cover-url-feedback.is-error { color: #b94a48; }
+body.blur .cwa-cover-url-feedback.is-ok    { color: #6cd078; }
+body.blur .cwa-cover-url-feedback.is-error { color: #ff7676; }
 .cwa-cover-picker__entry         { margin-top: 4px; }

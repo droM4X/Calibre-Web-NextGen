@@ -46,8 +46,8 @@ def _load_validator_module():
     cps_pkg.logger = logger_mod
 
     advocate_mod = sys.modules.get("cps.cw_advocate") or types.ModuleType("cps.cw_advocate")
-    if not hasattr(advocate_mod, "head"):
-        advocate_mod.head = lambda *a, **k: None  # patched per-test
+    if not hasattr(advocate_mod, "request"):
+        advocate_mod.request = lambda *a, **k: None  # patched per-test
         advocate_mod.get = lambda *a, **k: None
     sys.modules["cps.cw_advocate"] = advocate_mod
     cps_pkg.cw_advocate = advocate_mod
@@ -112,7 +112,7 @@ class TestEarlyRejects:
 class TestSsrfGuard:
     def test_ssrf_blocked_returns_friendly_error(self):
         with patch.object(
-            validator.cw_advocate, "head",
+            validator.cw_advocate, "request",
             side_effect=validator.UnacceptableAddressException("blocked"),
         ):
             result = validator.validate_cover_url("http://localhost:8080/cover.jpg")
@@ -125,7 +125,7 @@ class TestSsrfGuard:
 class TestUnreachable:
     def test_request_exception_returns_unreachable(self):
         import requests as _r
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           side_effect=_r.ConnectionError("nope")):
             result = validator.validate_cover_url("https://nope.example/x.jpg")
         assert not result.valid
@@ -135,21 +135,21 @@ class TestUnreachable:
 @pytest.mark.unit
 class TestStatusAndContentType:
     def test_404_rejected(self):
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(404, "text/html", 1234)):
             result = validator.validate_cover_url("https://example.com/missing.jpg")
         assert not result.valid
         assert result.error_code == "bad_status"
 
     def test_html_content_type_rejected(self):
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "text/html", 5000)):
             result = validator.validate_cover_url("https://example.com/page.html")
         assert not result.valid
         assert result.error_code == "not_image"
 
     def test_jpeg_content_type_passes_initial_check(self):
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/jpeg", 250000)), \
              patch.object(validator, "_probe_dimensions", return_value=(975, 1500)):
             result = validator.validate_cover_url("https://example.com/cover.jpg")
@@ -159,7 +159,7 @@ class TestStatusAndContentType:
         assert result.height == 1500
 
     def test_content_type_with_charset_suffix_normalized(self):
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/png; charset=binary", 80000)), \
              patch.object(validator, "_probe_dimensions", return_value=(800, 1200)):
             result = validator.validate_cover_url("https://example.com/cover.png")
@@ -171,7 +171,7 @@ class TestStatusAndContentType:
 class TestSizeBounds:
     def test_too_small_rejected(self):
         # The 43-byte image/gif placeholder Amazon serves for unknown ASINs.
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/gif", 43)):
             result = validator.validate_cover_url("https://example.com/placeholder.gif")
         # Note: image/gif passes the content-type check, but the size filter
@@ -181,7 +181,7 @@ class TestSizeBounds:
 
     def test_too_large_rejected(self):
         # 200 MB JPEG — exceeds the 15 MB default.
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/jpeg", 200 * 1024 * 1024)):
             result = validator.validate_cover_url("https://example.com/huge.jpg")
         assert not result.valid
@@ -190,7 +190,7 @@ class TestSizeBounds:
     def test_missing_content_length_passes_size_check(self):
         # Some CDNs don't report content-length on HEAD. Don't reject for that;
         # the actual save-path will enforce the cap.
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/jpeg", 0)), \
              patch.object(validator, "_probe_dimensions", return_value=(900, 1200)):
             result = validator.validate_cover_url("https://example.com/cover.jpg")
@@ -200,7 +200,7 @@ class TestSizeBounds:
 @pytest.mark.unit
 class TestSerialization:
     def test_to_dict_returns_jsonable_shape(self):
-        with patch.object(validator.cw_advocate, "head",
+        with patch.object(validator.cw_advocate, "request",
                           return_value=_mock_head(200, "image/jpeg", 250000)), \
              patch.object(validator, "_probe_dimensions", return_value=(975, 1500)):
             result = validator.validate_cover_url("https://example.com/cover.jpg")

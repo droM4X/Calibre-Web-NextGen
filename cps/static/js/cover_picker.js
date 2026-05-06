@@ -90,12 +90,18 @@
     img.alt = candidate.title || "";
     img.loading = "lazy";
     img.src = candidate.cover_url;
-    img.onerror = function () { img.style.display = "none"; };
+    img.onerror = function () {
+      // Network failure / CORS-strict provider / 404. Mark the card so
+      // the CSS-driven failure placeholder takes over the image area
+      // instead of showing an empty card. The candidate is still
+      // pickable — the user might know the URL is fine and want to apply
+      // it anyway.
+      card.classList.add("is-cover-failed");
+    };
     img.onload = function () {
       // Surface the natural dimensions when the candidate didn't carry
-      // them (most providers don't). cover_booster fires later for the
-      // metadata modal, but for the picker the browser is the source of
-      // truth — the image had to render anyway.
+      // them (most providers don't). For the picker the browser is the
+      // source of truth — the image had to render anyway.
       const dimsEl = card.querySelector(".cwa-cover-picker__card-dims");
       if (dimsEl && img.naturalWidth) {
         dimsEl.textContent = img.naturalWidth + "×" + img.naturalHeight;
@@ -105,6 +111,14 @@
       }
     };
     card.appendChild(img);
+
+    // Hidden by default — CSS reveals it when .is-cover-failed is set.
+    const failedMsg = document.createElement("div");
+    failedMsg.className = "cwa-cover-picker__card-failed-msg";
+    failedMsg.innerHTML =
+      '<span class="glyphicon glyphicon-picture" aria-hidden="true"></span>' +
+      '<div>Cover not reachable<br><small>Tap to apply anyway</small></div>';
+    card.appendChild(failedMsg);
 
     const info = document.createElement("div");
     info.className = "cwa-cover-picker__card-info";
@@ -249,6 +263,11 @@
     if (!payload.valid) {
       urlFeedback.classList.add("is-error");
       urlFeedback.textContent = payload.error_message || cfg.i18n.error;
+      // Make sure a previous successful preview's "Use this cover" button
+      // doesn't linger when the user types a worse URL afterwards.
+      urlActions.hidden = true;
+      lastValidatedUrl = null;
+      lastValidationResult = null;
       return;
     }
     lastValidatedUrl = url;

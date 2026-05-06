@@ -2,43 +2,104 @@
  * Calibre-Web-NextGen — focused cover-picker UI
  * SPDX-License-Identifier: GPL-3.0-or-later
  *
- * Plain CSS, Bootstrap-3 conventions matching the existing fork. No
- * preprocessor, no bundler. Selectors are scoped under .cwa-cover-picker
- * so the picker never bleeds into the rest of the app.
+ * Theme-aware. The fork ships two themes: standard (light-Bootstrap-3)
+ * and caliBlur (dark; body gets the .blur class). All colors flow
+ * through CSS custom properties scoped to the picker so neither theme
+ * pollutes the other or pulls in light-on-light or dark-on-dark text.
+ *
+ * Selectors are scoped under .cwa-cover-picker so the picker never
+ * bleeds into the rest of the app.
  */
 
 .cwa-cover-picker {
+  /* Light-theme defaults — apply when body has no .blur class. */
+  --cp-bg:           transparent;
+  --cp-text:         #222;
+  --cp-text-muted:   #666;
+  --cp-text-strong:  #111;
+  --cp-card-bg:      #ffffff;
+  --cp-card-text:    #222;
+  --cp-card-border:  #d8d8d8;
+  --cp-card-elev-bg: #fafafa;
+  --cp-summary-bg:   #ffffff;
+  --cp-summary-text: #222;
+  --cp-input-bg:     #ffffff;
+  --cp-input-text:   #222;
+  --cp-input-border: #cccccc;
+  --cp-feedback-ok:  #2d7d35;
+  --cp-feedback-err: #b94a48;
+  --cp-thumb-bg:     #f0f0f0;
+  --cp-pill-bg:      #eeeeee;
+  --cp-pill-text:    #444;
+  --cp-source-badge-bg:   #e8eef9;
+  --cp-source-badge-text: #2c3e7a;
+  --cp-divider:      #e6e6e6;
+  --cp-shadow:       0 4px 12px rgba(0,0,0,0.10);
+  --cp-cover-fail-bg: #f0f0f0;
+  --cp-cover-fail-text: #666;
   padding: 16px;
+}
+
+/* Dark theme overrides for the caliBlur skin. The .blur class lives on
+   <body> when the user is on caliBlur (see cps/templates/layout.html). */
+body.blur .cwa-cover-picker {
+  --cp-bg:           transparent;
+  --cp-text:         #f0f0f0;
+  --cp-text-muted:   #b8b8b8;
+  --cp-text-strong:  #ffffff;
+  --cp-card-bg:      #2c2c2c;
+  --cp-card-text:    #f0f0f0;
+  --cp-card-border:  #404040;
+  --cp-card-elev-bg: #353535;
+  --cp-summary-bg:   #2c2c2c;
+  --cp-summary-text: #f0f0f0;
+  --cp-input-bg:     #1f1f1f;
+  --cp-input-text:   #f0f0f0;
+  --cp-input-border: #555555;
+  --cp-feedback-ok:  #6cd078;
+  --cp-feedback-err: #ff7676;
+  --cp-thumb-bg:     #1a1a1a;
+  --cp-pill-bg:      #404040;
+  --cp-pill-text:    #d0d0d0;
+  --cp-source-badge-bg:   #3a4665;
+  --cp-source-badge-text: #c8d4ff;
+  --cp-divider:      #404040;
+  --cp-shadow:       0 4px 12px rgba(0,0,0,0.45);
+  --cp-cover-fail-bg: #1a1a1a;
+  --cp-cover-fail-text: #888;
 }
 
 .cwa-cover-picker__back {
   text-decoration: none;
   font-size: 13px;
-  color: #777;
+  color: var(--cp-text-muted);
 }
-.cwa-cover-picker__back:hover { color: #333; }
+.cwa-cover-picker__back:hover { color: var(--cp-text); }
 
 .cwa-cover-picker__title {
   margin: 4px 0 0 0;
+  color: var(--cp-text-strong);
 }
 
 .cwa-cover-picker__subtitle {
   margin: 4px 0 16px 0;
+  color: var(--cp-text-muted) !important;  /* override Bootstrap text-muted */
 }
 
 /* Left rail — current cover + lock toggle */
 .cwa-cover-picker__current-card {
-  border: 1px solid #e0e0e0;
+  background: var(--cp-card-bg);
+  color: var(--cp-card-text);
+  border: 1px solid var(--cp-card-border);
   border-radius: 6px;
   padding: 12px;
-  background: #fafafa;
 }
 
 .cwa-cover-picker__current-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--cp-text-muted);
   margin-bottom: 6px;
 }
 
@@ -47,21 +108,21 @@
   max-height: 360px;
   object-fit: contain;
   border-radius: 4px;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: var(--cp-thumb-bg);
+  border: 1px solid var(--cp-card-border);
 }
 
 .cwa-cover-picker__current-meta {
   margin-top: 10px;
   font-size: 13px;
   line-height: 1.4;
-  color: #444;
+  color: var(--cp-card-text);
 }
 
 .cwa-cover-picker__lock {
   margin-top: 14px;
   padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--cp-divider);
 }
 
 .cwa-cover-picker__lock-toggle {
@@ -70,12 +131,19 @@
   font-weight: 600;
   margin: 0;
   cursor: pointer;
+  color: var(--cp-card-text);
 }
-.cwa-cover-picker__lock-toggle input { margin-right: 8px; }
+.cwa-cover-picker__lock-toggle input {
+  margin-right: 8px;
+  /* Default browser checkboxes don't render well on dark — give them a
+     subtle border that's visible against either theme background. */
+  accent-color: #d77a00;  /* CWA brand orange */
+}
 
 .cwa-cover-picker__lock-help {
   font-size: 12px;
   margin-top: 4px;
+  color: var(--cp-text-muted);
 }
 
 /* Right column — source panels + grid */
@@ -84,10 +152,11 @@
 }
 
 .cwa-cover-picker__panel {
-  border: 1px solid #e0e0e0;
+  background: var(--cp-summary-bg);
+  border: 1px solid var(--cp-card-border);
   border-radius: 6px;
   margin-bottom: 8px;
-  background: #fff;
+  color: var(--cp-summary-text);
 }
 
 .cwa-cover-picker__panel summary {
@@ -96,13 +165,14 @@
   font-weight: 600;
   list-style: none;
   user-select: none;
+  color: var(--cp-summary-text);
 }
 .cwa-cover-picker__panel summary::-webkit-details-marker { display: none; }
 .cwa-cover-picker__panel summary::before {
   content: '\002B';  /* + */
   display: inline-block;
   margin-right: 8px;
-  color: #888;
+  color: var(--cp-text-muted);
   transition: transform 0.15s ease;
 }
 .cwa-cover-picker__panel[open] summary::before {
@@ -111,15 +181,24 @@
 
 .cwa-cover-picker__panel-body {
   padding: 0 14px 14px 14px;
+  color: var(--cp-summary-text);
+}
+
+.cwa-cover-picker__panel-body input[type="text"],
+.cwa-cover-picker__panel-body input[type="file"] {
+  background: var(--cp-input-bg);
+  color: var(--cp-input-text);
+  border: 1px solid var(--cp-input-border);
 }
 
 .cwa-cover-picker__feedback {
   font-size: 13px;
   margin-top: 6px;
   min-height: 1.4em;
+  color: var(--cp-text-muted);
 }
-.cwa-cover-picker__feedback.is-error { color: #b94a48; }
-.cwa-cover-picker__feedback.is-ok { color: #468847; }
+.cwa-cover-picker__feedback.is-error { color: var(--cp-feedback-err); }
+.cwa-cover-picker__feedback.is-ok    { color: var(--cp-feedback-ok); }
 
 .cwa-cover-picker__url-actions {
   display: flex;
@@ -127,22 +206,22 @@
   gap: 12px;
   margin-top: 10px;
   padding: 8px;
-  background: #f5f5f5;
+  background: var(--cp-card-elev-bg);
   border-radius: 4px;
 }
 
 #cwa-cover-picker-url-thumb {
   max-width: 80px;
   max-height: 120px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cp-card-border);
   border-radius: 3px;
-  background: #fff;
+  background: var(--cp-thumb-bg);
 }
 
 .cwa-cover-picker__url-meta {
   flex: 1;
   font-size: 12px;
-  color: #555;
+  color: var(--cp-text-muted);
 }
 
 /* Grid */
@@ -153,7 +232,10 @@
   margin: 12px 0 8px 0;
   flex-wrap: wrap;
 }
-.cwa-cover-picker__grid-toolbar h4 { margin: 0; }
+.cwa-cover-picker__grid-toolbar h4 {
+  margin: 0;
+  color: var(--cp-text-strong);
+}
 .cwa-cover-picker__grid-toolbar .cwa-cover-picker__grid-actions {
   margin-left: auto;
 }
@@ -163,20 +245,20 @@
   padding: 2px 10px;
   font-size: 12px;
   border-radius: 10px;
-  background: #eee;
-  color: #555;
+  background: var(--cp-pill-bg);
+  color: var(--cp-pill-text);
 }
 .cwa-cover-picker__status-pill--loading {
-  background: #e8f0fe;
-  color: #1967d2;
+  background: #d99000;
+  color: #ffffff;
 }
 .cwa-cover-picker__status-pill--ok {
-  background: #e6f4ea;
-  color: #137333;
+  background: #2d7d35;
+  color: #ffffff;
 }
 .cwa-cover-picker__status-pill--empty {
-  background: #fff7e6;
-  color: #b25e09;
+  background: #b25e09;
+  color: #ffffff;
 }
 
 .cwa-cover-picker__grid {
@@ -190,13 +272,15 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 30px 0;
+  color: var(--cp-text-muted);
 }
 
 .cwa-cover-picker__card {
   position: relative;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--cp-card-border);
   border-radius: 6px;
-  background: #fff;
+  background: var(--cp-card-bg);
+  color: var(--cp-card-text);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -204,7 +288,7 @@
   transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 .cwa-cover-picker__card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: var(--cp-shadow);
   transform: translateY(-1px);
 }
 
@@ -212,18 +296,47 @@
   width: 100%;
   height: 220px;
   object-fit: contain;
-  background: #f5f5f5;
+  background: var(--cp-thumb-bg);
+}
+
+/* Placeholder when an image fails to load (CSP, network, 404). The JS
+   sets a class on the card; the CSS replaces the broken thumb area
+   with a labeled fallback so the user understands the candidate
+   isn't reachable rather than seeing an empty white box. */
+.cwa-cover-picker__card.is-cover-failed .cwa-cover-picker__card-cover {
+  display: none;
+}
+.cwa-cover-picker__card-failed-msg {
+  display: none;
+  height: 220px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  background: var(--cp-cover-fail-bg);
+  color: var(--cp-cover-fail-text);
+  font-size: 12px;
+  text-align: center;
+  padding: 16px;
+}
+.cwa-cover-picker__card.is-cover-failed .cwa-cover-picker__card-failed-msg {
+  display: flex;
+}
+.cwa-cover-picker__card-failed-msg .glyphicon {
+  font-size: 24px;
+  opacity: 0.6;
+  margin-bottom: 6px;
 }
 
 .cwa-cover-picker__card-info {
   padding: 8px 10px;
   font-size: 12px;
   flex: 1;
+  color: var(--cp-card-text);
 }
 
 .cwa-cover-picker__card-source {
   font-weight: 600;
-  color: #333;
+  color: var(--cp-card-text);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -231,16 +344,16 @@
 
 .cwa-cover-picker__card-dims {
   margin-top: 2px;
-  color: #888;
+  color: var(--cp-text-muted);
   font-size: 11px;
 }
 .cwa-cover-picker__card-dims--low {
-  color: #b94a48;
+  color: var(--cp-feedback-err);
 }
 
 .cwa-cover-picker__card-title {
   margin-top: 4px;
-  color: #555;
+  color: var(--cp-text-muted);
   font-size: 11px;
   white-space: nowrap;
   overflow: hidden;
@@ -250,8 +363,8 @@
 .cwa-cover-picker__card-source-badge {
   display: inline-block;
   padding: 1px 6px;
-  background: #eef;
-  color: #335;
+  background: var(--cp-source-badge-bg);
+  color: var(--cp-source-badge-text);
   border-radius: 8px;
   font-size: 10px;
   text-transform: uppercase;
@@ -274,18 +387,19 @@
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 8px;
-  background: #f5f5f5;
-  color: #666;
+  background: var(--cp-pill-bg);
+  color: var(--cp-pill-text);
 }
-.cwa-cover-picker__provider-pill--ok { background: #e6f4ea; color: #137333; }
-.cwa-cover-picker__provider-pill--empty { background: #f5f5f5; color: #999; }
-.cwa-cover-picker__provider-pill--error { background: #fde7e7; color: #b94a48; }
-.cwa-cover-picker__provider-pill--rate_limited { background: #fff3cd; color: #856404; }
-.cwa-cover-picker__provider-pill--blocked { background: #fde7e7; color: #b94a48; }
-.cwa-cover-picker__provider-pill--missing_key { background: #fff3cd; color: #856404; }
-.cwa-cover-picker__provider-pill--disabled { background: #eee; color: #999; }
+.cwa-cover-picker__provider-pill--ok           { background: #2d7d35; color: #fff; }
+.cwa-cover-picker__provider-pill--empty        { background: var(--cp-pill-bg); color: var(--cp-text-muted); }
+.cwa-cover-picker__provider-pill--error        { background: #b94a48; color: #fff; }
+.cwa-cover-picker__provider-pill--rate_limited { background: #d99000; color: #fff; }
+.cwa-cover-picker__provider-pill--blocked      { background: #b94a48; color: #fff; }
+.cwa-cover-picker__provider-pill--missing_key  { background: #d99000; color: #fff; }
+.cwa-cover-picker__provider-pill--disabled     { background: var(--cp-pill-bg); color: var(--cp-text-muted); opacity: 0.7; }
 
-/* Confirm modal */
+/* Confirm modal — Bootstrap 3 modals style themselves; only the inner
+   grid + image elements need our touch. */
 .cwa-cover-picker__confirm-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -300,34 +414,47 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--cp-text-muted);
   margin-bottom: 6px;
 }
 
 .cwa-cover-picker__confirm-side img {
   max-width: 100%;
   max-height: 380px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cp-card-border);
   border-radius: 4px;
-  background: #fff;
+  background: var(--cp-thumb-bg);
 }
 
 .cwa-cover-picker__confirm-meta {
   margin-top: 8px;
   font-size: 12px;
-  color: #555;
+  color: var(--cp-text-muted);
 }
 
-/* API-keys panel — mirrors the metadata-search modal styling */
+/* API-keys panel rows. Mirrors the metadata-search modal rhythm. */
 .cwa-cover-picker__keys-row {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 0;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--cp-divider);
 }
 .cwa-cover-picker__keys-row:last-child { border-bottom: 0; }
-.cwa-cover-picker__keys-name { flex: 0 0 160px; font-weight: 600; }
-.cwa-cover-picker__keys-state { flex: 0 0 130px; font-size: 12px; }
+.cwa-cover-picker__keys-name {
+  flex: 0 0 160px;
+  font-weight: 600;
+  color: var(--cp-summary-text);
+}
+.cwa-cover-picker__keys-state {
+  flex: 0 0 130px;
+  font-size: 12px;
+  color: var(--cp-text-muted);
+}
 .cwa-cover-picker__keys-input { flex: 1; }
-.cwa-cover-picker__keys-input input { width: 100%; }
+.cwa-cover-picker__keys-input input {
+  width: 100%;
+  background: var(--cp-input-bg);
+  color: var(--cp-input-text);
+  border: 1px solid var(--cp-input-border);
+}
