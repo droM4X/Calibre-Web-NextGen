@@ -38,7 +38,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | Fork PR | Upstream issue | Description | SHA | Release |
 |---|---|---|---|---|
 | #1 | (audit; user-reported #1206 / #1078 / #1097 / #1270 / #1329) | Revert hardcoded Safari skip in `uploadprogress.js` so `$.fn.uploadprogress` stays defined and `main.js` doesn't crash on Safari | `3b7d70c` | v4.0.6 |
-| #77 | [#71](https://github.com/new-usemame/Calibre-Web-NextGen/issues/71) | Interface-language switcher: fix `compile_translations.sh` aborting at the first broken `.po` (was shipping 6/28 locales), drop redundant `Locale('en')` prepend in `cw_babel.py` (was duplicating English), repair fatal msgfmt errors in `es` and `ru` `.po` files | TBD | TBD |
+| #77 | [#71](https://github.com/new-usemame/Calibre-Web-NextGen/issues/71) | Interface-language switcher: fix `compile_translations.sh` aborting at the first broken `.po` (was shipping 6/28 locales), drop redundant `Locale('en')` prepend in `cw_babel.py` (was duplicating English), repair fatal msgfmt errors in `es` and `ru` `.po` files | `5ff8cfbd` | v4.0.24 |
 
 ### Security
 
