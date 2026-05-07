@@ -1327,21 +1327,26 @@ def do_download_file(book, book_format, client, data, headers):
         else:
             download_name = book_name
 
-    # Calculate and store checksum if metadata was embedded
+    # Calculate and store checksum if metadata was embedded.
+    # Skip entirely when KOReader sync is disabled — without sync the
+    # book_format_checksums table is never created, and writes raise
+    # "no such table" errors on every save (upstream CWA #1183).
     if metadata_was_embedded and filename and download_name:
         try:
             from .progress_syncing import calculate_and_store_checksum
+            from .progress_syncing.settings import is_koreader_sync_enabled
 
-            # Calculate checksum on the EXPORTED file (with embedded metadata)
-            # This is what KOReader actually downloads and calculates the checksum for
-            exported_file = os.path.join(filename, download_name + "." + book_format)
+            if is_koreader_sync_enabled():
+                # Calculate checksum on the EXPORTED file (with embedded metadata)
+                # This is what KOReader actually downloads and calculates the checksum for
+                exported_file = os.path.join(filename, download_name + "." + book_format)
 
-            if os.path.exists(exported_file):
-                calculate_and_store_checksum(
-                    book_id=book.id,
-                    book_format=book_format,
-                    file_path=exported_file  # Use exported file with embedded metadata!
-                )
+                if os.path.exists(exported_file):
+                    calculate_and_store_checksum(
+                        book_id=book.id,
+                        book_format=book_format,
+                        file_path=exported_file  # Use exported file with embedded metadata!
+                    )
         except Exception as e:
             log.error(f"Failed to calculate/store checksum for book {book.id}: {e}")
             # Don't fail the download if checksum calculation fails
