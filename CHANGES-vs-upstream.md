@@ -30,6 +30,9 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #48 | [#1166](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1166) | @black-dragon74 | Kobo: pass highlight color through as a Hardcover annotation tag | `bc9e37f` | v4.0.16 |
 | #37 | [#1290](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1290) | @haraldpdl | Run ingest-service python workers under `s6-setuidgid abc` (not root) | `f2616d6` | v4.0.16 |
 | #40 | [#1279](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1279) | @dbraendle | Use `lazy='subquery'` for Books relationships to prevent DetachedInstanceError | `bc9386c` | v4.0.16 |
+| #80 | [#1327](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1327) | @okms | Book delete: pass saved return location to the generated POST form (was assigning `window.location`); add explicit `X-CSRFToken` headers to bulk delete/edit/archive/read JSON POSTs | TBD | TBD |
+| #81 | [#1331](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1331) | @I-Would-Like-To-Report-A-Bug-Please | Move title/author directory rename ahead of fetched-metadata staging in `editbooks.py` so description/tags persist on first save when the book directory also gets renamed | TBD | TBD |
+| #82 | [#1144](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1144) | @mihneabulu | Kobo OIDC: add `/oauth/.well-known/openid-configuration` discovery endpoint, dedicated `/oauth/authorize` route, use `current_user.id` instead of empty-on-GET request body — fixes "Sync failed. Please try again." on newer Kobo firmware (4.45+) | TBD | TBD |
 
 ## Original fork patches (no upstream PR existed)
 
