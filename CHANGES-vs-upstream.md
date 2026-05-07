@@ -33,6 +33,7 @@ Format: each row is one fork-PR, mapped to its upstream PR or issue (if any), wi
 | #80 | [#1327](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1327) | @okms | Book delete: pass saved return location to the generated POST form (was assigning `window.location`); add explicit `X-CSRFToken` headers to bulk delete/edit/archive/read JSON POSTs | `8ec4c582` | v4.0.25 |
 | #81 | [#1331](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1331) | @I-Would-Like-To-Report-A-Bug-Please | Move title/author directory rename ahead of fetched-metadata staging in `editbooks.py` so description/tags persist on first save when the book directory also gets renamed | `3129d906` | v4.0.25 |
 | #82 | [#1144](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1144) | @mihneabulu | Kobo OIDC: add `/oauth/.well-known/openid-configuration` discovery endpoint, dedicated `/oauth/authorize` route, use `current_user.id` instead of empty-on-GET request body — fixes "Sync failed. Please try again." on newer Kobo firmware (4.45+) | `d8300288` | v4.0.25 |
+| #86 | [#1336](https://github.com/crocodilestick/Calibre-Web-Automated/pull/1336) | @I-Would-Like-To-Report-A-Bug-Please | Metadata-search: flush TinyMCE comments back to the textarea before submit (description was rendering in the editor but not posting on first save); rename modal "Save" to "Apply"; normalize missing provider descriptions to empty string | `5d6943d8` | v4.0.26 |
 
 ## Original fork patches (no upstream PR existed)
 
