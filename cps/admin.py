@@ -2303,6 +2303,7 @@ def _configuration_update_helper():
                             and config.config_login_type == constants.LOGIN_LDAP)
         _config_checkbox_int(to_save, "config_public_reg")
         _config_checkbox_int(to_save, "config_register_email")
+        prev_kobo_sync = bool(config.config_kobo_sync)
         reboot_required |= _config_checkbox_int(to_save, "config_kobo_sync")
         _config_int(to_save, "config_external_port")
         _config_checkbox_int(to_save, "config_kobo_proxy")
@@ -2312,6 +2313,13 @@ def _configuration_update_helper():
         _config_string(to_save, "config_kobo_cover_padding_aspect")
         _config_string(to_save, "config_kobo_cover_padding_fill_mode")
         _config_string(to_save, "config_kobo_cover_padding_color")
+        # Default-on coupling: when the user first enables Kobo sync, auto-
+        # enable cover padding too (the padding section was hidden in the
+        # form they just submitted, so they couldn't have set it). They can
+        # untoggle padding on a later save while keeping kobo_sync on; the
+        # auto-enable only fires on the off→on transition.
+        if not prev_kobo_sync and bool(config.config_kobo_sync):
+            config.config_kobo_cover_padding_enabled = 1
 
         _config_checkbox_int(to_save, "config_hardcover_sync")
 

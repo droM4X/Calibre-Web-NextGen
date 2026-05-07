@@ -653,9 +653,9 @@
             </div>
     </div>
 
-    <div style="max-width: 900px; justify-self: center; margin-bottom: 1rem; display: flex; flex-direction: row; flex-wrap: wrap; width: -webkit-fill-available; justify-content: space-between; margin-inline: 2rem;">
+    <div class="cwa-form-actions" style="max-width: 900px; justify-self: center; width: -webkit-fill-available; margin-inline: 2rem;">
+      <a href="{{ url_for('admin.admin') }}" id="config_back" class="btn btn-secondary">{{_('Cancel')}}</a>
       <button type="button" name="submit" id="config_submit" class="btn btn-default">{{_('Save')}}</button>
-      <a href="{{ url_for('admin.admin') }}" id="config_back" class="btn btn-default">{{_('Cancel')}}</a>
     </div>
   </form>
 </div>

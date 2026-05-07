@@ -99,6 +99,22 @@ $(document).on("click", ".postAction", function (event) {
 });
 
 
+// Dim + lock the Kobo cover-padding "custom border color" input when the
+// fill mode isn't "manual". Uses readonly (not disabled) so the typed
+// value is preserved across form submissions when the user toggles modes.
+// Layout does not shift; opacity halves to signal the disabled state.
+function _kobo_padding_color_sync() {
+    var $sel = $("#config_kobo_cover_padding_fill_mode");
+    var $color = $("#config_kobo_cover_padding_color");
+    if (!$sel.length || !$color.length) return;
+    var enabled = ($sel.val() === "manual");
+    $color.prop("readonly", !enabled);
+    $color.closest(".form-group").css("opacity", enabled ? "" : "0.5");
+}
+$(document).on("change", "#config_kobo_cover_padding_fill_mode", _kobo_padding_color_sync);
+$(_kobo_padding_color_sync);
+
+
 // Syntax has to be bind not on, otherwise problems with firefox
 $(".container-fluid").bind("dragenter dragover", function () {
     if($("#btn-upload").length && !$('body').hasClass('shelforder')) {

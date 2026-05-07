@@ -42,8 +42,10 @@
       <label for="schedule_metadata_backup">{{_('Generate Metadata Backup Files')}}</label>
     </div>
 
-    <button type="submit" name="submit" value="submit" class="btn btn-default">{{_('Save')}}</button>
-    <a href="{{ url_for('admin.admin') }}" id="email_back" class="btn btn-default">{{_('Cancel')}}</a>
+    <div class="cwa-form-actions">
+      <a href="{{ url_for('admin.admin') }}" id="email_back" class="btn btn-secondary">{{_('Cancel')}}</a>
+      <button type="submit" name="submit" value="submit" class="btn btn-default">{{_('Save')}}</button>
+    </div>
   </form>
 </div>
 {% endblock %}

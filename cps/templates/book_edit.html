@@ -261,9 +261,13 @@
         <input name="detail_view" type="checkbox" checked> {{_('View Book on Save')}}
       </label>
     </div>
-    <a href="#" id="get_meta" class="btn btn-default" data-toggle="modal" data-target="#metaModal">{{_('Fetch Metadata')}}</a>
-    <button type="submit" id="submit" class="btn btn-default">{{_('Save')}}</button>
-    <a href="{{ url_for('web.show_book', book_id=book.id) }}" id="edit_cancel" class="btn btn-default">{{_('Cancel')}}</a>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.75rem; margin-top: 1rem;">
+      <a href="#" id="get_meta" class="btn btn-default" data-toggle="modal" data-target="#metaModal">{{_('Fetch Metadata')}}</a>
+      <div class="cwa-form-actions" style="margin-bottom: 0;">
+        <a href="{{ url_for('web.show_book', book_id=book.id) }}" id="edit_cancel" class="btn btn-secondary">{{_('Cancel')}}</a>
+        <button type="submit" id="submit" class="btn btn-default">{{_('Save')}}</button>
+      </div>
+    </div>
   </div>
 </form>
 

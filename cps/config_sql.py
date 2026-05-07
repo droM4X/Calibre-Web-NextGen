@@ -123,8 +123,9 @@ class _Settings(_Base):
 
     # Kobo cover aspect-ratio padding. Pads server-side so the device shows
     # full-screen artwork instead of letterboxing tall publisher covers.
-    # Defaults: off; Libra Color/2 ratio (1264:1680); edge-mirror fill.
-    config_kobo_cover_padding_enabled = Column(Boolean, default=False)
+    # Defaults: ON when kobo_sync is enabled (auto-applied on the kobo_sync
+    # off→on flip in admin.py); Libra Color/2 ratio; edge-mirror fill.
+    config_kobo_cover_padding_enabled = Column(Boolean, default=True)
     config_kobo_cover_padding_aspect = Column(String, default="kobo_libra_color")
     config_kobo_cover_padding_fill_mode = Column(String, default="edge_mirror")
     config_kobo_cover_padding_color = Column(String, default="")
