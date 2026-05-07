@@ -7208,17 +7208,18 @@ msgstr ""
 
 #: cps/templates/user_edit.html:228
 msgid "Enable Send-to-eReader Pop-up Modal"
-msgstr "Habilitar la ventana emergente "Enviar a lector electrónico" "
+msgstr "Habilitar la ventana emergente \"Enviar a lector electrónico\""
 
 #: cps/templates/user_edit.html:230
 msgid ""
 "Enables or disables the Send-to-eReader Pop-up Modal that allows users to "
 "enter extra email addresses and only send to a selection of saved addresses "
 "when sending to eReader."
-msgstr "Permite activar o desactivar la ventana emergente "Enviar a lector "
-"electrónico", que permite a los usuarios introducir direcciones de correo "
-"electrónico adicionales y enviar el mensaje únicamente a una selección de direcciones "
-"guardadas al enviarlo al lector electrónico."
+msgstr ""
+"Permite activar o desactivar la ventana emergente \"Enviar a lector "
+"electrónico\", que permite a los usuarios introducir direcciones de correo "
+"electrónico adicionales y enviar el mensaje únicamente a una selección de "
+"direcciones guardadas al enviarlo al lector electrónico."
 
 #: cps/templates/user_edit.html:232
 #, fuzzy

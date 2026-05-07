@@ -46,7 +46,11 @@ def get_user_locale_language(user_language):
 
 
 def get_available_locale():
-    return [Locale('en')] + babel.list_translations()
+    # flask_babel.list_translations() already includes the default locale ('en')
+    # whether or not a translation directory exists for it, so don't prepend
+    # Locale('en') — that produced "English" twice in the language picker.
+    # Sort by display name for a stable, alphabetic dropdown order.
+    return sorted(babel.list_translations(), key=lambda x: x.display_name.lower())
 
 
 def get_available_translations():

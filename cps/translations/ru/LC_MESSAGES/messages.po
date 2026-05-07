@@ -2637,17 +2637,17 @@ msgstr "Выбрать дубликаты"
 #: cps/tasks/duplicate_scan.py:133 cps/tasks/duplicate_scan.py:311
 #, python-format
 msgid "Duplicate scan completed: %(count)s groups"
-msgid "Сканирование дубликатов завершено: %(count)s групп"
+msgstr "Сканирование дубликатов завершено: %(count)s групп"
 
 #: cps/tasks/duplicate_scan.py:203 cps/tasks/duplicate_scan.py:402
 #, python-format
 msgid "Duplicate scan completed: %(count)s groups auto-resolved"
-msgid "Сканирование дубликатов завершено: %(count)s групп автоматически разрешены"
+msgstr "Сканирование дубликатов завершено: %(count)s групп автоматически разрешены"
 
 #: cps/tasks/duplicate_scan.py:313
 #, python-format
 msgid "Duplicate scan completed: %(count)s new groups"
-msgid "Сканирование дубликатов завершено: %(count)s новых групп"
+msgstr "Сканирование дубликатов завершено: %(count)s новых групп"
 
 #: cps/tasks/mail.py:275
 #, fuzzy
