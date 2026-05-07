@@ -39,11 +39,14 @@ jobs:
       - name: Run update_translations.sh
         run: bash scripts/update_translations.sh
 
+      - name: Refresh translation-status table in README
+        run: python scripts/generate_translation_status.py
+
       - name: Commit translation updates
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f messages.pot cps/translations/*/LC_MESSAGES/messages.po
+          git add -f messages.pot cps/translations/*/LC_MESSAGES/messages.po README.md
           if git diff --cached --quiet; then
             echo "No translation changes to commit"
             echo "TRANSLATION_COMMITTED=0" >> $GITHUB_ENV

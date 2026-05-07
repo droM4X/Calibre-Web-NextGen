@@ -358,6 +358,46 @@ Backports are conservative. Anything that touches auth, schema, or dependencies 
 
 ---
 
+## Translations
+
+The interface ships with the locales below. Completion is auto-refreshed on every push to `main` by [`scripts/generate_translation_status.py`](scripts/generate_translation_status.py); to contribute a translation, edit the `.po` file under [`cps/translations/`](cps/translations/) for your language and open a PR.
+
+<!-- TRANSLATION_STATUS_START -->
+| Language | Completion | Strings | Fuzzy |
+|---|---|---:|---:|
+| English (source) | 100% | source | — |
+| French (`fr`) | `████████████████████` 100% | 1518/1518 | 0 |
+| German (`de`) | `████████████████████` 100% | 1518/1518 | 11 |
+| Japanese (`ja`) | `████████████████████` 100% | 1518/1518 | 133 |
+| Spanish (`es`) | `████████████████████` 100% | 1517/1518 | 181 |
+| Slovenian (`sl`) | `████████████████████` 98% | 1489/1518 | 234 |
+| Russian (`ru`) | `████████████████░░░░` 82% | 1243/1518 | 392 |
+| Dutch (`nl`) | `████████████████░░░░` 81% | 1223/1518 | 210 |
+| Italian (`it`) | `████████████████░░░░` 78% | 1186/1518 | 179 |
+| Polish (`pl`) | `████████████████░░░░` 78% | 1186/1518 | 185 |
+| Portuguese (Brazil) (`pt_BR`) | `████████████████░░░░` 78% | 1186/1518 | 329 |
+| Korean (`ko`) | `████████████████░░░░` 78% | 1180/1518 | 179 |
+| Chinese (Simplified, China) (`zh_Hans_CN`) | `███████████████░░░░░` 75% | 1140/1518 | 278 |
+| Arabic (`ar`) | `█████████████░░░░░░░` 66% | 1001/1518 | 208 |
+| Slovak (`sk`) | `█████████████░░░░░░░` 65% | 991/1518 | 241 |
+| Portuguese (`pt`) | `█████████████░░░░░░░` 65% | 990/1518 | 289 |
+| Indonesian (`id`) | `█████████████░░░░░░░` 64% | 970/1518 | 291 |
+| Galician (`gl`) | `█████████████░░░░░░░` 64% | 968/1518 | 290 |
+| Chinese (Traditional, Taiwan) (`zh_Hant_TW`) | `████████████░░░░░░░░` 61% | 925/1518 | 309 |
+| Swedish (`sv`) | `████████████░░░░░░░░` 60% | 906/1518 | 323 |
+| Hungarian (`hu`) | `████████████░░░░░░░░` 59% | 896/1518 | 350 |
+| Greek (`el`) | `███████████░░░░░░░░░` 55% | 831/1518 | 334 |
+| Czech (`cs`) | `███████████░░░░░░░░░` 53% | 811/1518 | 343 |
+| Norwegian (`no`) | `███████████░░░░░░░░░` 53% | 811/1518 | 374 |
+| Vietnamese (`vi`) | `█████████░░░░░░░░░░░` 47% | 714/1518 | 300 |
+| Finnish (`fi`) | `█████████░░░░░░░░░░░` 44% | 675/1518 | 326 |
+| Ukrainian (`uk`) | `████████░░░░░░░░░░░░` 40% | 609/1518 | 312 |
+| Turkish (`tr`) | `████████░░░░░░░░░░░░` 40% | 606/1518 | 326 |
+| Khmer (`km`) | `███████░░░░░░░░░░░░░` 33% | 502/1518 | 293 |
+<!-- TRANSLATION_STATUS_END -->
+
+---
+
 ## Contributing
 
 - **Bug reports:** [open a bug issue](https://github.com/new-usemame/Calibre-Web-NextGen/issues/new?template=bug_report.md). Reproduction steps, version tag, and a `docker logs` snippet help a lot.

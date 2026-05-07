@@ -1,16 +1,28 @@
 # Calibre-Web Automated – fork of Calibre-Web
 # Copyright (C) 2018-2026 Calibre-Web contributors
 # Copyright (C) 2024-2026 Calibre-Web Automated contributors
+# Copyright (C) 2026 Calibre-Web-NextGen contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See CONTRIBUTORS for full list of authors.
 
+"""Refresh translation-status tables in the wiki and the repo README.
+
+The wiki page (`Contributing-Translations.md`) gets a full per-language
+table with raw counts. The repo README.md gets a compact bar-graph
+oriented table that scans well at a glance. Both targets are updated
+between explicit comment markers so the rest of the document is left
+untouched.
+
+Usage:
+    generate_translation_status.py                     # README.md only
+    generate_translation_status.py wiki-tmp/page.md    # wiki + README
+"""
+
 import polib
-import glob
 from pathlib import Path
 import re
 import sys
 
-# Mapping of language codes to full language names
 LANGUAGE_NAMES = {
     "ar": "Arabic",
     "cs": "Czech",
@@ -43,42 +55,112 @@ LANGUAGE_NAMES = {
 }
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+START_MARKER = "<!-- TRANSLATION_STATUS_START -->"
+END_MARKER = "<!-- TRANSLATION_STATUS_END -->"
 
-status_lines = []
-status_lines.append("| Language | Total Strings | Untranslated | Completion |")
-status_lines.append("|---|---|---|---|")
-for po_path in sorted(ROOT_DIR.glob("cps/translations/*/LC_MESSAGES/messages.po")):
-    po_path_str = str(po_path)
-    lang = po_path_str.split("/cps/translations/")[1].split("/")[0]
-    lang_name = LANGUAGE_NAMES.get(lang, lang)
-    po = polib.pofile(po_path_str)
-    total = len([e for e in po if not e.obsolete])
-    untranslated = sum(1 for entry in po if not entry.msgstr.strip() and not entry.obsolete)
-    percent = 100 * (total - untranslated) // total if total else 0
-    status_lines.append(f"| {lang_name} ([{lang}](https://github.com/crocodilestick/Calibre-Web-Automated/tree/main/cps/translations/{lang}/LC_MESSAGES)) | {total} | {untranslated} | {percent}% |")
 
-# Write to the wiki file (replace the table section)
+def collect_stats():
+    """Return a list of (lang, lang_name, total, translated, fuzzy, percent)
+    tuples sorted by completion percentage (highest first), with English
+    pinned to the top as the source language."""
+    stats = []
+    for po_path in sorted(ROOT_DIR.glob("cps/translations/*/LC_MESSAGES/messages.po")):
+        lang = po_path.parts[-3]
+        po = polib.pofile(str(po_path))
+        total = sum(1 for e in po if not e.obsolete)
+        translated = sum(1 for e in po if not e.obsolete and e.msgstr.strip())
+        fuzzy = sum(1 for e in po if not e.obsolete and "fuzzy" in e.flags)
+        percent = round(100 * translated / total, 1) if total else 0.0
+        stats.append((lang, LANGUAGE_NAMES.get(lang, lang), total, translated, fuzzy, percent))
+    stats.sort(key=lambda r: (-r[5], r[1]))
+    return stats
 
-wiki_path = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT_DIR / "wiki-tmp/Contributing-Translations.md"
-with open(wiki_path, "r", encoding="utf-8") as f:
-    content = f.read()
 
-# Replace the table between special markers, or insert if not present
-start_marker = "<!-- TRANSLATION_STATUS_START -->"
-end_marker = "<!-- TRANSLATION_STATUS_END -->"
-table_md = start_marker + "\n" + "\n".join(status_lines) + "\n" + end_marker
+def render_readme_table(stats):
+    """Compact table for the repo README. Pure markdown, no images, no
+    external services — renders the same on github.com and on a clone."""
+    lines = [
+        "| Language | Completion | Strings | Fuzzy |",
+        "|---|---|---:|---:|",
+        "| English (source) | 100% | source | — |",
+    ]
+    for lang, name, total, translated, fuzzy, percent in stats:
+        bar_filled = int(round(percent / 5))
+        bar = "█" * bar_filled + "░" * (20 - bar_filled)
+        lines.append(
+            f"| {name} (`{lang}`) | `{bar}` {percent:.0f}% | {translated}/{total} | {fuzzy} |"
+        )
+    return "\n".join(lines)
 
-if start_marker in content and end_marker in content:
-    content = re.sub(f"{start_marker}.*?{end_marker}", table_md, content, flags=re.DOTALL)
-else:
-    # Insert after the first heading
-    parts = content.split("\n", 2)
-    if len(parts) > 2:
-        content = parts[0] + "\n" + parts[1] + "\n" + table_md + "\n" + parts[2]
-    else:
-        content = content + "\n" + table_md
 
-with open(wiki_path, "w", encoding="utf-8") as f:
-    f.write(content)
+def render_wiki_table(stats):
+    """Full table for the wiki page. Links each row back to the .po file
+    on this repo so contributors can edit directly."""
+    lines = [
+        "| Language | Total Strings | Untranslated | Completion |",
+        "|---|---|---|---|",
+    ]
+    for lang, name, total, translated, fuzzy, percent in stats:
+        untranslated = total - translated
+        lines.append(
+            f"| {name} ([{lang}](https://github.com/new-usemame/Calibre-Web-NextGen/tree/main/cps/translations/{lang}/LC_MESSAGES)) "
+            f"| {total} | {untranslated} | {int(percent)}% |"
+        )
+    return "\n".join(lines)
 
-print(f"Translation status table updated in {wiki_path}.")
+
+def update_between_markers(path: Path, body: str) -> bool:
+    """Replace text between START_MARKER and END_MARKER. Returns True if
+    file was modified (or markers needed to be inserted), False if the
+    file lacked markers AND we're not allowed to invent them."""
+    text = path.read_text(encoding="utf-8")
+    block = f"{START_MARKER}\n{body}\n{END_MARKER}"
+    if START_MARKER in text and END_MARKER in text:
+        new_text = re.sub(
+            f"{re.escape(START_MARKER)}.*?{re.escape(END_MARKER)}",
+            block,
+            text,
+            flags=re.DOTALL,
+        )
+        if new_text != text:
+            path.write_text(new_text, encoding="utf-8")
+            return True
+        return False
+    return False
+
+
+def main():
+    stats = collect_stats()
+
+    # README.md is always updated.
+    readme_path = ROOT_DIR / "README.md"
+    if readme_path.exists():
+        if update_between_markers(readme_path, render_readme_table(stats)):
+            print(f"Updated translation table in {readme_path}.")
+        else:
+            print(f"No marker block in {readme_path}; skipped.")
+
+    # Wiki page is updated only if a path is supplied.
+    if len(sys.argv) > 1:
+        wiki_path = Path(sys.argv[1])
+        if update_between_markers(wiki_path, render_wiki_table(stats)):
+            print(f"Updated translation table in {wiki_path}.")
+        else:
+            # Fall back to the original "insert after first heading" behaviour
+            # so the wiki file gets seeded on first run.
+            text = wiki_path.read_text(encoding="utf-8") if wiki_path.exists() else ""
+            block = f"{START_MARKER}\n{render_wiki_table(stats)}\n{END_MARKER}"
+            if text:
+                parts = text.split("\n", 2)
+                if len(parts) > 2:
+                    text = parts[0] + "\n" + parts[1] + "\n" + block + "\n" + parts[2]
+                else:
+                    text = text + "\n" + block
+            else:
+                text = block
+            wiki_path.write_text(text, encoding="utf-8")
+            print(f"Seeded translation table in {wiki_path}.")
+
+
+if __name__ == "__main__":
+    main()
