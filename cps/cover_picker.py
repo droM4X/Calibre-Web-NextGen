@@ -28,7 +28,9 @@ this file.
 from __future__ import annotations
 
 import base64
+import os
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 from functools import wraps
 from typing import Optional
 
@@ -39,7 +41,7 @@ from flask_babel import get_locale
 from . import calibre_db, config, helper, logger, ub
 from .cw_login import current_user
 from .render_template import render_title_template
-from .services import cover_extract, cover_picker as cover_picker_svc, cover_url_validator
+from .services import cover_extract, cover_padding, cover_picker as cover_picker_svc, cover_url_validator
 from .usermanagement import user_login_required
 
 
@@ -104,6 +106,7 @@ def cover_picker_page(book_id):
         "cover_picker.html",
         book=book,
         cover_locked=locked,
+        config=config,
         title=_(u"Change cover — %(title)s", title=book.title),
         page="coverpicker",
     )
@@ -246,6 +249,131 @@ def cover_picker_lock(book_id):
         ub.session.rollback()
         return _json_error("commit_failed", _(u"Could not save lock state."), 500)
     return jsonify({"locked": record.locked})
+
+
+# ---- Kobo cover preview (issue #84) --------------------------------------
+
+
+@cover_picker.route("/book/<int:book_id>/cover/kobo-preview", methods=["POST"])
+@user_login_required
+@edit_required
+def cover_picker_kobo_preview(book_id):
+    """Re-render an image through the Kobo cover-padding pipeline and
+    return a base64 data URL the picker page can drop straight into an
+    ``<img src>``. Picker-session-local: aspect / fill_mode / color come
+    from the request, not from global config, so users can preview
+    variations without mutating admin defaults.
+
+    Body shape (JSON):
+        {
+            "candidate_url": "https://...",   # OR
+            "embedded": true,                 # use the book's embedded cover
+            "aspect":    "kobo_libra_color",
+            "fill_mode": "edge_mirror",
+            "color":     "#1a1a1a"            # only used when fill_mode == manual
+        }
+
+    With neither ``candidate_url`` nor ``embedded`` set, the book's
+    current saved cover is used as the source.
+    """
+    book = _load_book(book_id)
+    body = request.get_json(silent=True) or {}
+
+    candidate_url = (body.get("candidate_url") or "").strip()
+    use_embedded = bool(body.get("embedded"))
+    aspect = body.get("aspect") or ""
+    fill_mode = body.get("fill_mode") or ""
+    color = body.get("color") or ""
+
+    # Belt-and-suspenders: cw_advocate (the SSRF guard) is the primary line
+    # of defense, but it's a vendored library we don't actively maintain.
+    # Reject anything that's not http(s) here so a future cw_advocate parser
+    # bug can't widen the attack surface.
+    if candidate_url:
+        scheme = urlparse(candidate_url).scheme.lower()
+        if scheme not in ("http", "https"):
+            return _json_error(
+                "bad_scheme",
+                _(u"Only http(s) URLs can be previewed."),
+                400,
+            )
+
+    blob = _resolve_preview_source(book, candidate_url, use_embedded)
+    if blob is None:
+        return _json_error("source_unavailable", _(u"Could not load a source image to preview."), 502)
+
+    try:
+        data_url = cover_padding.render_kobo_preview_data_url(
+            blob, aspect=aspect, fill_mode=fill_mode, color=color,
+        )
+    except Exception as exc:  # pragma: no cover - defensive
+        log.warning("cover_picker_kobo_preview render failed: %s", exc)
+        return _json_error("render_failed", _(u"Could not render the Kobo preview."), 500)
+
+    return jsonify({"ok": True, "data_url": data_url})
+
+
+def _resolve_preview_source(book, candidate_url: str, use_embedded: bool) -> Optional[bytes]:
+    """Pick the right bytes to feed pad_blob: a SSRF-safe fetch of an
+    external URL, the embedded cover from the book file, or the book's
+    on-disk current cover. Returns None when none of those resolve."""
+    if candidate_url:
+        return _fetch_url_bytes(candidate_url)
+    if use_embedded:
+        extracted = cover_extract.extract_embedded_cover(book)
+        return extracted.data if extracted else None
+    return _read_current_cover_bytes(book)
+
+
+def _fetch_url_bytes(url: str) -> Optional[bytes]:
+    """Fetch up to ~10 MB through cw_advocate. Mirrors the SSRF guard +
+    timeout shape used by helper.save_cover_from_url so external image
+    URLs in the picker get the same treatment everywhere."""
+    try:
+        from . import cw_advocate
+    except Exception:  # pragma: no cover - defensive
+        return None
+    try:
+        resp = cw_advocate.get(url, timeout=(10, 30), allow_redirects=True, stream=True)
+        if resp.status_code != 200:
+            return None
+        max_bytes = 10 * 1024 * 1024
+        # Pre-stream cap: trust Content-Length when the server bothers to
+        # send one. This drops the worker fast when an attacker advertises
+        # a 1 GB image instead of waiting to stream past max_bytes.
+        size_hint = resp.headers.get("Content-Length")
+        if size_hint and size_hint.isdigit() and int(size_hint) > max_bytes:
+            log.info("cover_picker_kobo_preview rejecting %s — Content-Length %s exceeds cap", url, size_hint)
+            return None
+        chunks = []
+        total = 0
+        for chunk in resp.iter_content(chunk_size=64 * 1024):
+            if not chunk:
+                continue
+            total += len(chunk)
+            if total > max_bytes:
+                return None
+            chunks.append(chunk)
+        return b"".join(chunks)
+    except Exception as exc:
+        log.warning("cover_picker_kobo_preview fetch failed for %s: %s", url, exc)
+        return None
+
+
+def _read_current_cover_bytes(book) -> Optional[bytes]:
+    """Load the book's on-disk cover.jpg. Returns None if the book has
+    no saved cover or the read fails."""
+    if not getattr(book, "has_cover", False):
+        return None
+    try:
+        cover_path = os.path.join(config.config_calibre_dir, book.path, "cover.jpg")
+        if not os.path.isfile(cover_path):
+            return None
+        with open(cover_path, "rb") as fh:
+            return fh.read()
+    except Exception as exc:
+        log.warning("cover_picker_kobo_preview disk-cover read failed: %s", exc)
+        return None
 
 
 # ---- helpers --------------------------------------------------------------

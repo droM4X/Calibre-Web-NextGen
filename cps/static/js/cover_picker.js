@@ -427,4 +427,225 @@
   // Kick off the candidate fetch as soon as the page renders.
   document.addEventListener("DOMContentLoaded", loadCandidates);
   if (document.readyState !== "loading") loadCandidates();
+
+  // -------- Kobo preview (issue #84) ----------------------------------------
+  // When the operator has Kobo cover padding enabled at the admin level,
+  // the template renders an extra <details> panel with a toggle + the same
+  // aspect / fill_mode / color controls that live in Settings. Flipping the
+  // toggle on swaps every visible cover <img> to a server-padded variant.
+  // Picker-session-local — does NOT mutate global config.
+  (function setupKoboPreview() {
+    const panel = document.getElementById("cwa-cover-picker-kobo-panel");
+    if (!panel) return;
+
+    const toggle = document.getElementById("cwa-cover-picker-kobo-enabled");
+    const aspectSel = document.getElementById("cwa-cover-picker-kobo-aspect");
+    const fillSel = document.getElementById("cwa-cover-picker-kobo-fill-mode");
+    const colorInput = document.getElementById("cwa-cover-picker-kobo-color");
+    const statusEl = document.getElementById("cwa-cover-picker-kobo-status");
+    const endpoint = cfg.endpoints.koboPreview;
+    if (!toggle || !aspectSel || !fillSel || !colorInput || !endpoint) return;
+
+    const cache = new WeakMap();
+    // One AbortController per "burst" (toggle-on or settings-change). When
+    // the user toggles off or changes a control, abort the prior burst so
+    // we stop burning server CPU on Wand work the user no longer wants.
+    let currentBurst = null;
+    // Loading pill: counts how many fetches are in flight in the current
+    // burst. Decrements as each promise settles. Hidden when count <= 0.
+    let inFlightCount = 0;
+    function updateStatus() {
+      if (!statusEl) return;
+      if (inFlightCount > 0) {
+        statusEl.textContent = " · " + (cfg.i18n.koboRendering || "Rendering Kobo previews:") + " " + inFlightCount + "…";
+        statusEl.hidden = false;
+      } else {
+        statusEl.hidden = true;
+      }
+    }
+    function abortCurrentBurst() {
+      if (currentBurst) {
+        currentBurst.abort();
+        currentBurst = null;
+      }
+      inFlightCount = 0;
+      updateStatus();
+    }
+    function ensureBurst() {
+      if (!currentBurst) currentBurst = new AbortController();
+      return currentBurst;
+    }
+
+    function settingsKey() {
+      return aspectSel.value + "|" + fillSel.value + "|" + (colorInput.value || "");
+    }
+
+    function syncColorEnabled() {
+      const isManual = fillSel.value === "manual";
+      colorInput.disabled = !isManual;
+      colorInput.style.opacity = isManual ? "1" : "0.5";
+    }
+    syncColorEnabled();
+    fillSel.addEventListener("change", syncColorEnabled);
+
+    function originalSrcOf(img) {
+      if (!img.dataset.koboOriginalSrc) {
+        img.dataset.koboOriginalSrc = img.src;
+      }
+      return img.dataset.koboOriginalSrc;
+    }
+
+    function isSameOriginCoverUrl(url) {
+      // Same-origin /cover/<id>/... — let server load from disk; cw_advocate
+      // SSRF guard refuses to fetch our own host.
+      try {
+        const u = new URL(url, location.href);
+        return u.origin === location.origin && /^\/cover\/\d+/.test(u.pathname);
+      } catch { return false; }
+    }
+
+    async function fetchPreview(srcUrl, signal) {
+      const body = {
+        aspect: aspectSel.value,
+        fill_mode: fillSel.value,
+        color: colorInput.value || "",
+      };
+      if (srcUrl && srcUrl.startsWith("data:")) {
+        // Embedded data URL — too large to round-trip; tell server to use
+        // the embedded-cover extract path instead.
+        body.embedded = true;
+      } else if (srcUrl && !isSameOriginCoverUrl(srcUrl)) {
+        body.candidate_url = srcUrl;
+      }
+      // Else: leave both empty → server uses on-disk current cover.
+      const resp = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": cfg.csrfToken },
+        body: JSON.stringify(body),
+        signal,
+      });
+      if (!resp.ok) throw new Error("kobo-preview HTTP " + resp.status);
+      const data = await resp.json();
+      if (!data || !data.ok) throw new Error("kobo-preview body !ok");
+      return data.data_url;
+    }
+
+    // In-flight de-dup: per-img/per-settings promise, so concurrent
+    // refreshAll() calls (toggle + observer fires) coalesce into one fetch.
+    const inflight = new WeakMap();
+
+    async function applyPreviewTo(img) {
+      const orig = originalSrcOf(img);
+      if (!orig) return;
+      const key = settingsKey();
+      let perImg = cache.get(img);
+      if (!perImg) { perImg = new Map(); cache.set(img, perImg); }
+      if (perImg.has(key)) {
+        if (toggle.checked) img.src = perImg.get(key);
+        return;
+      }
+      let perImgInflight = inflight.get(img);
+      if (!perImgInflight) { perImgInflight = new Map(); inflight.set(img, perImgInflight); }
+      if (perImgInflight.has(key)) {
+        // A fetch is already in flight for this exact (img, settings); skip.
+        return;
+      }
+      const burst = ensureBurst();
+      inFlightCount += 1;
+      updateStatus();
+      const promise = (async () => {
+        try {
+          const dataUrl = await fetchPreview(orig, burst.signal);
+          perImg.set(key, dataUrl);
+          if (toggle.checked && key === settingsKey()) img.src = dataUrl;
+        } catch (e) {
+          // AbortError is the user toggling off / changing settings —
+          // expected, not a problem. Other errors are SSRF-blocked or
+          // unreachable provider URLs — graceful-degrade, info-level so
+          // the devtools "errors" count stays clean.
+          if (e && e.name === "AbortError") {
+            // intentional cancellation; nothing to do.
+          } else {
+            console.info("[cover-picker] kobo preview unavailable for one cover", e);
+          }
+        } finally {
+          perImgInflight.delete(key);
+          inFlightCount = Math.max(0, inFlightCount - 1);
+          updateStatus();
+        }
+      })();
+      perImgInflight.set(key, promise);
+    }
+
+    function revertImg(img) {
+      const orig = img.dataset.koboOriginalSrc;
+      if (orig) img.src = orig;
+    }
+
+    function visibleCoverImgs() {
+      const ids = [
+        "cwa-cover-picker-current-img",
+        "cwa-cover-picker-confirm-current",
+        "cwa-cover-picker-confirm-new",
+        "cwa-cover-picker-url-thumb",
+      ];
+      const out = [];
+      ids.forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el && el.tagName === "IMG" && el.src) out.push(el);
+      });
+      const grid = document.getElementById("cwa-cover-picker-grid");
+      if (grid) Array.prototype.forEach.call(grid.querySelectorAll("img"), function (i) { out.push(i); });
+      return out;
+    }
+
+    function refreshAll() {
+      const imgs = visibleCoverImgs();
+      if (toggle.checked) {
+        imgs.forEach(applyPreviewTo);
+      } else {
+        // Toggle off: kill any in-flight server work and revert.
+        abortCurrentBurst();
+        imgs.forEach(revertImg);
+      }
+    }
+
+    toggle.addEventListener("change", refreshAll);
+    // Closing the <details> panel implicitly cancels too — same effect as
+    // toggle off as far as "stop burning server cycles" goes.
+    panel.addEventListener("toggle", function () {
+      if (!panel.open && currentBurst) abortCurrentBurst();
+    });
+
+    let debounceTimer = null;
+    function debouncedRefresh() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(function () {
+        if (toggle.checked) {
+          // New settings → cancel the prior burst so we don't waste work
+          // on results the user has already moved past.
+          abortCurrentBurst();
+          refreshAll();
+        }
+      }, 250);
+    }
+    aspectSel.addEventListener("change", debouncedRefresh);
+    fillSel.addEventListener("change", debouncedRefresh);
+    colorInput.addEventListener("input", debouncedRefresh);
+
+    // Watch the candidate grid for new <img> nodes (the API response renders
+    // ~67 cards in a burst). Debounce so we trigger one refresh per burst
+    // instead of one per card — without this we'd fire 67 concurrent fetches
+    // and the browser hits ERR_INSUFFICIENT_RESOURCES.
+    const grid = document.getElementById("cwa-cover-picker-grid");
+    if (grid) {
+      let obsTimer = null;
+      const obs = new MutationObserver(function () {
+        if (!toggle.checked) return;
+        clearTimeout(obsTimer);
+        obsTimer = setTimeout(refreshAll, 200);
+      });
+      obs.observe(grid, { childList: true, subtree: true });
+    }
+  })();
 })();

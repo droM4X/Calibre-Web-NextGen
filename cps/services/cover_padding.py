@@ -36,8 +36,10 @@ a no-op (returns source bytes unchanged) when Wand is unavailable.
 """
 from __future__ import annotations
 
+import base64
 import hashlib
 import os
+import threading
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
@@ -383,6 +385,50 @@ def pad_blob(blob: bytes, settings: PaddingSettings) -> bytes:
     except Exception as ex:
         log.warning("cover_padding: pad_blob failed (%s); returning source", ex)
         return blob
+
+
+# Bound concurrent Wand work. Wand is CPU-heavy (50-500 ms per call) and
+# the cover-picker can fire 60+ pad requests at once when a user toggles
+# Kobo preview on. Without a cap, all gunicorn workers can saturate on a
+# single user's burst on a multi-user instance. 4 keeps a normal
+# household responsive while leaving headroom for everything else.
+_PREVIEW_SEMAPHORE = threading.BoundedSemaphore(4)
+
+
+def render_kobo_preview_data_url(
+    blob: bytes,
+    aspect: str,
+    fill_mode: str,
+    color: str,
+) -> str:
+    """Pad ``blob`` for a Kobo preview and return a base64 data URL.
+
+    Used by the cover-picker page (issue #84) to show users what each
+    candidate cover will look like on a Kobo device without a full
+    apply-and-sync round trip. Inputs map 1:1 to admin settings:
+    ``aspect`` is a preset key or "WxH"; ``fill_mode`` is one of the
+    five FILL_MODES; ``color`` is a hex string used only when
+    ``fill_mode == "manual"``.
+
+    Always returns a JPEG data URL — if the padding pipeline no-ops
+    (Wand missing, source already on-target, decode failure), the
+    URL still wraps the original bytes so the caller can swap an
+    ``<img src>`` unconditionally.
+
+    Concurrent calls are bounded by ``_PREVIEW_SEMAPHORE`` so a single
+    user's burst can't starve all workers.
+    """
+    settings = PaddingSettings(
+        enabled=True,
+        target_aspect=aspect or "",
+        fill_mode=fill_mode or DEFAULT_FILL_MODE,
+        manual_color=color or "",
+    )
+    with _PREVIEW_SEMAPHORE:
+        padded = pad_blob(blob, settings) if blob else b""
+    payload = padded if padded else (blob or b"")
+    encoded = base64.b64encode(payload).decode("ascii")
+    return "data:image/jpeg;base64," + encoded
 
 
 def pad_path_to_cache(

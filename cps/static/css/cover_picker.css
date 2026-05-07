@@ -458,3 +458,31 @@ body.blur .cwa-cover-picker {
   color: var(--cp-input-text);
   border: 1px solid var(--cp-input-border);
 }
+
+.cwa-cover-picker__kobo-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.cwa-cover-picker__kobo-toggle input { margin: 0; }
+.cwa-cover-picker__kobo-status {
+  font-size: 12px;
+  color: var(--cp-text-muted, #666);
+  font-weight: 400;
+  font-style: italic;
+}
+.cwa-cover-picker__kobo-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 8px;
+}
+.cwa-cover-picker__kobo-controls .form-group { margin-bottom: 0; }
+.cwa-cover-picker__kobo-controls .form-group:nth-child(3) { grid-column: 1 / -1; }
+@media (max-width: 600px) {
+  .cwa-cover-picker__kobo-controls { grid-template-columns: 1fr; }
+}
+
