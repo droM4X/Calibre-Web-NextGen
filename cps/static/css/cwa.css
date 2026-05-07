@@ -105,8 +105,34 @@ body.blur .cwa-cover-url-feedback.is-error { color: #ff7676; }
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: flex-end;
+    align-items: stretch;
     gap: 0.75rem;
     margin-bottom: 1rem;
+}
+
+/* Equalize Save / Cancel heights. Cancel (anchor + .btn-secondary) and Save
+   (.btn-default on caliBlur) ship with mismatched padding + border defaults,
+   so a naive pairing renders Cancel ~5 px taller. Force a fixed 38 px box
+   with centered content on every .btn in the row, regardless of element
+   type. !important is needed because some inline page styles (cf.
+   config_edit.html) bump .btn padding above what we want here. */
+.cwa-form-actions .btn,
+.cwa-form-actions a.btn,
+.cwa-form-actions button.btn {
+    height: 38px !important;
+    min-height: 38px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1 !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+.cwa-form-actions .btn-default {
+    border-color: transparent !important;
 }
 
 .btn-secondary {
