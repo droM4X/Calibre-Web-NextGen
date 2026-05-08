@@ -29,7 +29,7 @@ Single source of truth here, doc references it by path-and-line. If a value need
    policy = {}
    with open(".github/policy/tier-policy.config") as fh:
        for line in fh:
-           m = re.match(r"^([A-Z_]+)='?(.*?)'?$", line.strip())
+           m = re.match(r"^([A-Z0-9_]+)='?(.*?)'?$", line.strip())
            if m: policy[m.group(1)] = m.group(2)
    ```
 3. Add a test in `tests/autopilot/test_tier_policy.sh` asserting the key exists and parses.
