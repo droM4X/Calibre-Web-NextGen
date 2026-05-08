@@ -549,6 +549,15 @@
                                                 <span id="archive-icon" class="glyphicon {{ entry.is_archived and 'glyphicon-folder-open' or 'glyphicon-folder-close' }}"></span>
                                             </button>
                                         {% endif %}
+                                        {# Hide / Unhide button — fork issue #64. Per-user library declutter, distinct from archive. #}
+                                        <button type="button" class="btn btn-default action-icon-btn" id="toggle-hide-btn"
+                                                data-book-id="{{ entry.id }}"
+                                                title="{{ is_hidden and _('Unhide from your library') or _('Hide from your library') }}"
+                                                aria-label="{{ is_hidden and _('Unhide from your library') or _('Hide from your library') }}"
+                                                data-toast-on="{{ _('Hidden') }}"
+                                                data-toast-off="{{ _('Unhidden') }}">
+                                            <span id="hide-icon" class="glyphicon {{ is_hidden and 'glyphicon-eye-open' or 'glyphicon-eye-close' }}"></span>
+                                        </button>
                                     {% endif %}
 
                                     {% if current_user.role_edit() %}
@@ -1053,6 +1062,32 @@
                 },
                 error: function () {
                     $cb.prop("checked", !nextChecked);
+                }
+            });
+        });
+
+        // Hide / unhide handler — fork issue #64. Optimistic icon toggle, then
+        // POSTs to /ajax/togglehidden/<id> which flips the row in user_hidden_book.
+        // No revert on failure (the user can click again if the state desyncs).
+        $("#toggle-hide-btn").on("click", function () {
+            var $btn = $("#toggle-hide-btn");
+            var bookId = $btn.data("book-id");
+            var $icon = $("#hide-icon");
+            var nowHiding = $icon.hasClass("glyphicon-eye-close");
+            $.ajax({
+                url: "/ajax/togglehidden/" + bookId,
+                method: "post",
+                headers: {
+                    "X-CSRFToken": $('meta[name="csrf-token"]').attr("content") || ""
+                },
+                success: function (data) {
+                    if (typeof handleResponse === "function") {
+                        handleResponse(data);
+                    }
+                    $icon.toggleClass("glyphicon-eye-open", nowHiding)
+                         .toggleClass("glyphicon-eye-close", !nowHiding);
+                    var toastMsg = nowHiding ? $btn.data("toast-on") : $btn.data("toast-off");
+                    showActionToast(toastMsg, $btn[0]);
                 }
             });
         });

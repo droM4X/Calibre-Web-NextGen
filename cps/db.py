@@ -930,7 +930,8 @@ class CalibreDB:
             log.error("Database error: {}".format(e))
 
     # Language and content filters for displaying in the UI
-    def common_filters(self, allow_show_archived=False, return_all_languages=False, viewing_tag_id=None):
+    def common_filters(self, allow_show_archived=False, return_all_languages=False,
+                       viewing_tag_id=None, allow_show_hidden=False):
         if not allow_show_archived:
             archived_books = (ub.session.query(ub.ArchivedBook)
                               .filter(ub.ArchivedBook.user_id==int(current_user.id))
@@ -940,6 +941,17 @@ class CalibreDB:
             archived_filter = Books.id.notin_(archived_book_ids)
         else:
             archived_filter = true()
+
+        # Per-user hidden books — fork issue #64. allow_show_hidden=True is the
+        # /hidden listing's escape hatch (so users can see + unhide).
+        if not allow_show_hidden and not current_user.is_anonymous:
+            hidden_books = (ub.session.query(ub.UserHiddenBook)
+                            .filter(ub.UserHiddenBook.user_id == int(current_user.id))
+                            .all())
+            hidden_book_ids = [h.book_id for h in hidden_books]
+            hidden_filter = Books.id.notin_(hidden_book_ids)
+        else:
+            hidden_filter = true()
 
         if current_user.filter_language() == "all" or return_all_languages:
             lang_filter = true()
@@ -981,7 +993,7 @@ class CalibreDB:
             pos_content_cc_filter = true()
             neg_content_cc_filter = false()
         return and_(lang_filter, pos_content_tags_filter, ~neg_content_tags_filter,
-                    pos_content_cc_filter, ~neg_content_cc_filter, archived_filter)
+                    pos_content_cc_filter, ~neg_content_cc_filter, archived_filter, hidden_filter)
 
     def generate_linked_query(self, config_read_column, database):
         # Safety: session can be briefly None during DB reconnects
@@ -1034,13 +1046,14 @@ class CalibreDB:
                                            join_archive_read, config_read_column, *join, **kwargs):
         self.ensure_session()
         viewing_tag_id = kwargs.get('viewing_tag_id')
+        allow_show_hidden = kwargs.get('allow_show_hidden', False)
         pagesize = pagesize or self.config.config_books_per_page
         if current_user.show_detail_random():
             random_query = self.generate_linked_query(config_read_column, database)
             # Eagerly load the data relationship for random books to prevent session errors
             if database == Books:
                 random_query = random_query.options(joinedload(Books.data))
-            randm = (random_query.filter(self.common_filters(allow_show_archived, viewing_tag_id=viewing_tag_id))
+            randm = (random_query.filter(self.common_filters(allow_show_archived, viewing_tag_id=viewing_tag_id, allow_show_hidden=allow_show_hidden))
                      .order_by(func.random())
                      .limit(self.config.config_random_books).all())
         else:
@@ -1072,7 +1085,7 @@ class CalibreDB:
                 indx -= 1
                 element += 1
         query = query.filter(db_filter)\
-            .filter(self.common_filters(allow_show_archived, viewing_tag_id=viewing_tag_id))
+            .filter(self.common_filters(allow_show_archived, viewing_tag_id=viewing_tag_id, allow_show_hidden=allow_show_hidden))
         entries = list()
         pagination = list()
         try:

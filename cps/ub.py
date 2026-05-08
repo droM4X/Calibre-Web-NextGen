@@ -612,6 +612,32 @@ class ArchivedBook(Base):
     last_modified = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class UserHiddenBook(Base):
+    """Per-user hidden books — fork issue #64.
+
+    Distinct from ArchivedBook: archived is a deletion-track / sync-pause
+    semantic; hidden is a personal-library declutter. Same shape (user_id +
+    book_id pair, last_modified) but a separate table so the two semantics
+    don't bleed into each other. The web UI exposes hide/unhide on the book
+    detail page and a dedicated `/hidden` listing for un-hiding.
+
+    common_filters() in cps/db.py reads this table and excludes hidden
+    books from index, search, OPDS, and shelf listings (the same code path
+    that already handles archived books).
+    """
+    __tablename__ = 'user_hidden_book'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'),
+                     nullable=False, index=True)
+    book_id = Column(Integer, nullable=False, index=True)
+    hidden_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'book_id', name='uq_user_hidden_book'),
+    )
+
+
 class KoboSyncedBooks(Base):
     __tablename__ = 'kobo_synced_books'
     id = Column(Integer, primary_key=True, autoincrement=True)

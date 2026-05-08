@@ -1,0 +1,237 @@
+# Calibre-Web Automated – fork of Calibre-Web
+# Copyright (C) 2018-2026 Calibre-Web contributors
+# Copyright (C) 2024-2026 Calibre-Web Automated contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+# See CONTRIBUTORS for full list of authors.
+
+"""Regression tests for fork issue #64 — per-user hide-books feature.
+
+Pre-fix: no way to declutter a personal view of the library; archive was
+the only opt-out and it has different semantics (sync-pause). Users with
+large Project-Gutenberg-style hoards wanted a "hide" toggle that drops a
+book out of their index, search, OPDS feeds, and shelves without deleting
+or affecting other users.
+
+Post-fix: `UserHiddenBook` table (per-user × book_id, unique pair) +
+`common_filters()` extension that excludes hidden book ids for
+`current_user`. `/hidden` listing bypasses the exclusion via
+`allow_show_hidden=True`.
+"""
+
+import inspect
+from datetime import datetime, timezone
+from unittest.mock import MagicMock, patch
+
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from cps.ub import Base, User, UserHiddenBook
+
+
+@pytest.fixture
+def in_memory_session():
+    engine = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    yield session
+    session.close()
+
+
+@pytest.fixture
+def user_alice(in_memory_session):
+    u = User()
+    u.name = "alice"
+    u.email = "alice@example.com"
+    u.password = ""
+    in_memory_session.add(u)
+    in_memory_session.commit()
+    in_memory_session.refresh(u)
+    return u
+
+
+@pytest.mark.unit
+class TestUserHiddenBookModel:
+    """Pin the schema invariants — same shape as ArchivedBook plus a
+    unique constraint on (user_id, book_id) so we can't double-hide."""
+
+    def test_can_insert_a_hidden_book(self, in_memory_session, user_alice):
+        row = UserHiddenBook(user_id=user_alice.id, book_id=42)
+        in_memory_session.add(row)
+        in_memory_session.commit()
+        in_memory_session.refresh(row)
+        assert row.id is not None
+        assert row.hidden_at is not None, "hidden_at default must populate"
+
+    def test_unique_constraint_prevents_double_hide(self, in_memory_session, user_alice):
+        in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=42))
+        in_memory_session.commit()
+        in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=42))
+        with pytest.raises(Exception):
+            in_memory_session.commit()
+        in_memory_session.rollback()
+
+    def test_same_book_can_be_hidden_by_multiple_users(self, in_memory_session, user_alice):
+        u2 = User()
+        u2.name = "bob"
+        u2.email = "bob@example.com"
+        u2.password = ""
+        in_memory_session.add(u2)
+        in_memory_session.commit()
+        in_memory_session.refresh(u2)
+
+        in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=42))
+        in_memory_session.add(UserHiddenBook(user_id=u2.id, book_id=42))
+        in_memory_session.commit()  # must NOT raise; constraint is per-user
+
+        rows = in_memory_session.query(UserHiddenBook).filter(
+            UserHiddenBook.book_id == 42).all()
+        assert len(rows) == 2
+
+    def test_different_books_for_same_user(self, in_memory_session, user_alice):
+        for bid in [1, 2, 3, 100, 9999]:
+            in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=bid))
+        in_memory_session.commit()
+
+        rows = in_memory_session.query(UserHiddenBook).filter(
+            UserHiddenBook.user_id == user_alice.id).all()
+        assert len(rows) == 5
+
+
+@pytest.mark.unit
+class TestCommonFiltersHiddenBranch:
+    """common_filters() must accept and apply allow_show_hidden. The
+    filter expression is what excludes hidden books from index, search,
+    OPDS, and shelf listings. Source-pin the contract; full SQLAlchemy
+    semantics are exercised in integration tests."""
+
+    def test_signature_accepts_allow_show_hidden(self):
+        from cps.db import CalibreDB
+        sig = inspect.signature(CalibreDB.common_filters)
+        assert "allow_show_hidden" in sig.parameters, (
+            "common_filters must expose allow_show_hidden so the /hidden "
+            "listing can bypass the exclusion (otherwise users couldn't "
+            "see what they hid in order to unhide it)"
+        )
+        assert sig.parameters["allow_show_hidden"].default is False, (
+            "default must be False so existing callers keep excluding hidden books"
+        )
+
+    def test_source_queries_user_hidden_book_table(self):
+        """Pin that the implementation actually reads UserHiddenBook —
+        not just adds a no-op `true()` placeholder."""
+        from pathlib import Path
+        repo_root = Path(__file__).resolve().parent.parent.parent
+        src = (repo_root / "cps" / "db.py").read_text()
+        assert "ub.UserHiddenBook" in src, (
+            "common_filters must query ub.UserHiddenBook to compute the "
+            "exclusion list — see fork issue #64"
+        )
+        assert "allow_show_hidden" in src, (
+            "common_filters must reference allow_show_hidden — pinned by signature test"
+        )
+
+    def test_filter_returned_includes_hidden_filter_when_user_has_hidden_books(
+            self, in_memory_session, user_alice):
+        """End-to-end: with a hidden book and current_user=alice, the
+        filter expression returned by common_filters must produce a SQL
+        clause that excludes that book id."""
+        from cps import db as cps_db
+        in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=42))
+        in_memory_session.add(UserHiddenBook(user_id=user_alice.id, book_id=99))
+        in_memory_session.commit()
+
+        # Build a CalibreDB stub just enough to exercise common_filters'
+        # branches that don't depend on the calibre-side metadata.db.
+        cdb = MagicMock(spec=cps_db.CalibreDB)
+        cdb.config = MagicMock(config_restricted_column=0)
+
+        mock_user = MagicMock()
+        mock_user.id = user_alice.id
+        mock_user.is_anonymous = False
+        mock_user.filter_language.return_value = "all"
+        mock_user.list_denied_tags.return_value = ['']
+        mock_user.list_allowed_tags.return_value = ['']
+        mock_user.allowed_column_value = ''
+        mock_user.denied_column_value = ''
+
+        with patch("cps.db.current_user", mock_user), \
+                patch("cps.db.ub", MagicMock(
+                    session=in_memory_session,
+                    UserHiddenBook=UserHiddenBook,
+                    ArchivedBook=MagicMock(),
+                )):
+            # ub.session.query returns SQLAlchemy results for
+            # UserHiddenBook (real session) and a stub for ArchivedBook
+            # (no rows, returns []).
+            real_session = in_memory_session
+            mock_session = MagicMock()
+            archived_query = MagicMock()
+            archived_query.filter.return_value.filter.return_value.all.return_value = []
+
+            def _query(model):
+                if model is UserHiddenBook:
+                    return real_session.query(model)
+                return archived_query
+            mock_session.query.side_effect = _query
+
+            with patch("cps.db.ub.session", mock_session):
+                # Bypass full CalibreDB init; call as bound method.
+                filter_expr = cps_db.CalibreDB.common_filters(cdb)
+
+        # The filter expression is a SQLAlchemy AND clause. The presence
+        # of the hidden book ids in the .compile()d SQL is what we pin.
+        compiled = str(filter_expr.compile(compile_kwargs={"literal_binds": True}))
+        # Both hidden book ids appear in the NOT IN clause:
+        assert "42" in compiled
+        assert "99" in compiled
+        assert "NOT IN" in compiled.upper()
+
+
+@pytest.mark.unit
+class TestHideRouteShape:
+    """Source-level pins on the Flask routes — they must exist and use
+    the right HTTP verbs / paths so OPDS clients and the detail-page JS
+    handler can rely on them."""
+
+    def test_toggle_hidden_route_is_post_only(self):
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent.parent.parent / "cps" / "web.py").read_text()
+        assert '/ajax/togglehidden/<int:book_id>' in src, (
+            "POST /ajax/togglehidden/<book_id> must exist for the detail-page Hide button"
+        )
+        # Pin that it's POST-only (not GET — would be CSRF-relevant if mistakenly added)
+        import re
+        m = re.search(
+            r'@web\.route\("/ajax/togglehidden/<int:book_id>",\s*methods=\[([^\]]+)\]\)',
+            src,
+        )
+        assert m is not None, "togglehidden route declaration not found in expected shape"
+        assert "'POST'" in m.group(1) or '"POST"' in m.group(1)
+
+    def test_hidden_listing_route_dispatch_is_present(self):
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent.parent.parent / "cps" / "web.py").read_text()
+        assert 'data == "hidden"' in src, (
+            "The data-dispatch must include the 'hidden' branch so /hidden URL renders"
+        )
+        assert "render_hidden_books(" in src, (
+            "render_hidden_books helper must be invoked by the dispatch"
+        )
+
+    def test_render_hidden_books_uses_allow_show_hidden(self):
+        """The /hidden listing must bypass the hidden-book exclusion or
+        users can never see what they hid (defeats the whole feature)."""
+        from pathlib import Path
+        src = (Path(__file__).resolve().parent.parent.parent / "cps" / "web.py").read_text()
+        import re
+        match = re.search(
+            r"def render_hidden_books\(.*?\n(?=\n\ndef |\nclass |\Z)",
+            src, re.DOTALL,
+        )
+        assert match is not None, "render_hidden_books function not found"
+        body = match.group(0)
+        assert "allow_show_hidden=True" in body, (
+            "render_hidden_books must pass allow_show_hidden=True to the helper"
+        )

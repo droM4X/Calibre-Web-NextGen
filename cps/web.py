@@ -220,6 +220,35 @@ def toggle_archived(book_id):
     return ""
 
 
+# Per-user hidden books — fork issue #64. Hide removes the book from index
+# pages, search, OPDS feeds, and shelf listings for the calling user only;
+# /hidden lists hidden books with an unhide button. Distinct from archive
+# (which is sync-pause semantics). See common_filters() in cps/db.py.
+@web.route("/ajax/togglehidden/<int:book_id>", methods=['POST'])
+@user_login_required
+def toggle_hidden(book_id):
+    if current_user.is_anonymous:
+        abort(403)
+    existing = ub.session.query(ub.UserHiddenBook).filter(
+        ub.UserHiddenBook.user_id == int(current_user.id),
+        ub.UserHiddenBook.book_id == int(book_id),
+    ).first()
+    if existing:
+        ub.session.delete(existing)
+        ub.session.commit()
+        log.debug("Book %d unhidden for user %s", book_id, current_user.name)
+    else:
+        row = ub.UserHiddenBook(user_id=int(current_user.id), book_id=int(book_id))
+        ub.session.add(row)
+        try:
+            ub.session.commit()
+        except Exception as ex:
+            ub.session.rollback()
+            log.debug("toggle_hidden insert failed (likely race / dup): %s", ex)
+        log.debug("Book %d hidden for user %s", book_id, current_user.name)
+    return ""
+
+
 @web.route("/ajax/view", methods=["POST"])
 @login_required_if_no_ano
 def update_view():
@@ -465,6 +494,8 @@ def render_books_list(data, sort_param, book_id, page):
         return render_language_books(page, book_id, order)
     elif data == "archived":
         return render_archived_books(page, order)
+    elif data == "hidden":
+        return render_hidden_books(page, order)
     elif data == "search":
         term = request.args.get('query', None)
         offset = int(int(config.config_books_per_page) * (page - 1))
@@ -881,6 +912,30 @@ def render_archived_books(page, sort_param):
 
     name = _('Archived Books') + ' (' + str(len(archived_book_ids)) + ')'
     page_name = "archived"
+    return render_title_template('index.html', random=random, entries=entries, pagination=pagination,
+                                 title=name, page=page_name, order=sort_param[1])
+
+
+def render_hidden_books(page, sort_param):
+    """List the current user's hidden books — fork issue #64. Mirrors
+    render_archived_books: the listing has to bypass the
+    common_filters() hidden-book exclusion (otherwise users couldn't see
+    what they hid in order to unhide it), so we pass
+    `allow_show_hidden=True` through the helper."""
+    order = sort_param[0] or []
+    hidden_books = (ub.session.query(ub.UserHiddenBook)
+                    .filter(ub.UserHiddenBook.user_id == int(current_user.id))
+                    .all())
+    hidden_book_ids = [h.book_id for h in hidden_books]
+
+    hidden_filter = db.Books.id.in_(hidden_book_ids)
+
+    entries, random, pagination = calibre_db.fill_indexpage_with_archived_books(
+        page, db.Books, 0, hidden_filter, order, False, True,
+        config.config_read_column, allow_show_hidden=True)
+
+    name = _('Hidden Books') + ' (' + str(len(hidden_book_ids)) + ')'
+    page_name = "hidden"
     return render_title_template('index.html', random=random, entries=entries, pagination=pagination,
                                  title=name, page=page_name, order=sort_param[1])
 
@@ -3011,6 +3066,15 @@ def show_book(book_id):
         cwa_db = CWA_DB()
         cwa_settings = cwa_db.cwa_settings
 
+        # Per-user hide state — fork issue #64. Logged-in users see a Hide
+        # button on the detail page; the toggle endpoint flips the row.
+        is_hidden = False
+        if not current_user.is_anonymous:
+            is_hidden = ub.session.query(ub.UserHiddenBook).filter(
+                ub.UserHiddenBook.user_id == int(current_user.id),
+                ub.UserHiddenBook.book_id == int(book_id),
+            ).first() is not None
+
         return render_title_template('detail.html',
                                      entry=entry,
                                      cc=cc,
@@ -3020,6 +3084,7 @@ def show_book(book_id):
                                      cwa_settings=cwa_settings,
                                      kosync_progress=kosync_progress,
                                      kosync_progress_timestamp=kosync_progress_timestamp,
+                                     is_hidden=is_hidden,
                                      page="book")
     else:
         log.debug("Selected book is unavailable. File does not exist or is not accessible")
