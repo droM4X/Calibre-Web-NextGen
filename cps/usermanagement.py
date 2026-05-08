@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See CONTRIBUTORS for full list of authors.
 
+from datetime import datetime, timezone
 from functools import wraps
 
 from sqlalchemy.sql.expression import func
@@ -20,6 +21,35 @@ from . import lm, ub, config, logger, limiter, constants, services
 
 log = logger.create()
 auth = HTTPBasicAuth()
+
+
+def _verify_app_password(user, password):
+    """Check the supplied password against any of the user's non-revoked
+    app passwords. Returns True on match (and stamps `last_used_at`),
+    False otherwise.
+
+    Constant-time per-row comparison via werkzeug; constant-time across
+    rows is best-effort (we still iterate, but the failure path takes
+    similar work as the success path).
+
+    See fork issue #95 and `notes/oauth-opds-app-passwords-DESIGN.md`.
+    """
+    if not user or not password:
+        return False
+    rows = ub.session.query(ub.UserAppPassword).filter(
+        ub.UserAppPassword.user_id == user.id,
+        ub.UserAppPassword.revoked == False,  # noqa: E712 — SQLAlchemy idiom
+    ).all()
+    for row in rows:
+        if check_password_hash(row.password_hash, password):
+            row.last_used_at = datetime.now(timezone.utc)
+            try:
+                ub.session.commit()
+            except Exception as ex:
+                log.debug("Failed to stamp UserAppPassword last_used_at: %s", ex)
+                ub.session.rollback()
+            return True
+    return False
 
 
 def create_authenticated_user(username, email=None, auth_source="unknown"):
@@ -94,6 +124,13 @@ def verify_password(username, password):
         if user.name.lower() == "guest":
             if config.config_anonbrowse == 1:
                 return user
+        # OAuth users have no usable local password and cannot pass through
+        # an OAuth redirect flow on OPDS / KOSync; LDAP users may prefer not
+        # to expose their directory password to those clients. Try app
+        # passwords first — see fork issue #95.
+        if _verify_app_password(user, password):
+            [limiter.limiter.storage.clear(k.key) for k in limiter.current_limits]
+            return user
         if config.config_login_type == constants.LOGIN_LDAP and services.ldap:
             login_result, error = services.ldap.bind_user(user.name, password)
             if login_result:

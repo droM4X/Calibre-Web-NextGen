@@ -2781,7 +2781,59 @@ def profile():
                                  title=_(f"{current_user.name.capitalize()}'s Profile", name=current_user.name),
                                  page="me",
                                  registered_oauth=local_oauth_check,
-                                 oauth_status=oauth_status)
+                                 oauth_status=oauth_status,
+                                 app_passwords=ub.session.query(ub.UserAppPassword).filter(
+                                     ub.UserAppPassword.user_id == current_user.id,
+                                     ub.UserAppPassword.revoked == False,  # noqa: E712
+                                 ).order_by(ub.UserAppPassword.created_at.desc()).all())
+
+
+# App passwords — fork issue #95 / CWA #1269. Per-user labeled tokens for HTTP Basic auth
+# on OPDS / KOSync, since OAuth users have no usable local password and LDAP users may
+# prefer not to expose their directory password. Cleartext shown once at create time via
+# Flask flash; only the werkzeug hash is persisted. See `notes/oauth-opds-app-passwords-DESIGN.md`.
+
+import secrets as _secrets
+
+
+@web.route("/me/app-passwords", methods=["POST"])
+@user_login_required
+def app_password_create():
+    label = (request.form.get("label") or "").strip()
+    if not label or len(label) > 64:
+        flash(_("App-password label must be 1-64 characters."), category="error")
+        return redirect(url_for("web.profile"))
+    if current_user.role_anonymous():
+        abort(403)
+    cleartext = _secrets.token_urlsafe(32)
+    row = ub.UserAppPassword(
+        user_id=current_user.id,
+        label=label,
+        password_hash=generate_password_hash(cleartext),
+    )
+    ub.session.add(row)
+    ub.session.commit()
+    # Cleartext shown exactly once. The user must copy it now.
+    flash(_("App password created for '%(label)s'. Copy it now — you won't see it again: %(token)s",
+            label=label, token=cleartext), category="info")
+    return redirect(url_for("web.profile"))
+
+
+@web.route("/me/app-passwords/<int:app_password_id>/revoke", methods=["POST"])
+@user_login_required
+def app_password_revoke(app_password_id):
+    if current_user.role_anonymous():
+        abort(403)
+    row = ub.session.query(ub.UserAppPassword).filter(
+        ub.UserAppPassword.id == app_password_id,
+        ub.UserAppPassword.user_id == current_user.id,  # scope to caller — never leak revoke across users
+    ).first()
+    if row is None:
+        abort(404)
+    row.revoked = True
+    ub.session.commit()
+    flash(_("App password '%(label)s' revoked.", label=row.label), category="info")
+    return redirect(url_for("web.profile"))
 
 
 # ###################################Show single book ##################################################################

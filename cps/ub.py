@@ -403,6 +403,31 @@ class User_Sessions(Base):
         self.expiry = expiry
 
 
+class UserAppPassword(Base):
+    """Per-user app passwords for HTTP Basic auth on OPDS / KOSync endpoints.
+
+    OAuth users (Authentik / Authelia / Keycloak) can authenticate to the web UI
+    via the IdP redirect flow but have no usable password for HTTP Basic auth.
+    LDAP users may prefer not to expose their directory password to OPDS / KOSync
+    clients. App passwords let any user mint a long random token bound to a
+    label (e.g. "Kobo", "KOReader iPad"); the cleartext is shown once at create
+    time and then only its `werkzeug` hash is stored.
+
+    See `notes/oauth-opds-app-passwords-DESIGN.md` and fork issue #95.
+    """
+    __tablename__ = 'user_app_password'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('user.id', ondelete='CASCADE'),
+                     nullable=False, index=True)
+    label = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False,
+                        default=lambda: datetime.now(timezone.utc))
+    last_used_at = Column(DateTime)
+    revoked = Column(Boolean, nullable=False, default=False)
+
+
 # Baseclass representing Shelfs in calibre-web in app.db
 class Shelf(Base):
     __tablename__ = 'shelf'
