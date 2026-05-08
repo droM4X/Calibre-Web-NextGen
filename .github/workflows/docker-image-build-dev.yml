@@ -1,8 +1,14 @@
 name: Build & Push - Dev - Split Strategy
-# Automatically builds and pushes a multi-platform dev image based on commits involving key files in any branch
+# Builds + pushes a multi-platform dev image. Pushes to GHCR always;
+# also pushes to DockerHub when the operator has set the repo variable
+# DOCKERHUB_PUSH_ENABLED='true' AND the secrets DOCKERHUB_USERNAME +
+# DOCKERHUB_PA_TOKEN are present. Without those, the workflow runs in
+# GHCR-only mode — useful on the standalone fork where DockerHub
+# credentials don't exist. Earlier runs failed at the DockerHub login
+# step because the secrets were empty; this gating fixes that.
 
 on:
-  workflow_dispatch:  # disabled auto-trigger — needs DockerHub/Discord secrets we don't have on the standalone repo
+  workflow_dispatch:  # auto-trigger disabled by intent; operator dispatches manually
 jobs:
   # --------------------------------------------------------------------------------
   # JOB 1: Build Intel (amd64) on GitHub Runners
@@ -46,6 +52,9 @@ jobs:
 
       # --- 2. Logins ---
       - name: DockerHub Login
+        # Skipped on the standalone fork where DOCKERHUB secrets aren't set.
+        # Operator opts in by setting repo variable DOCKERHUB_PUSH_ENABLED='true'.
+        if: vars.DOCKERHUB_PUSH_ENABLED == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -64,6 +73,16 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Compose docker outputs (GHCR always; DockerHub when opted-in)
+        run: |
+          GHCR_LINE="type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }},push-by-digest=true,name-canonical=true,push=true"
+          if [ "${{ vars.DOCKERHUB_PUSH_ENABLED }}" = "true" ]; then
+            DH_LINE="type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated,push-by-digest=true,name-canonical=true,push=true"
+            printf 'DOCKER_BUILD_OUTPUTS<<EOF\n%s\n%s\nEOF\n' "$DH_LINE" "$GHCR_LINE" >> "$GITHUB_ENV"
+          else
+            printf 'DOCKER_BUILD_OUTPUTS<<EOF\n%s\nEOF\n' "$GHCR_LINE" >> "$GITHUB_ENV"
+          fi
+
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v7
@@ -76,9 +95,10 @@ jobs:
           # CACHE STRATEGY: Use GitHub Actions Cache (Ephemeral Runner)
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          outputs: |
-            type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated,push-by-digest=true,name-canonical=true,push=true
-            type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }},push-by-digest=true,name-canonical=true,push=true
+          # GHCR is always a target. DockerHub is added by the
+          # "Compose docker outputs" step above, which conditionally
+          # includes the DockerHub image name when DOCKERHUB_PUSH_ENABLED.
+          outputs: ${{ env.DOCKER_BUILD_OUTPUTS }}
           build-args: |
             BUILD_DATE=${{ github.event.repository.updated_at }}
             VERSION=DEV_BUILD-${{ env.IMAGE_TAG }}-${{ vars.CURRENT_DEV_BUILD_NUM }}
@@ -141,6 +161,9 @@ jobs:
 
       # --- 2. Logins ---
       - name: DockerHub Login
+        # Skipped on the standalone fork where DOCKERHUB secrets aren't set.
+        # Operator opts in by setting repo variable DOCKERHUB_PUSH_ENABLED='true'.
+        if: vars.DOCKERHUB_PUSH_ENABLED == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -159,6 +182,16 @@ jobs:
         with:
           driver-opts: network=host
 
+      - name: Compose docker outputs (GHCR always; DockerHub when opted-in)
+        run: |
+          GHCR_LINE="type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }},push-by-digest=true,name-canonical=true,push=true"
+          if [ "${{ vars.DOCKERHUB_PUSH_ENABLED }}" = "true" ]; then
+            DH_LINE="type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated,push-by-digest=true,name-canonical=true,push=true"
+            printf 'DOCKER_BUILD_OUTPUTS<<EOF\n%s\n%s\nEOF\n' "$DH_LINE" "$GHCR_LINE" >> "$GITHUB_ENV"
+          else
+            printf 'DOCKER_BUILD_OUTPUTS<<EOF\n%s\nEOF\n' "$GHCR_LINE" >> "$GITHUB_ENV"
+          fi
+
       - name: Build and push by digest
         id: build
         uses: docker/build-push-action@v7
@@ -172,9 +205,10 @@ jobs:
           # Saves bandwidth and time by storing cache directly on the Oracle VM
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          outputs: |
-            type=image,name=${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated,push-by-digest=true,name-canonical=true,push=true
-            type=image,name=ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }},push-by-digest=true,name-canonical=true,push=true
+          # GHCR is always a target. DockerHub is added by the
+          # "Compose docker outputs" step below, which conditionally
+          # includes the DockerHub image name when DOCKERHUB_PUSH_ENABLED.
+          outputs: ${{ env.DOCKER_BUILD_OUTPUTS }}
           build-args: |
             BUILD_DATE=${{ github.event.repository.updated_at }}
             VERSION=DEV_BUILD-${{ env.IMAGE_TAG }}-${{ vars.CURRENT_DEV_BUILD_NUM }}
@@ -259,6 +293,9 @@ jobs:
 
       # --- 2. Logins ---
       - name: DockerHub Login
+        # Skipped on the standalone fork where DOCKERHUB secrets aren't set.
+        # Operator opts in by setting repo variable DOCKERHUB_PUSH_ENABLED='true'.
+        if: vars.DOCKERHUB_PUSH_ENABLED == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -285,13 +322,17 @@ jobs:
       - name: Create manifest list and push
         working-directory: /tmp/digests
         run: |
-          # 1. Push to DockerHub (Both Tags)
-          docker buildx imagetools create \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated:${{ env.FLOAT_TAG }} \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated:${{ env.UNIQUE_TAG }} \
-            $(printf '${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated@sha256:%s ' *)
-          
-          # 2. Push to GHCR (Both Tags)
+          # 1. Push to DockerHub (only when DOCKERHUB_PUSH_ENABLED) — both tags
+          if [ "${{ vars.DOCKERHUB_PUSH_ENABLED }}" = "true" ]; then
+            docker buildx imagetools create \
+              -t ${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated:${{ env.FLOAT_TAG }} \
+              -t ${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated:${{ env.UNIQUE_TAG }} \
+              $(printf '${{ secrets.DOCKERHUB_USERNAME }}/calibre-web-automated@sha256:%s ' *)
+          else
+            echo "DOCKERHUB_PUSH_ENABLED is not 'true' — skipping DockerHub manifest push (GHCR-only mode)."
+          fi
+
+          # 2. Push to GHCR (Both Tags) — always
           docker buildx imagetools create \
             -t ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }}:${{ env.FLOAT_TAG }} \
             -t ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }}:${{ env.UNIQUE_TAG }} \

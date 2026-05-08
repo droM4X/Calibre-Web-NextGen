@@ -114,16 +114,23 @@ jobs:
   integration-tests:
     name: Integration Tests (Docker)
     runs-on: ubuntu-latest
-    # Advisory only — does NOT gate merging. Failures here are surfaced
-    # to test-summary which decides workflow conclusion based on the
-    # mandatory fast-tests job. Network/PPA flakiness here will not red
-    # the workflow.
-    continue-on-error: true
-    # Only run on merge to main/dev OR manual dispatch with flag
+    # Tier-2 auto-merge requires Integration Tests as a hard gate — small
+    # code changes still need to clear the actual ingest/Calibre flow.
+    # We keep the broad-PR exemption: tier-1 (.po / *.md) PRs and PRs
+    # without a tier label don't pay the 15-minute integration cost.
+    # On main / dev pushes the job stays advisory so flaky-network failures
+    # don't block downstream auto-revert decisions. On tier-2 PRs the job
+    # is mandatory.
+    continue-on-error: ${{ !contains(github.event.pull_request.labels.*.name, 'safe-tier-2') }}
+    # Run on:
+    # - merge to main / dev (advisory)
+    # - manual dispatch with flag
+    # - any PR labeled safe-tier-2 (gating)
     if: |
       github.ref == 'refs/heads/main' ||
       github.ref == 'refs/heads/dev' ||
-      (github.event_name == 'workflow_dispatch' && inputs.run_integration)
+      (github.event_name == 'workflow_dispatch' && inputs.run_integration) ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'safe-tier-2'))
     
     steps:
       - name: Checkout code
