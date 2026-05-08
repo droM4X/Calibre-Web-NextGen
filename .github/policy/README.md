@@ -4,7 +4,7 @@ Policy values that multiple consumers (workflows, scripts, tests, docs) need to 
 
 ## Files
 
-### `tier-policy.env`
+### `tier-policy.config`
 
 Auto-merge tier policy. Sourceable shell with simple `KEY=VALUE` lines (no interpolation, no functions). Currently consumed by:
 
@@ -22,12 +22,12 @@ Single source of truth here, doc references it by path-and-line. If a value need
 
 ## How to add a new policy value
 
-1. Add the new `KEY=VALUE` line to the relevant `.env` file with a comment explaining what it gates.
-2. Update each consumer to read it. For shell consumers, that's `source .github/policy/tier-policy.env`. For Python (e.g., `triage-prs.sh`'s embedded Python), read the file with a small parser:
+1. Add the new `KEY=VALUE` line to the relevant `.config` file with a comment explaining what it gates.
+2. Update each consumer to read it. For shell consumers, that's `source .github/policy/tier-policy.config`. For Python (e.g., `triage-prs.sh`'s embedded Python), read the file with a small parser:
    ```python
    import os, re
    policy = {}
-   with open(".github/policy/tier-policy.env") as fh:
+   with open(".github/policy/tier-policy.config") as fh:
        for line in fh:
            m = re.match(r"^([A-Z_]+)='?(.*?)'?$", line.strip())
            if m: policy[m.group(1)] = m.group(2)
@@ -37,7 +37,7 @@ Single source of truth here, doc references it by path-and-line. If a value need
 
 ## How to change an existing policy value
 
-1. Update the value in the `.env` file.
+1. Update the value in the `.config` file.
 2. Run `bash tests/autopilot/test_tier_policy.sh` to confirm parseability.
 3. Run `bash scripts/autopilot-tick.sh` (with `AUTOPILOT_NO_LLM=1`) to confirm the triage script still loads cleanly.
 4. Open a PR labeled `needs-review` — policy changes never auto-merge.
