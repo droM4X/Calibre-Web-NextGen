@@ -1253,6 +1253,28 @@ def save_cover_with_thumbnail_update(img, book_path, book_id=None):
 
 
 def do_download_file(book, book_format, client, data, headers):
+    # Fork issue #103 / mirrors janeczku/calibre-web#3274. Validate inputs so a
+    # malformed call (None book_format, or a Data row with a NULL `name` because
+    # the calibre.db is anomalous) surfaces as a clean 400 with a diagnostic log
+    # line instead of a 500 from `None + "."` deeper inside this function.
+    # Both `data.name` (book_name) and `book_format` are concatenated into a
+    # filename in five places below; one None propagates everywhere.
+    if not data or not getattr(data, 'name', None):
+        log.error(
+            "do_download_file: Data row has no usable name "
+            "(book_id=%s, format=%s) — calibre.db `data` row is missing "
+            "the `name` column. Aborting 400.",
+            getattr(book, 'id', '?'), book_format,
+        )
+        abort(400)
+    if not isinstance(book_format, str) or not book_format:
+        log.error(
+            "do_download_file: book_format is not a non-empty string "
+            "(book_id=%s, got=%r). Aborting 400.",
+            getattr(book, 'id', '?'), book_format,
+        )
+        abort(400)
+
     book_name = data.name
     download_name = filename = None
     metadata_was_embedded = False  # Track if we embedded metadata
