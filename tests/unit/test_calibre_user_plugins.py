@@ -136,6 +136,175 @@ class TestCalibreUserPluginsHelper:
 
 
 @pytest.mark.unit
+class TestAutoRegisterPlugins:
+    """Auto-registration is the load-bearing piece for CWA #243.
+
+    Without it, dropping a .zip into the plugins folder is inert —
+    calibre needs `calibre-customize -a <zip>` to record the plugin in
+    its customize.py.json registry. Users on upstream CWA #243
+    repeatedly reported 'copied the plugin folder, nothing happens'
+    because of this gap. The bootstrap now runs the registration step
+    on first boot.
+    """
+
+    def test_disabled_returns_empty(self, clean_env, tmp_path):
+        # No env var set
+        result = calibre_user_plugins.auto_register_plugins(
+            calibre_customize_binary="/nonexistent"
+        )
+        assert result == []
+
+    def test_no_plugins_dir_returns_empty(self, clean_env, tmp_path, monkeypatch):
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        # Point _HOME at an empty tmp; plugins/ doesn't exist
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        monkeypatch.setattr(
+            calibre_user_plugins, "_CUSTOMIZE_JSON",
+            tmp_path / ".config" / "calibre" / "customize.py.json",
+        )
+        result = calibre_user_plugins.auto_register_plugins(
+            calibre_customize_binary="/nonexistent"
+        )
+        assert result == []
+
+    def test_already_registered_short_circuits(
+            self, clean_env, tmp_path, monkeypatch):
+        """Once customize.py.json has plugin entries, skip the scan to
+        avoid re-running calibre-customize -a on every boot."""
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        # Pre-populate the registry as if we'd registered before
+        registry_path.parent.mkdir(parents=True, exist_ok=True)
+        registry_path.write_text('{"plugins": {"DeDRM": "/some/path.zip"}}')
+        # Drop a fresh .zip in plugins/
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        (plugins_dir / "fake_plugin.zip").write_bytes(b"PK\x03\x04")
+        # Should short-circuit because registry has entries
+        result = calibre_user_plugins.auto_register_plugins(
+            calibre_customize_binary="/nonexistent"
+        )
+        assert result == []
+
+    def test_first_boot_invokes_calibre_customize_per_zip(
+            self, clean_env, tmp_path, monkeypatch):
+        """On a fresh container, every .zip in plugins/ should trigger
+        a calibre-customize -a call. This is the regression vector for
+        CWA #243 — without it, users see the plugin in the folder but
+        calibre never loads it at conversion time."""
+        from unittest.mock import patch, MagicMock
+
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        (plugins_dir / "DeDRM_plugin.zip").write_bytes(b"PK\x03\x04")
+        (plugins_dir / "Obok_plugin.zip").write_bytes(b"PK\x03\x04")
+
+        called_zips = []
+
+        def fake_run(args, **kwargs):
+            called_zips.append(args[2])
+            mock = MagicMock()
+            mock.returncode = 0
+            mock.stdout = "Plugin added: FakePlugin (1, 0, 0)\n"
+            return mock
+
+        with patch("subprocess.run", side_effect=fake_run):
+            result = calibre_user_plugins.auto_register_plugins(
+                calibre_customize_binary="/fake/calibre-customize"
+            )
+
+        assert len(called_zips) == 2, (
+            f"each .zip in plugins/ must trigger one calibre-customize -a "
+            f"call; got {len(called_zips)} calls"
+        )
+        # Ordered by sorted glob — DeDRM before Obok alphabetically
+        assert "DeDRM_plugin.zip" in called_zips[0]
+        assert "Obok_plugin.zip" in called_zips[1]
+        # Both registered → both names returned
+        assert len(result) == 2
+        assert all(name == "FakePlugin (1, 0, 0)" for name in result)
+
+    def test_failed_calibre_customize_doesnt_block_boot(
+            self, clean_env, tmp_path, monkeypatch):
+        """If the binary is missing or returns nonzero, bootstrap should
+        log + continue rather than raise. Container start must not be
+        gated on plugin registration."""
+        from unittest.mock import patch, MagicMock
+
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        (plugins_dir / "fake.zip").write_bytes(b"PK\x03\x04")
+
+        def fake_run_fails(args, **kwargs):
+            mock = MagicMock()
+            mock.returncode = 1
+            mock.stdout = ""
+            mock.stderr = "error: corrupt plugin"
+            return mock
+
+        with patch("subprocess.run", side_effect=fake_run_fails):
+            # Must not raise — boot is best-effort
+            result = calibre_user_plugins.auto_register_plugins(
+                calibre_customize_binary="/fake/calibre-customize"
+            )
+        # Returns empty list — nothing was actually registered
+        assert result == []
+
+    def test_missing_binary_doesnt_raise(
+            self, clean_env, tmp_path, monkeypatch):
+        """`calibre-customize` not present at the configured path
+        (alternate Calibre install, dev container) returns [] cleanly."""
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        (plugins_dir / "fake.zip").write_bytes(b"PK\x03\x04")
+
+        # No mock — actually try to invoke a path that doesn't exist
+        result = calibre_user_plugins.auto_register_plugins(
+            calibre_customize_binary="/this/path/does/not/exist"
+        )
+        assert result == []
+
+    def test_registered_plugin_names_parses_customize_json(
+            self, clean_env, tmp_path, monkeypatch):
+        registry_path = tmp_path / "customize.py.json"
+        registry_path.write_text(
+            '{"plugins": {"DeDRM": "/p/dedrm.zip", "Obok DeDRM": "/p/obok.zip"}}'
+        )
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        names = calibre_user_plugins._registered_plugin_names()
+        assert names == {"DeDRM", "Obok DeDRM"}
+
+    def test_registered_plugin_names_handles_missing_file(
+            self, clean_env, tmp_path, monkeypatch):
+        monkeypatch.setattr(
+            calibre_user_plugins, "_CUSTOMIZE_JSON", tmp_path / "missing.json"
+        )
+        assert calibre_user_plugins._registered_plugin_names() == set()
+
+    def test_registered_plugin_names_handles_corrupt_json(
+            self, clean_env, tmp_path, monkeypatch):
+        registry_path = tmp_path / "corrupt.json"
+        registry_path.write_text("{not valid json")
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        # Must not raise — return empty set
+        assert calibre_user_plugins._registered_plugin_names() == set()
+
+
+@pytest.mark.unit
 class TestCallSiteWiringSourcePin:
     """Source-pin: every subprocess site that builds a Calibre env must
     delegate to ``calibre_user_plugins.apply_to_env`` rather than

@@ -102,6 +102,100 @@ def ensure_plugins_dir() -> Path | None:
         return None
 
 
+# Path to the calibre customize.py.json registry under our HOME=/config.
+# When a plugin is added via `calibre-customize -a`, calibre records it
+# under the "plugins" key of this file. We use that to detect what's
+# already registered so we don't redundantly re-register on every boot.
+_CUSTOMIZE_JSON = Path(_HOME) / ".config" / "calibre" / "customize.py.json"
+
+
+def _registered_plugin_names() -> set[str]:
+    """Return the set of plugin display names already registered with
+    calibre. Empty set if customize.py.json doesn't exist or can't be
+    parsed."""
+    import json
+    if not _CUSTOMIZE_JSON.is_file():
+        return set()
+    try:
+        data = json.loads(_CUSTOMIZE_JSON.read_text())
+    except (json.JSONDecodeError, OSError):
+        return set()
+    plugins = data.get("plugins", {})
+    if isinstance(plugins, dict):
+        return set(plugins.keys())
+    return set()
+
+
+def auto_register_plugins(
+    calibre_customize_binary: str = "/app/calibre/calibre-customize",
+) -> list[str]:
+    """If enabled, scan the plugins dir for ``*.zip`` files and call
+    ``calibre-customize -a`` on each one with HOME=/config so calibre
+    records it in customize.py.json. Returns the list of plugin names
+    successfully registered this call (could be empty if nothing new).
+
+    Idempotent across reboots — calibre's own internal dedup handles
+    re-registration of the same .zip cleanly. We additionally short-
+    circuit when the registry already has entries to keep boot fast.
+
+    Designed to be called from the container bootstrap (auto_library)
+    after ensure_plugins_dir(). When disabled, returns ``[]`` without
+    touching the filesystem.
+
+    The binary path defaults to the canonical location inside our
+    Docker image (`/app/calibre/calibre-customize`); override for
+    tests or alternate Calibre installs.
+    """
+    import subprocess
+
+    if not is_enabled():
+        return []
+
+    target = plugins_dir()
+    if not target.is_dir():
+        return []
+
+    # On reboots after the first registration pass, calibre has copied
+    # each plugin .zip into the same dir under its display-name (e.g.
+    # `DeDRM_plugin.zip` → `DeDRM.zip`). The operator's original drop
+    # is still there. To avoid spamming calibre-customize -a with files
+    # it has already absorbed, we skip the scan when customize.py.json
+    # already has a non-empty `plugins` dict — operator can manually
+    # register additional plugins later via `docker exec` if they want
+    # to add more without a fresh container start.
+    if _registered_plugin_names():
+        return []
+
+    env = {"HOME": _HOME, "PATH": "/usr/bin:/bin:/app/calibre"}
+    registered: list[str] = []
+    for zip_path in sorted(target.glob("*.zip")):
+        try:
+            result = subprocess.run(
+                [calibre_customize_binary, "-a", str(zip_path)],
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=60,
+                check=False,
+            )
+            if result.returncode == 0:
+                # Calibre prints a final line `Plugin added: <Name> (...)`.
+                # Extract the name to log + return; fall back to filename.
+                for line in (result.stdout or "").splitlines():
+                    if line.startswith("Plugin added:"):
+                        name = line[len("Plugin added:"):].strip()
+                        registered.append(name)
+                        break
+                else:
+                    registered.append(zip_path.stem)
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            # Best-effort. A missing calibre-customize binary or hung
+            # subprocess shouldn't block container boot. The operator
+            # can still manually register via docker exec later.
+            continue
+    return registered
+
+
 def env_var_name() -> str:
     """Public accessor so tests / docs can reference the canonical name
     without re-defining it."""

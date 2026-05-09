@@ -160,10 +160,17 @@ class AutoLibrary:
         return
 
     def bootstrap_calibre_user_plugins_dir(self):
-        """Create /config/.config/calibre/plugins when the operator has
-        opted in via CWA_CALIBRE_USER_PLUGINS, so they have a destination
-        ready for their plugin .zip files. No-op when disabled. Closes
-        upstream CWA #243."""
+        """Create /config/.config/calibre/plugins and auto-register any
+        .zip files the operator dropped there. No-op when the env var
+        CWA_CALIBRE_USER_PLUGINS isn't set. Closes upstream CWA #243.
+
+        Auto-registration runs `calibre-customize -a` per .zip with
+        HOME=/config so calibre persists the plugin into its
+        customize.py.json registry. Without this step, just having a
+        .zip in the plugins folder doesn't make calibre load it during
+        ingest — the user-visible symptom previous CWA users hit on
+        upstream #243 ('I copied the plugin folder, nothing happens').
+        """
         try:
             _CPS_ROOT = "/app/calibre-web-automated"
             if _CPS_ROOT not in sys.path:
@@ -189,12 +196,45 @@ class AutoLibrary:
                 subprocess.run(["chown", "-R", "abc:abc", str(target)], check=False)
         except Exception as e:
             print(f"[cwa-auto-library] chown of {target} failed: {e}", flush=True)
-        print(
-            f"[cwa-auto-library] CWA_CALIBRE_USER_PLUGINS is enabled. "
-            f"Drop your Calibre plugin .zip files into {target} and "
-            f"restart the container; ingest subprocesses will load them.",
-            flush=True,
-        )
+
+        # Auto-register any .zip files the operator dropped in. First-
+        # boot only — once calibre's customize.py.json has entries, we
+        # skip the scan to keep boot fast. Operator can add more later
+        # via `docker exec calibre-web /app/calibre/calibre-customize -a
+        # /config/.config/calibre/plugins/<new>.zip`.
+        registered = calibre_user_plugins.auto_register_plugins()
+        if registered:
+            for name in registered:
+                print(f"[cwa-auto-library] Registered Calibre plugin: {name}", flush=True)
+            # After registration, fix ownership again — calibre may have
+            # copied the .zip into HOME=/config under root if cont-init
+            # ran as root; persist abc:abc on the calibre dir so the
+            # service user can read it.
+            try:
+                nsm = os.getenv("NETWORK_SHARE_MODE", "false").strip().lower() in ("1", "true", "yes", "on")
+                if not nsm:
+                    subprocess.run(
+                        ["chown", "-R", "abc:abc", "/config/.config/calibre"],
+                        check=False,
+                    )
+            except Exception:
+                pass
+        else:
+            zip_count = len(list(target.glob("*.zip")))
+            if zip_count == 0:
+                print(
+                    f"[cwa-auto-library] CWA_CALIBRE_USER_PLUGINS is enabled. "
+                    f"Drop your Calibre plugin .zip files into {target} and "
+                    f"restart the container; they'll be auto-registered.",
+                    flush=True,
+                )
+            else:
+                print(
+                    f"[cwa-auto-library] CWA_CALIBRE_USER_PLUGINS is enabled "
+                    f"and {zip_count} plugin .zip(s) are in {target}. "
+                    f"Already registered (skipping auto-register).",
+                    flush=True,
+                )
 
 
 if __name__ == '__main__':
