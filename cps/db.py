@@ -44,6 +44,13 @@ from .string_helper import strip_whitespaces
 
 log = logger.create()
 
+# Rate-limit author-sort drift diagnostics. Books.author_sort is denormalized
+# from Authors.sort and can drift after an Authors edit; the divergence is
+# visual-only (within-book ordering falls back to Authors.id), but the log
+# fires from every page render. Module-level set so we warn once per process
+# per drifted sort string. See fork issue #108.
+_AUTHOR_SORT_DRIFT_WARNED: set = set()
+
 cc_exceptions = ['composite', 'series']
 cc_classes = {}
 
@@ -1120,11 +1127,21 @@ class CalibreDB:
                 if not auth:
                     continue
                 results = self.session.query(Authors).filter(Authors.sort == auth).all()
-                # ToDo: How to handle not found author name
                 if not len(results):
-                    log.error("Author '{}' not found to display name in right order".format(auth))
-                    # error = True
-                    break
+                    # Books.author_sort drifted from Authors.sort. Warn once
+                    # per process per author so the log doesn't fill on every
+                    # page render. The unmatched author still appears in the
+                    # book — it falls through to the Authors.id loop below
+                    # (continue, not break, so other authors on this same
+                    # book that DO have a valid sort still get ordered).
+                    if auth not in _AUTHOR_SORT_DRIFT_WARNED:
+                        _AUTHOR_SORT_DRIFT_WARNED.add(auth)
+                        log.warning(
+                            "Author sort '%s' from Books.author_sort has no "
+                            "match in Authors.sort. Falling back to Authors.id "
+                            "order for this author. To fix: edit the author in "
+                            "the admin UI so Authors.sort matches.", auth)
+                    continue
                 for r in results:
                     if r.id in ids:
                         authors_ordered.append(r)
