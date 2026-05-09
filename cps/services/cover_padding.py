@@ -16,12 +16,16 @@ This module pads source covers to a target aspect ratio *server-side* so
 the device receives an image that already matches its screen and renders
 edge-to-edge.
 
-Five fill modes:
+Six fill modes:
 
     - "edge_mirror"   - mirror the cover's outer edge into the pad area;
                         feels like a natural continuation of the artwork
     - "edge_blur"     - take the outer edge column/row, stretch it across
                         the pad area, blur heavily; soft "bokeh" border
+    - "gradient"      - top-to-bottom gradient between the cover's top-edge
+                        dominant color and bottom-edge dominant color;
+                        looks "designed" and palette-matched without the
+                        edge-replication artifacts of mirror/blur
     - "average"       - solid pad, color = average pixel of the cover
     - "dominant"      - solid pad, color = quantized-mode pixel
     - "manual"        - solid pad, color = a hex string supplied by the
@@ -58,7 +62,7 @@ except (ImportError, RuntimeError):  # ImageMagick missing → degrade gracefull
 
 
 # Public fill-mode identifiers. Anything else falls through to "edge_mirror".
-FILL_MODES = ("edge_mirror", "edge_blur", "average", "dominant", "manual")
+FILL_MODES = ("edge_mirror", "edge_blur", "gradient", "average", "dominant", "manual")
 DEFAULT_FILL_MODE = "edge_mirror"
 
 # 1264:1680 = Libra Color / Libra 2 native; 1072:1448 = Clara family. We
@@ -290,6 +294,86 @@ def _composite_edge_mirror(img, new_w: int, new_h: int, orient: str):
     return canvas
 
 
+def _band_dominant_hex(img, top: int, height: int) -> str:
+    """Dominant color of a horizontal band (top..top+height) of `img`.
+    Used by `gradient` fill mode to sample a palette-matched anchor color
+    without averaging the whole cover. Falls back to the cover's average
+    if anything goes wrong with the crop."""
+    band_h = max(1, min(height, img.height - top))
+    try:
+        with img.clone() as band:
+            band.crop(left=0, top=top, width=img.width, height=band_h)
+            return dominant_color_hex(band)
+    except Exception:
+        return average_color_hex(img)
+
+
+def _composite_gradient(img, new_w: int, new_h: int, orient: str):
+    """Two-color gradient pad. Sample dominant color from the cover's top
+    edge and bottom edge, then fill the pad area with a smooth top-to-bottom
+    gradient between them. Looks 'designed' — colors come from the artwork
+    palette, but the pad area itself is clean (no edge-replication artifacts).
+
+    Best for covers with a strong top/bottom color split (sky-over-ground,
+    title-band-over-art); falls back gracefully on monochromatic covers
+    where the two band colors are nearly identical.
+
+    Wand's ``pseudo='gradient:'`` constructor renders the gradient in C —
+    cheap relative to the per-pixel composites done by mirror/blur.
+    """
+    canvas = Image(width=new_w, height=new_h, background=Color("white"))
+
+    # ~10% of cover height for each sampling band — large enough that the
+    # dominant-color quantization has signal, small enough that it picks up
+    # the actual edge palette rather than the cover's overall mean.
+    band_h = max(2, img.height // 10)
+    top_hex = _band_dominant_hex(img, 0, band_h)
+    bot_hex = _band_dominant_hex(img, max(0, img.height - band_h), band_h)
+    pseudo = "gradient:{}-{}".format(top_hex, bot_hex)
+
+    if orient == "horizontal":
+        pad_total = new_w - img.width
+        left_pad = pad_total // 2
+        right_pad = pad_total - left_pad
+        if left_pad > 0:
+            try:
+                bar = Image(width=left_pad, height=new_h, pseudo=pseudo)
+            except Exception:
+                # Some IM builds reject very narrow gradient widths; fall
+                # back to a solid bar of the top color rather than failing.
+                bar = Image(width=left_pad, height=new_h, background=_hex_to_color(top_hex))
+            try:
+                canvas.composite(bar, left=0, top=0)
+            finally:
+                bar.close()
+        if right_pad > 0:
+            try:
+                bar = Image(width=right_pad, height=new_h, pseudo=pseudo)
+            except Exception:
+                bar = Image(width=right_pad, height=new_h, background=_hex_to_color(top_hex))
+            try:
+                canvas.composite(bar, left=left_pad + img.width, top=0)
+            finally:
+                bar.close()
+        canvas.composite(img, left=left_pad, top=0)
+    else:  # vertical pads — top + bottom
+        pad_total = new_h - img.height
+        top_pad = pad_total // 2
+        bottom_pad = pad_total - top_pad
+        # Top pad: solid top-edge dominant. Bottom pad: solid bottom-edge
+        # dominant. A vertical gradient inside each pad is overkill here
+        # because each pad is short relative to the cover; solid bands tied
+        # to the cover's edge color hide the seam more cleanly.
+        if top_pad > 0:
+            with Image(width=new_w, height=top_pad, background=_hex_to_color(top_hex)) as bar:
+                canvas.composite(bar, left=0, top=0)
+        if bottom_pad > 0:
+            with Image(width=new_w, height=bottom_pad, background=_hex_to_color(bot_hex)) as bar:
+                canvas.composite(bar, left=0, top=top_pad + img.height)
+        canvas.composite(img, left=0, top=top_pad)
+    return canvas
+
+
 def _composite_edge_blur(img, new_w: int, new_h: int, orient: str):
     """Stretch the outer edge across the pad area and blur heavily. A softer,
     bokeh-like alternative to edge_mirror that hides edge artifacts."""
@@ -372,6 +456,8 @@ def pad_blob(blob: bytes, settings: PaddingSettings) -> bytes:
                 padded = _composite_solid(img, new_w, new_h, orient, fill_color)
             elif fill_mode == "edge_blur":
                 padded = _composite_edge_blur(img, new_w, new_h, orient)
+            elif fill_mode == "gradient":
+                padded = _composite_gradient(img, new_w, new_h, orient)
             else:  # edge_mirror (default)
                 padded = _composite_edge_mirror(img, new_w, new_h, orient)
 

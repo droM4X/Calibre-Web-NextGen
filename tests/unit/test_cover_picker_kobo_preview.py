@@ -172,6 +172,42 @@ class TestRenderKoboPreviewDataUrl:
         decoded = base64.b64decode(url.split(",", 1)[1])
         assert decoded[:2] == b"\xff\xd8"
 
+    def test_gradient_mode_renders_a_jpeg(self):
+        # New "gradient" fill mode (operator-requested 2026-05-08): builds a
+        # palette-matched top→bottom gradient on the pad area. Must round-trip
+        # to a valid JPEG.
+        cover_padding = _load_cover_padding()
+        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+            pytest.fail("helper not implemented")
+        if "gradient" not in cover_padding.FILL_MODES:
+            pytest.fail("'gradient' must be a registered fill mode")
+
+        jpeg = _make_jpeg_bytes(width=200, height=300)
+        url = cover_padding.render_kobo_preview_data_url(
+            jpeg, aspect="kobo_libra_color", fill_mode="gradient", color="",
+        )
+        assert url.startswith("data:image/jpeg;base64,")
+        decoded = base64.b64decode(url.split(",", 1)[1])
+        assert decoded[:2] == b"\xff\xd8"
+
+    def test_gradient_mode_produces_target_aspect(self):
+        cover_padding = _load_cover_padding()
+        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+            pytest.fail("helper not implemented")
+        try:
+            from wand.image import Image
+        except ImportError:
+            pytest.skip("Wand not available")
+
+        jpeg = _make_jpeg_bytes(width=200, height=300)
+        url = cover_padding.render_kobo_preview_data_url(
+            jpeg, aspect="kobo_libra_color", fill_mode="gradient", color="",
+        )
+        decoded = base64.b64decode(url.split(",", 1)[1])
+        with Image(blob=decoded) as out:
+            ratio = out.width / out.height
+        assert abs(ratio - (1264 / 1680)) < 0.01
+
     def test_invalid_aspect_falls_back_to_default_or_raises_clear_error(self):
         cover_padding = _load_cover_padding()
         if not hasattr(cover_padding, "render_kobo_preview_data_url"):
@@ -294,10 +330,9 @@ class TestKoboPreviewEndpointStructure:
 
 
 class TestCoverPickerJsKoboPreview:
-    """Smoke checks that the JS module wires up the toggle, dedupes in-flight
-    fetches, and debounces the candidate-grid MutationObserver. These guard
-    against the two regressions browser e2e caught (rate-limit explosion +
-    stale src-revert)."""
+    """Smoke checks that the JS module wires up the toggle, debounces the
+    candidate-grid MutationObserver, and (regression) refreshes previews
+    immediately when aspect / fill_mode / color change while toggle is on."""
 
     JS_FILE = REPO_ROOT / "cps" / "static" / "js" / "cover_picker.js"
 
@@ -307,11 +342,12 @@ class TestCoverPickerJsKoboPreview:
     def test_js_has_kobo_setup_block(self):
         assert "setupKoboPreview" in self._read()
 
-    def test_js_dedupes_inflight_fetches(self):
-        # Without this, toggling on with 60+ candidate cards rendered fires
-        # 60+ concurrent fetches and the browser hits ERR_INSUFFICIENT_RESOURCES.
+    def test_js_caches_per_settings(self):
+        # Settings-change refresh must hit cache for previously-fetched
+        # combinations rather than re-firing a server burst on each toggle.
         src = self._read()
-        assert "inflight" in src, "must track in-flight requests to dedupe"
+        assert "settingsKey" in src, "must compute a per-settings cache key"
+        assert "perImg.has(key)" in src, "must check cache before fetching"
 
     def test_js_debounces_mutation_observer(self):
         # MutationObserver fires once per appended candidate card. We need
@@ -343,7 +379,66 @@ class TestCoverPickerJsKoboPreview:
         # 5 seconds of "did the toggle even work?"
         src = self._read()
         assert "cwa-cover-picker-kobo-status" in src, "must read the status pill element"
-        assert "inFlightCount" in src, "must track the in-flight count"
+        assert "activeInFlight" in src, "must track the active in-flight count"
+
+    def test_js_refresh_on_aspect_change(self):
+        # Regression (operator-reported, 2026-05-08): switching the Target
+        # Aspect Ratio dropdown with the toggle on must refire previews. The
+        # change handler must call refreshAll (or trigger a refresh) — not
+        # just sit on a cached older response.
+        src = self._read()
+        # Find the line that wires aspectSel change.
+        idx = src.find('aspectSel.addEventListener("change"')
+        assert idx != -1, "aspect dropdown must have a change listener"
+        block = src[idx:idx + 200]
+        assert (
+            "refreshAll" in block or "refresh" in block.lower()
+        ), "aspect change must drive a refresh"
+
+    def test_js_refresh_on_fill_mode_change(self):
+        # Regression: switching Border fill style must refire previews.
+        src = self._read()
+        # syncColorEnabled is one bound listener; the refresh wiring is the
+        # other. Both must exist on fillSel change.
+        # Count fillSel.addEventListener("change", ...) occurrences.
+        occurrences = src.count('fillSel.addEventListener("change"')
+        assert occurrences >= 2, (
+            "fillSel must have at least two change listeners "
+            "(syncColorEnabled + refresh-trigger)"
+        )
+
+    def test_js_refresh_on_color_input(self):
+        # Regression: typing in the manual hex color input must drive a
+        # debounced refresh while fill_mode == manual.
+        src = self._read()
+        idx = src.find('colorInput.addEventListener("input"')
+        assert idx != -1, "manual color input must have an input listener"
+        block = src[idx:idx + 400]
+        assert (
+            "refreshAll" in block
+        ), "color input must drive a refresh"
+
+    def test_js_caps_client_side_concurrency(self):
+        # Without a client cap, ~36 candidate covers fire simultaneous
+        # fetches on toggle-on. Each fetch holds a gunicorn worker through
+        # the server-side BoundedSemaphore(4) wait, starving login / static
+        # routes until the burst drains.
+        src = self._read()
+        assert (
+            "KOBO_MAX_CONCURRENT" in src
+        ), "must declare a client-side max-concurrency cap"
+
+    def test_js_uses_generation_for_race_safety(self):
+        # The bug was: aborted fetches' .finally decremented a shared
+        # inFlightCount that belonged to the NEW burst, corrupting state.
+        # The fix is generation-tagged completion handlers — each fetch
+        # checks `generation === myGen` before mutating shared UI state.
+        src = self._read()
+        assert "generation" in src, "must use a generation counter for race safety"
+        assert "myGen" in src, "fetches must close over their own generation"
+        assert (
+            "generation === myGen" in src or "generation == myGen" in src
+        ), "completion handlers must gate on generation match"
 
 
 class TestCoverPaddingConcurrencyCap:
@@ -410,6 +505,13 @@ class TestCoverPickerTemplateSurface:
         assert (
             'id="cwa-cover-picker-kobo-fill-mode"' in src
         ), "Kobo fill-mode select needs a stable ID"
+
+    def test_template_includes_gradient_option(self):
+        # The new gradient mode must be selectable in both the picker and
+        # the admin Settings dropdowns. (Settings template covered by the
+        # admin-side test below.)
+        src = self._read()
+        assert 'value="gradient"' in src, "picker fill-mode select needs a 'gradient' option"
 
     def test_template_includes_color_input(self):
         src = self._read()
