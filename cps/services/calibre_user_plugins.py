@@ -168,16 +168,36 @@ def auto_register_plugins(
 
     env = {"HOME": _HOME, "PATH": "/usr/bin:/bin:/app/calibre"}
     registered: list[str] = []
+    # `calibre-customize -a` copies the source .zip into
+    # `<plugins_dir>/<PluginDisplayName>.zip`. When the source filename
+    # already matches the display name (e.g. operator drops `DeACSM.zip`
+    # and the plugin's display name is "DeACSM"), source and destination
+    # collide and the registration silently fails — the source file gets
+    # truncated/removed, customize.py.json stays unchanged. Stage every
+    # source through /tmp first so the destination path can never equal
+    # the source path. Side benefit: keeps the operator's original .zip
+    # exactly as they dropped it, untouched by calibre's copy logic.
+    import shutil
+    import tempfile
     for zip_path in sorted(target.glob("*.zip")):
         try:
+            with tempfile.NamedTemporaryFile(
+                suffix=".zip", prefix="cwa-plugin-", delete=False
+            ) as tmp:
+                staged_path = tmp.name
+            shutil.copy(str(zip_path), staged_path)
             result = subprocess.run(
-                [calibre_customize_binary, "-a", str(zip_path)],
+                [calibre_customize_binary, "-a", staged_path],
                 env=env,
                 capture_output=True,
                 text=True,
                 timeout=60,
                 check=False,
             )
+            try:
+                Path(staged_path).unlink()
+            except OSError:
+                pass
             if result.returncode == 0:
                 # Calibre prints a final line `Plugin added: <Name> (...)`.
                 # Extract the name to log + return; fall back to filename.

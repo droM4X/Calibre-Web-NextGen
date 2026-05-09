@@ -190,10 +190,17 @@ class AutoLibrary:
                 flush=True,
             )
             return
+        # Always chown the calibre config dir to abc:abc — /config is a
+        # local Docker volume regardless of NETWORK_SHARE_MODE (NSM gates
+        # the library/ingest paths that may be on NFS, not the local
+        # config volume). Without this, plugins extracted by calibre-
+        # customize -a end up root-owned and the abc service user can't
+        # read them at conversion time.
         try:
-            nsm = os.getenv("NETWORK_SHARE_MODE", "false").strip().lower() in ("1", "true", "yes", "on")
-            if not nsm:
-                subprocess.run(["chown", "-R", "abc:abc", str(target)], check=False)
+            subprocess.run(
+                ["chown", "-R", "abc:abc", "/config/.config/calibre"],
+                check=False,
+            )
         except Exception as e:
             print(f"[cwa-auto-library] chown of {target} failed: {e}", flush=True)
 
@@ -206,17 +213,18 @@ class AutoLibrary:
         if registered:
             for name in registered:
                 print(f"[cwa-auto-library] Registered Calibre plugin: {name}", flush=True)
-            # After registration, fix ownership again — calibre may have
-            # copied the .zip into HOME=/config under root if cont-init
-            # ran as root; persist abc:abc on the calibre dir so the
-            # service user can read it.
+            # Calibre extracts plugin contents during registration; some
+            # of those files land owned by whichever uid invoked
+            # calibre-customize (root, if cont-init ran as root). Re-
+            # chown so abc can read them at conversion time. Skipped
+            # ONLY for /calibre-library (library_dir, NAS) earlier — for
+            # /config/.config/calibre we chown unconditionally because
+            # /config is always a local volume.
             try:
-                nsm = os.getenv("NETWORK_SHARE_MODE", "false").strip().lower() in ("1", "true", "yes", "on")
-                if not nsm:
-                    subprocess.run(
-                        ["chown", "-R", "abc:abc", "/config/.config/calibre"],
-                        check=False,
-                    )
+                subprocess.run(
+                    ["chown", "-R", "abc:abc", "/config/.config/calibre"],
+                    check=False,
+                )
             except Exception:
                 pass
         else:

@@ -223,10 +223,16 @@ class TestAutoRegisterPlugins:
             f"each .zip in plugins/ must trigger one calibre-customize -a "
             f"call; got {len(called_zips)} calls"
         )
-        # Ordered by sorted glob — DeDRM before Obok alphabetically
-        assert "DeDRM_plugin.zip" in called_zips[0]
-        assert "Obok_plugin.zip" in called_zips[1]
-        # Both registered → both names returned
+        # Each invocation receives a staged tmp path, not the original
+        # plugins-dir path (avoids the source==dest collision bug — see
+        # test_source_zip_staged_through_tmp_to_avoid_collision).
+        import tempfile
+        for path in called_zips:
+            assert path.startswith(tempfile.gettempdir()), (
+                f"calibre-customize must be invoked with a tmp-staged path "
+                f"to avoid the source==dest collision; got {path}"
+            )
+        # Both registered → both names returned, order matches sorted glob
         assert len(result) == 2
         assert all(name == "FakePlugin (1, 0, 0)" for name in result)
 
@@ -302,6 +308,109 @@ class TestAutoRegisterPlugins:
         monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
         # Must not raise — return empty set
         assert calibre_user_plugins._registered_plugin_names() == set()
+
+    def test_source_zip_staged_through_tmp_to_avoid_collision(
+            self, clean_env, tmp_path, monkeypatch):
+        """v4.0.41 had a real-world bug: when an operator dropped a .zip
+        whose filename matched the plugin's display name (e.g.
+        `DeACSM.zip` for the DeACSM plugin), `calibre-customize -a` was
+        called with a source path that equalled the destination path
+        (`<plugins_dir>/<DisplayName>.zip` = `<plugins_dir>/DeACSM.zip`).
+        Calibre's add_plugin then truncated/removed the source during
+        the copy step and the registration silently failed.
+
+        Fix: stage every source through a tmpfile so the destination can
+        never equal the source. This test pins that the subprocess call
+        receives a path under the system tmp dir, NOT the original .zip
+        path inside plugins_dir."""
+        from unittest.mock import patch, MagicMock
+        import tempfile
+
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        # Filename that would collide if not staged: matches a plausible
+        # display name calibre would assign (and the path under
+        # plugins_dir/<name>.zip).
+        original = plugins_dir / "DeACSM.zip"
+        original.write_bytes(b"PK\x03\x04not-a-real-zip-but-fine-for-test")
+
+        captured_paths: list[str] = []
+
+        def fake_run(args, **kwargs):
+            captured_paths.append(args[2])
+            mock = MagicMock()
+            mock.returncode = 0
+            mock.stdout = "Plugin added: DeACSM (0, 0, 16)\n"
+            return mock
+
+        with patch("subprocess.run", side_effect=fake_run):
+            result = calibre_user_plugins.auto_register_plugins(
+                calibre_customize_binary="/fake/calibre-customize"
+            )
+
+        assert len(captured_paths) == 1, "expected one calibre-customize call"
+        invoked_path = captured_paths[0]
+        assert invoked_path != str(original), (
+            "calibre-customize was invoked with the original .zip path. "
+            "When the source path matches the destination path "
+            f"(<plugins_dir>/<DisplayName>.zip), calibre's copy collides "
+            f"and the registration silently fails. Stage through a tmp "
+            f"file. Got: source={original}, invoked={invoked_path}"
+        )
+        # Should be a tempfile under the system tmp dir
+        sys_tmp = tempfile.gettempdir()
+        assert invoked_path.startswith(sys_tmp), (
+            f"staged path should be under the system tmp dir ({sys_tmp}); "
+            f"got {invoked_path}"
+        )
+        # Original file untouched (calibre's copy didn't collide with it)
+        assert original.is_file(), (
+            "operator's original .zip must remain intact — calibre's "
+            "copy logic should never touch it because we staged through tmp"
+        )
+        # Registration completed
+        assert result == ["DeACSM (0, 0, 16)"]
+
+    def test_temp_staged_zip_cleaned_up_after_registration(
+            self, clean_env, tmp_path, monkeypatch):
+        """The tmp file created by the staging step must be deleted
+        after calibre-customize returns, success or failure. Otherwise
+        every container reboot leaks N tmp files into /tmp."""
+        from unittest.mock import patch, MagicMock
+        import tempfile, glob
+
+        clean_env.setenv("CWA_CALIBRE_USER_PLUGINS", "true")
+        monkeypatch.setattr(calibre_user_plugins, "_HOME", str(tmp_path))
+        registry_path = tmp_path / ".config" / "calibre" / "customize.py.json"
+        monkeypatch.setattr(calibre_user_plugins, "_CUSTOMIZE_JSON", registry_path)
+        plugins_dir = tmp_path / ".config" / "calibre" / "plugins"
+        plugins_dir.mkdir(parents=True)
+        (plugins_dir / "test.zip").write_bytes(b"PK\x03\x04")
+
+        sys_tmp = tempfile.gettempdir()
+        before = set(glob.glob(f"{sys_tmp}/cwa-plugin-*.zip"))
+
+        def fake_run(args, **kwargs):
+            mock = MagicMock()
+            mock.returncode = 0
+            mock.stdout = "Plugin added: TestPlugin (1, 0, 0)\n"
+            return mock
+
+        with patch("subprocess.run", side_effect=fake_run):
+            calibre_user_plugins.auto_register_plugins(
+                calibre_customize_binary="/fake/calibre-customize"
+            )
+
+        after = set(glob.glob(f"{sys_tmp}/cwa-plugin-*.zip"))
+        leaked = after - before
+        assert not leaked, (
+            f"staged tmp .zip files leaked into {sys_tmp}: {leaked}. "
+            f"Cleanup must happen after each calibre-customize call."
+        )
 
 
 @pytest.mark.unit
