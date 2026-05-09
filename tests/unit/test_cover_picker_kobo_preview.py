@@ -442,27 +442,65 @@ class TestCoverPickerJsKoboPreview:
 
 
 class TestCoverPaddingConcurrencyCap:
-    """Server-side semaphore around pad_blob so a single user's burst
-    can't starve all gunicorn workers on a multi-user instance."""
+    """Server-side concurrency cap around pad_blob so a single user's burst
+    can't starve all gunicorn workers on a multi-user instance.
+
+    Implementation must be a ThreadPoolExecutor (not threading.Semaphore):
+    the WSGI server is gevent and a synchronous Semaphore.acquire blocks the
+    whole gevent loop. Real OS threads + ImageMagick releasing the GIL gives
+    actual parallelism."""
 
     PAD_FILE = REPO_ROOT / "cps" / "services" / "cover_padding.py"
 
     def _read(self) -> str:
         return self.PAD_FILE.read_text(encoding="utf-8")
 
-    def test_module_declares_bounded_semaphore(self):
+    def test_module_uses_gevent_aware_threadpool(self):
         src = self._read()
-        assert (
-            "BoundedSemaphore" in src or "Semaphore(" in src
-        ), "cover_padding must declare a concurrency-cap semaphore"
+        assert "gevent.threadpool" in src, (
+            "cover_padding must prefer gevent.threadpool.ThreadPool — "
+            "stdlib ThreadPoolExecutor.Future.result() blocks the gevent loop."
+        )
+        assert "_PREVIEW_POOL_SIZE" in src, "must declare pool size constant"
 
-    def test_render_helper_acquires_the_semaphore(self):
+    def test_module_falls_back_to_stdlib_when_no_gevent(self):
+        # The unit-test runner imports the module without gevent installed.
+        # The fallback path keeps tests green.
+        src = self._read()
+        assert "ImportError" in src and "ThreadPoolExecutor" in src, (
+            "must fall back to stdlib ThreadPoolExecutor when gevent is missing"
+        )
+
+    def test_render_helper_offloads_to_pool(self):
         src = self._read()
         helper_idx = src.find("def render_kobo_preview_data_url")
-        block = src[helper_idx:helper_idx + 1500]
+        block = src[helper_idx:helper_idx + 2000]
         assert (
-            "_PREVIEW_SEMAPHORE" in block or "with " in block and "Semaphore" in src
-        ), "render_kobo_preview_data_url must hold the semaphore around pad_blob"
+            "_run_in_pool" in block
+        ), "render_kobo_preview_data_url must dispatch through _run_in_pool"
+
+    def test_run_in_pool_uses_gevent_apply_when_available(self):
+        src = self._read()
+        helper_idx = src.find("def _run_in_pool")
+        assert helper_idx != -1, "must define _run_in_pool helper"
+        block = src[helper_idx:helper_idx + 1800]
+        assert "_PREVIEW_POOL.apply" in block, (
+            "must use ThreadPool.apply (yields to gevent hub) on the gevent path"
+        )
+        assert ".submit(" in block and ".result()" in block, (
+            "must keep stdlib submit/result on the no-gevent fallback path"
+        )
+
+    def test_run_in_pool_is_reentrant(self):
+        # Nested calls (cover_picker dispatches the whole pipeline; pad_blob
+        # internally also dispatches) must not consume two pool slots, or
+        # the 4-slot pool deadlocks under load.
+        src = self._read()
+        helper_idx = src.find("def _run_in_pool")
+        block = src[helper_idx:helper_idx + 1800]
+        assert "_in_pool_thread" in block, (
+            "must track per-thread reentry state to detect nested calls"
+        )
 
 
 # --------------------------------------------------------------------- template surface

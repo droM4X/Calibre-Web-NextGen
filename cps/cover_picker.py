@@ -298,17 +298,30 @@ def cover_picker_kobo_preview(book_id):
                 400,
             )
 
-    blob = _resolve_preview_source(book, candidate_url, use_embedded)
-    if blob is None:
-        return _json_error("source_unavailable", _(u"Could not load a source image to preview."), 502)
-
-    try:
-        data_url = cover_padding.render_kobo_preview_data_url(
+    # Run the whole fetch+pad pipeline on the gevent-aware threadpool. The
+    # external cover fetch (`requests` via cw_advocate) does a blocking SSL
+    # read on the calling thread; if that thread is the gevent MainThread,
+    # every other greenlet stalls for the duration of the fetch. Confirmed
+    # live with py-spy: MainThread stuck in ssl.py:read inside
+    # `_fetch_url_bytes`, while login + static + metadata-search piled up.
+    # Offloading the source-resolve step to the same pool that does the
+    # Wand work lets the gevent hub keep serving other endpoints.
+    def _resolve_then_render():
+        blob = _resolve_preview_source(book, candidate_url, use_embedded)
+        if blob is None:
+            return None
+        return cover_padding.render_kobo_preview_data_url(
             blob, aspect=aspect, fill_mode=fill_mode, color=color,
         )
+
+    try:
+        data_url = cover_padding._run_in_pool(_resolve_then_render)
     except Exception as exc:  # pragma: no cover - defensive
         log.warning("cover_picker_kobo_preview render failed: %s", exc)
         return _json_error("render_failed", _(u"Could not render the Kobo preview."), 500)
+
+    if data_url is None:
+        return _json_error("source_unavailable", _(u"Could not load a source image to preview."), 502)
 
     return jsonify({"ok": True, "data_url": data_url})
 
@@ -325,16 +338,80 @@ def _resolve_preview_source(book, candidate_url: str, use_embedded: bool) -> Opt
     return _read_current_cover_bytes(book)
 
 
+# URL → fetched bytes cache. The picker re-renders covers on every settings
+# change (toggle on, aspect dropdown, fill-mode dropdown, color input). Each
+# refresh re-fetches the same set of external candidate URLs from Amazon,
+# OpenLibrary, Google Books, etc — at 1-30 seconds per fetch. The Wand work
+# is fast (~0.2s); the SSL handshakes are the bottleneck. A small in-process
+# LRU keyed by URL collapses the second-and-subsequent settings change down
+# to "Wand work only" (sub-second per cover instead of 5+ minutes for the
+# whole grid). Bytes are bounded by total size so a malicious cover URL
+# can't exhaust process memory.
+import threading as _threading
+_FETCH_CACHE_MAX_BYTES = 64 * 1024 * 1024  # 64 MB ≈ 60 covers @ ~1 MB each
+_FETCH_CACHE_LOCK = _threading.Lock()
+_FETCH_CACHE = {}  # url -> (bytes, last_used_ts)
+_FETCH_CACHE_TOTAL = [0]  # mutable so the closure can update
+
+
+def _fetch_cache_get(url):
+    with _FETCH_CACHE_LOCK:
+        entry = _FETCH_CACHE.get(url)
+        if entry is None:
+            return None
+        # Refresh LRU position by re-inserting.
+        del _FETCH_CACHE[url]
+        _FETCH_CACHE[url] = entry
+        return entry[0]
+
+
+def _fetch_cache_put(url, data):
+    if not data:
+        return
+    size = len(data)
+    if size > _FETCH_CACHE_MAX_BYTES:
+        # Single oversized blob — don't cache.
+        return
+    with _FETCH_CACHE_LOCK:
+        # Evict LRU entries until we fit.
+        while _FETCH_CACHE_TOTAL[0] + size > _FETCH_CACHE_MAX_BYTES and _FETCH_CACHE:
+            _, (old_data, _ts) = _FETCH_CACHE.popitem(last=False) if hasattr(_FETCH_CACHE, "popitem") else (None, (b"", 0))
+            # dict.popitem(last=False) doesn't exist on a regular dict pre-3.7
+            # but our minimum is 3.13 — and we use insertion order via the
+            # plain dict for FIFO. Force a manual oldest-key pop:
+            break
+        # Manual eviction loop (insertion-order dict yields FIFO via iter()):
+        while _FETCH_CACHE_TOTAL[0] + size > _FETCH_CACHE_MAX_BYTES and _FETCH_CACHE:
+            oldest = next(iter(_FETCH_CACHE))
+            _, _ = _FETCH_CACHE.pop(oldest), None
+            _FETCH_CACHE_TOTAL[0] -= len(_)
+            if _FETCH_CACHE_TOTAL[0] < 0:
+                _FETCH_CACHE_TOTAL[0] = 0
+        _FETCH_CACHE[url] = (data, 0)
+        _FETCH_CACHE_TOTAL[0] += size
+
+
 def _fetch_url_bytes(url: str) -> Optional[bytes]:
     """Fetch up to ~10 MB through cw_advocate. Mirrors the SSRF guard +
     timeout shape used by helper.save_cover_from_url so external image
-    URLs in the picker get the same treatment everywhere."""
+    URLs in the picker get the same treatment everywhere.
+
+    Cached per URL so subsequent settings changes don't re-fetch. Tighter
+    timeout than save_cover_from_url because the picker is a live UX path
+    (a 30 s laggard blocks the user's entire grid), not a save flow.
+    """
+    cached = _fetch_cache_get(url)
+    if cached is not None:
+        return cached
     try:
         from . import cw_advocate
     except Exception:  # pragma: no cover - defensive
         return None
     try:
-        resp = cw_advocate.get(url, timeout=(10, 30), allow_redirects=True, stream=True)
+        # (5 s connect, 8 s read) — picker context is interactive, so prefer
+        # to drop a slow URL fast and let the user move on. The full 10/30
+        # timeout still applies on the save path (helper.save_cover_from_url).
+        resp = cw_advocate.get(url, timeout=(5, 8), allow_redirects=True, stream=True)
         if resp.status_code != 200:
             return None
         max_bytes = 10 * 1024 * 1024
@@ -354,7 +431,9 @@ def _fetch_url_bytes(url: str) -> Optional[bytes]:
             if total > max_bytes:
                 return None
             chunks.append(chunk)
-        return b"".join(chunks)
+        data = b"".join(chunks)
+        _fetch_cache_put(url, data)
+        return data
     except Exception as exc:
         log.warning("cover_picker_kobo_preview fetch failed for %s: %s", url, exc)
         return None
