@@ -551,12 +551,12 @@
       return out;
     }
 
-    // Max parallel fetches per refresh. The server-side BoundedSemaphore is
-    // 4 — going beyond that just queues at the worker, ties up gunicorn
-    // workers, and starves unrelated routes (login, /static/) until the
-    // burst drains. Cap the same on the client so the rest of the app
-    // stays responsive while ~36 candidate covers re-render.
-    const KOBO_MAX_CONCURRENT = 4;
+    // Max parallel fetches per refresh. Mirrors the server-side gevent
+    // ThreadPool size of 8. The first burst is mostly IO-bound (external
+    // SSL fetches to candidate cover URLs); subsequent bursts hit the
+    // server's URL cache and are CPU-bound (Wand only). 8 keeps both
+    // paths near full utilization without starving other routes.
+    const KOBO_MAX_CONCURRENT = 8;
 
     function refreshAll() {
       if (!toggle.checked) {
