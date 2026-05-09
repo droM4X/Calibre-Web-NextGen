@@ -23,6 +23,11 @@ def do_calibre_export(book_id, book_format):
         calibredb_binarypath = get_calibre_binarypath("calibredb")
         temp_file_name = str(uuid4())
         my_env = os.environ.copy()
+        # Operator-opt-in: route HOME to /config so any user-installed
+        # Calibre plugins under /config/.config/calibre/plugins are picked
+        # up during the export. Closes upstream CWA #243.
+        from .services import calibre_user_plugins
+        calibre_user_plugins.apply_to_env(my_env)
         if config.config_calibre_split:
             my_env['CALIBRE_OVERRIDE_DATABASE_PATH'] = os.path.join(config.config_calibre_dir, "metadata.db")
         library_path = config.get_book_path()

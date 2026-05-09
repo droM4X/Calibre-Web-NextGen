@@ -23,6 +23,18 @@ from kindle_epub_fixer import EPUBFixer
 import audiobook
 import requests
 
+# Path-shim so cps.services.* is importable when this script runs as a
+# standalone subprocess (the cwa-ingest-service entrypoint). cps lives
+# at /app/calibre-web-automated/cps in the container; pytest runs add
+# the same root via PYTHONPATH=scripts:.
+_CPS_ROOT = "/app/calibre-web-automated"
+if _CPS_ROOT not in sys.path:
+    sys.path.insert(0, _CPS_ROOT)
+try:
+    from cps.services import calibre_user_plugins as _calibre_plugins
+except ImportError:
+    _calibre_plugins = None  # tests with a partial path will skip this branch
+
 # Optional: enable GDrive sync and auto-send by importing cps modules when available
 _GDRIVE_AVAILABLE = False
 _CPS_AVAILABLE = False
@@ -415,9 +427,15 @@ class NewBookProcessor:
         # Determine if the file is already in the desired target format using normalized extensions
         self.is_target_format = (self.input_format.lower() == str(self.target_format).lower())
 
-        # Calibre environment
+        # Calibre subprocess environment. HOME is only redirected to
+        # /config when the operator opts in via CWA_CALIBRE_USER_PLUGINS;
+        # otherwise the subprocess inherits the parent's HOME and any
+        # third-party plugin .zip files in /config/.config/calibre/plugins
+        # are NOT loaded. Closes upstream CWA #243 — see
+        # cps.services.calibre_user_plugins.
         self.calibre_env = os.environ.copy()
-        self.calibre_env["HOME"] = "/config"  # Enable plugins under /config
+        if _calibre_plugins is not None:
+            _calibre_plugins.apply_to_env(self.calibre_env)
 
         self.metadata_db = os.path.join(self.library_dir, "metadata.db")
         # Split library support

@@ -102,9 +102,20 @@ class Book:
         self.book_id: str = (list(re.findall(r"\(\d*\)", book_dir))[-1])[1:-1]
         self.book_title, self.author_name, self.title_author = self.get_title_and_author()
 
+        # Calibre subprocess environment. Operator-opt-in plugin loading
+        # (CWA_CALIBRE_USER_PLUGINS=true) routes HOME to /config so any
+        # third-party plugin .zip files in /config/.config/calibre/plugins
+        # are picked up by the embedded Calibre process. Closes upstream
+        # CWA #243.
         self.calibre_env = os.environ.copy()
-        # Enables Calibre plugins to be used from /config/plugins
-        self.calibre_env["HOME"] = "/config"
+        try:
+            _CPS_ROOT = "/app/calibre-web-automated"
+            if _CPS_ROOT not in sys.path:
+                sys.path.insert(0, _CPS_ROOT)
+            from cps.services import calibre_user_plugins
+            calibre_user_plugins.apply_to_env(self.calibre_env)
+        except ImportError:
+            pass
         # Gets split library info from app.db and sets library dir to the split dir if split library is enabled
         self.split_library = self.get_split_library()
         if self.split_library:
@@ -228,9 +239,20 @@ class Enforcer:
 
         self.illegal_characters = ["<", ">", ":", '"', "/", "\\", "|", "?", "*"]
 
+        # Calibre subprocess environment. Operator-opt-in plugin loading
+        # (CWA_CALIBRE_USER_PLUGINS=true) routes HOME to /config so any
+        # third-party plugin .zip files in /config/.config/calibre/plugins
+        # are picked up by the embedded Calibre process. Closes upstream
+        # CWA #243.
         self.calibre_env = os.environ.copy()
-        # Enables Calibre plugins to be used from /config/plugins
-        self.calibre_env["HOME"] = "/config"
+        try:
+            _CPS_ROOT = "/app/calibre-web-automated"
+            if _CPS_ROOT not in sys.path:
+                sys.path.insert(0, _CPS_ROOT)
+            from cps.services import calibre_user_plugins
+            calibre_user_plugins.apply_to_env(self.calibre_env)
+        except ImportError:
+            pass
         # Gets split library info from app.db and sets library dir to the split dir if split library is enabled
         self.split_library = self.get_split_library()
         if self.split_library:

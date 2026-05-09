@@ -21,6 +21,8 @@ def main():
         auto_lib.make_new_library()
         auto_lib.set_library_location()
 
+    auto_lib.bootstrap_calibre_user_plugins_dir()
+
     print(f"[cwa-auto-library] Library location successfully set to: {auto_lib.lib_path}")
     sys.exit(0)
 
@@ -156,6 +158,43 @@ class AutoLibrary:
             print(f"[cwa-auto-library] An error occurred while attempting to recursively set ownership of {self.library_dir} to abc:abc. See the following error:\n{e}", flush=True)
         self.metadb_path = f"{self.library_dir}/metadata.db"
         return
+
+    def bootstrap_calibre_user_plugins_dir(self):
+        """Create /config/.config/calibre/plugins when the operator has
+        opted in via CWA_CALIBRE_USER_PLUGINS, so they have a destination
+        ready for their plugin .zip files. No-op when disabled. Closes
+        upstream CWA #243."""
+        try:
+            _CPS_ROOT = "/app/calibre-web-automated"
+            if _CPS_ROOT not in sys.path:
+                sys.path.insert(0, _CPS_ROOT)
+            from cps.services import calibre_user_plugins
+        except ImportError:
+            return
+        if not calibre_user_plugins.is_enabled():
+            return
+        target = calibre_user_plugins.ensure_plugins_dir()
+        if target is None:
+            print(
+                "[cwa-auto-library] CWA_CALIBRE_USER_PLUGINS is enabled but "
+                "the plugins directory could not be created (permission "
+                "error). Create it manually: "
+                f"mkdir -p /config/.config/calibre/plugins",
+                flush=True,
+            )
+            return
+        try:
+            nsm = os.getenv("NETWORK_SHARE_MODE", "false").strip().lower() in ("1", "true", "yes", "on")
+            if not nsm:
+                subprocess.run(["chown", "-R", "abc:abc", str(target)], check=False)
+        except Exception as e:
+            print(f"[cwa-auto-library] chown of {target} failed: {e}", flush=True)
+        print(
+            f"[cwa-auto-library] CWA_CALIBRE_USER_PLUGINS is enabled. "
+            f"Drop your Calibre plugin .zip files into {target} and "
+            f"restart the container; ingest subprocesses will load them.",
+            flush=True,
+        )
 
 
 if __name__ == '__main__':
