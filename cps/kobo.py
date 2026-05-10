@@ -382,7 +382,7 @@ def HandleSyncRequest():
             
         for shelf in magic_shelves:
             books, _ = magic_shelf.get_books_for_magic_shelf(
-                shelf.id, page=1, page_size=1000
+                shelf.id, page=1, page_size=None
             )
 
             new_tags_last_modified = max(shelf.last_modified, new_tags_last_modified)
@@ -857,7 +857,7 @@ def sync_shelves(sync_token, sync_results, only_kobo_shelves=False):
         for shelf in ub.session.query(ub.Shelf).filter(
             func.datetime(ub.Shelf.last_modified) > sync_token.tags_last_modified,
             ub.Shelf.user_id == current_user.id,
-            not ub.Shelf.kobo_sync
+            ub.Shelf.kobo_sync == False  # noqa: E712 -- SQLAlchemy column comparison
         ):
             sync_results.append({
                 "DeletedTag": {
