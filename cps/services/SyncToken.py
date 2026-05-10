@@ -54,6 +54,7 @@ class SyncToken:
     token_schema = {
         "type": "object",
         "properties": {"version": {"type": "string"}, "data": {"type": "object"}, },
+        "required": ["version", "data"],
     }
     # This Schema doesn't contain enough information to detect and propagate book deletions from Calibre to the device.
     # A potential solution might be to keep a list of all known book uuids in the token, and look for any missing
@@ -62,11 +63,11 @@ class SyncToken:
         "type": "object",
         "properties": {
             "raw_kobo_store_token": {"type": "string"},
-            "books_last_modified": {"type": "string"},
-            "books_last_created": {"type": "string"},
-            "archive_last_modified": {"type": "string"},
-            "reading_state_last_modified": {"type": "string"},
-            "tags_last_modified": {"type": "string"}
+            "books_last_modified": {"type": "number"},
+            "books_last_created": {"type": "number"},
+            "archive_last_modified": {"type": "number"},
+            "reading_state_last_modified": {"type": "number"},
+            "tags_last_modified": {"type": "number"}
             # "books_last_id": {"type": "integer", "optional": True}
         },
     }
@@ -110,12 +111,11 @@ class SyncToken:
                 raise ValueError
 
             data_json = sync_token_json["data"]
-            validate(sync_token_json, SyncToken.data_schema_v1)
-        except (exceptions.ValidationError, ValueError):
+            validate(data_json, SyncToken.data_schema_v1)
+            raw_kobo_store_token = data_json.get("raw_kobo_store_token", "")
+        except (exceptions.ValidationError, ValueError, TypeError, KeyError):
             log.error("Sync token contents do not follow the expected json schema.")
             return SyncToken()
-
-        raw_kobo_store_token = data_json["raw_kobo_store_token"]
         try:
             books_last_modified = get_datetime_from_json(data_json, "books_last_modified")
             books_last_created = get_datetime_from_json(data_json, "books_last_created")
