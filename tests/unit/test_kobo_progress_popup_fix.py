@@ -126,31 +126,83 @@ class TestCurrentBookmarkResponseShape:
 
 
 @pytest.mark.unit
-class TestHandleStateRequestPutResponse:
-    """The PUT /v1/library/<uuid>/state handler must echo the freshly
-    bumped LastModified + PriorityTimestamp back to the device.
-    Without this the device's cached timestamps lag the server's, so
-    the next GET returns 'newer' values the device hasn't seen yet
-    and triggers the 'Return to last page read?' popup after sleep
-    /wake. Pinned via source inspection because the function relies on
-    Flask request/current_user context that isn't available at unit
-    scope."""
+class TestHandleStateRequestUsesDeviceLastModified:
+    """The popup-loop root cause is timestamp drift between the
+    server's PT and what the device last saw. Janeczku PR #3601
+    (commit 2d4ca23d) tried echoing PT/LM back in the PUT response,
+    but devices don't persist timestamps from PUT responses -- the
+    auto-sleep variant of the popup persisted. The real fix
+    (janeczku PR #3607) is to use the device's own LastModified for
+    both PT and LM, mirroring what official Kobo cloud does so the
+    next GET returns a timestamp the device already knows.
 
-    def test_priority_timestamp_added_to_put_response(self):
+    Pinned via source inspection because HandleStateRequest needs
+    Flask request/current_user context not available at unit scope.
+    """
+
+    def test_reads_last_modified_from_request_body(self):
         from cps.kobo import HandleStateRequest
         src = inspect.getsource(HandleStateRequest)
-        assert 'update_results_response["PriorityTimestamp"]' in src, (
-            "PUT /state response must include PriorityTimestamp -- "
-            "without it Kobo devices show spurious 'Return to last "
-            "page read?' popup after auto-sleep/wake. See "
-            "janeczku/calibre-web#3601."
+        assert 'request_reading_state.get("LastModified")' in src, (
+            "PUT handler must read LastModified from the request "
+            "body so the saved timestamps match what the device "
+            "expects to see back. See janeczku/calibre-web#3607."
         )
 
-    def test_last_modified_added_to_put_response(self):
+    def test_threads_request_lm_into_flask_g(self):
         from cps.kobo import HandleStateRequest
         src = inspect.getsource(HandleStateRequest)
-        assert 'update_results_response["LastModified"]' in src, (
-            "PUT /state response must include LastModified so the "
-            "device's cached timestamp matches the server. See "
-            "janeczku/calibre-web#3601."
+        assert "g.kobo_reading_state_lm = request_lm" in src, (
+            "PUT handler must publish request_lm via Flask g so the "
+            "before_flush hook in cps/ub.py can apply the device's "
+            "timestamp to the parent KoboReadingState row instead of "
+            "stamping datetime.now(). See janeczku/calibre-web#3607."
+        )
+
+    def test_does_not_echo_lm_pt_in_put_response(self):
+        """The previous attempt (commit 2d4ca23d / janeczku#3601)
+        added LastModified + PriorityTimestamp to the PUT response.
+        Devices don't persist them from PUT responses -- the data
+        was dead code. PR #3607 reverts that. If a future refactor
+        re-adds those keys, the popup-loop debugging cycle starts
+        over. Pin the absence."""
+        from cps.kobo import HandleStateRequest
+        src = inspect.getsource(HandleStateRequest)
+        assert 'update_results_response["PriorityTimestamp"]' not in src, (
+            "PUT response must NOT include PriorityTimestamp -- "
+            "Kobo devices ignore timestamps from PUT responses, the "
+            "data is dead code, and including it leaves the door "
+            "open to inconsistent server timestamps causing the "
+            "popup. See janeczku/calibre-web#3607."
+        )
+        assert 'update_results_response["LastModified"]' not in src
+
+    def test_priority_timestamp_column_has_no_onupdate(self):
+        """The popup root cause: priority_timestamp had its own
+        onupdate=datetime.now() that ran independently of last_modified.
+        PT and LM could drift, and PT-newer-than-device's-cached-PT
+        triggers the popup. Fix removes the onupdate; the before_flush
+        hook now sets PT and LM together to the device's own LM."""
+        from cps.ub import KoboReadingState
+        col = KoboReadingState.__table__.columns["priority_timestamp"]
+        assert col.onupdate is None, (
+            "priority_timestamp must NOT have onupdate -- if it does, "
+            "PT advances on every flush regardless of what the device "
+            "expects, and the 'Sync to last page read' popup returns. "
+            "See janeczku/calibre-web#3607."
+        )
+
+    def test_before_flush_uses_request_lm_when_available(self):
+        from cps import ub
+        src = inspect.getsource(ub.receive_before_flush)
+        assert "g.kobo_reading_state_lm" in src, (
+            "before_flush hook must check Flask g.kobo_reading_state_lm "
+            "(set by HandleStateRequest from the device's PUT body) "
+            "before falling back to datetime.now(). See "
+            "janeczku/calibre-web#3607."
+        )
+        assert "change.kobo_reading_state.priority_timestamp = ts" in src, (
+            "before_flush hook must explicitly set priority_timestamp "
+            "(not just last_modified) so PT and LM stay in lock-step. "
+            "See janeczku/calibre-web#3607."
         )
