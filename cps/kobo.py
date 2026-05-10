@@ -985,8 +985,12 @@ def HandleStateRequest(book_uuid):
             request_statistics = request_reading_state["Statistics"]
             if request_statistics:
                 statistics = kobo_reading_state.statistics
-                statistics.spent_reading_minutes = int(request_statistics["SpentReadingMinutes"])
-                statistics.remaining_time_minutes = int(request_statistics["RemainingTimeMinutes"])
+                spent = request_statistics.get("SpentReadingMinutes")
+                if spent is not None:
+                    statistics.spent_reading_minutes = int(spent)
+                remaining = request_statistics.get("RemainingTimeMinutes")
+                if remaining is not None:
+                    statistics.remaining_time_minutes = int(remaining)
                 statistics.last_modified = request_lm
                 update_results_response["StatisticsResult"] = {"Result": "Success"}
 
@@ -1006,7 +1010,8 @@ def HandleStateRequest(book_uuid):
             ub.session.rollback()
             abort(400, description="Malformed request data is missing 'ReadingStates' key")
 
-        push_reading_state_to_hardcover(current_user, book, request_bookmark['ProgressPercent'])
+        if request_bookmark and request_bookmark.get("ProgressPercent") is not None:
+            push_reading_state_to_hardcover(current_user, book, request_bookmark["ProgressPercent"])
 
         ub.session.merge(kobo_reading_state)
         ub.session_commit()
@@ -1117,9 +1122,9 @@ def get_statistics_response(statistics):
     resp = {
         "LastModified": convert_to_kobo_timestamp_string(statistics.last_modified),
     }
-    if statistics.spent_reading_minutes:
+    if statistics.spent_reading_minutes is not None:
         resp["SpentReadingMinutes"] = statistics.spent_reading_minutes
-    if statistics.remaining_time_minutes:
+    if statistics.remaining_time_minutes is not None:
         resp["RemainingTimeMinutes"] = statistics.remaining_time_minutes
     return resp
 
