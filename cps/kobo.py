@@ -1474,6 +1474,8 @@ def HandleInitRequest():
                                                                isGreyscale='false'))
         if config.config_hardcover_annotations_sync and bool(hardcover):
             kobo_resources["reading_services_host"] = calibre_web_url
+        kobo_resources["library_sync"] = calibre_web_url + url_for("kobo.HandleSyncRequest",
+                                                                    auth_token=kobo_auth.get_auth_token())
     else:
         kobo_resources["image_host"] = url_for("web.index", _external=True).strip("/")
         kobo_resources["image_url_quality_template"] = unquote(url_for("kobo.HandleCoverImageRequest",
@@ -1493,6 +1495,9 @@ def HandleInitRequest():
                                                                _external=True))
         if config.config_hardcover_annotations_sync and bool(hardcover):
             kobo_resources["reading_services_host"] = url_for("web.index", _external=True).strip("/")
+        kobo_resources["library_sync"] = url_for("kobo.HandleSyncRequest",
+                                                  auth_token=kobo_auth.get_auth_token(),
+                                                  _external=True)
 
     # When not proxying Kobo Store requests, point oauth_host to CWA and
     # serve dummy OAuth responses for unregistered devices.
