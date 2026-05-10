@@ -1,0 +1,314 @@
+{# Book organizer bar: dropdown sort filter (left), multi-select + settings (right). #}
+{# Used on book-listing pages (index, author, shelf, search). #}
+
+{% macro organizer_bar(active_key, sort_options, multiselect=true, settings=true, actions=true, can_delete=false, can_edit_public_shelf=false, shelves=none) %}
+{% set ns = namespace(active=none) %}
+{% for opt in sort_options %}
+  {% if opt.key == active_key %}{% set ns.active = opt %}{% endif %}
+{% endfor %}
+{% if ns.active is none and sort_options|length %}{% set ns.active = sort_options[0] %}{% endif %}
+<div class="book-organizer-bar-wrap">
+<div class="book-organizer-bar" role="toolbar" aria-label="{{ _('Book organizer') }}">
+  <div class="book-organizer-bar-left">
+    {% if ns.active is not none %}
+    <div class="dropdown book-organizer-sort">
+      <button type="button"
+              class="btn btn-primary dropdown-toggle book-organizer-sort-toggle"
+              id="book-organizer-sort-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="{{ _('Change sort order') }}">
+        <span class="book-organizer-icons">
+          {% for icon in ns.active.icons %}<span class="glyphicon {{ icon }}"></span>{% endfor %}
+        </span>
+        <span class="book-organizer-label">{{ ns.active.label }}</span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu book-organizer-menu" role="menu" aria-labelledby="book-organizer-sort-toggle">
+        {% for opt in sort_options %}
+        <li{% if opt.key == ns.active.key %} class="active"{% endif %} role="presentation">
+          <a href="{{ opt.url }}" role="menuitem">
+            <span class="book-organizer-icons">
+              {% for icon in opt.icons %}<span class="glyphicon {{ icon }}"></span>{% endfor %}
+            </span>
+            <span class="book-organizer-label">{{ opt.label }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  <div class="book-organizer-bar-right">
+    {% if multiselect %}
+    <button type="button"
+            class="btn btn-primary book-organizer-multiselect-toggle"
+            data-toggle="tooltip"
+            title="{{ _('Select multiple books') }}"
+            aria-label="{{ _('Select multiple books') }}"
+            aria-pressed="false">
+      <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+    </button>
+    {% endif %}
+    {% if settings %}
+    <div class="dropdown book-organizer-settings">
+      <button type="button"
+              class="btn btn-primary dropdown-toggle book-organizer-settings-toggle"
+              id="book-organizer-settings-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              aria-label="{{ _('Display settings') }}"
+              title="{{ _('Display settings') }}">
+        <span class="glyphicon glyphicon-cog" aria-hidden="true"></span>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-right book-organizer-settings-menu"
+          role="menu"
+          aria-labelledby="book-organizer-settings-toggle">
+        <li role="presentation">
+          <a href="#" role="menuitem" data-organizer-action="cover-settings">
+            <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+            <span>{{ _('Cover Settings') }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% if actions and multiselect %}
+<div class="book-organizer-actions-row" role="toolbar" aria-label="{{ _('Selection actions') }}" hidden>
+  <div class="book-organizer-actions-left">
+    {% if shelves %}
+    <div class="dropdown book-organizer-action-shelf">
+      <button type="button"
+              class="btn btn-default dropdown-toggle"
+              id="book-organizer-shelf-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false">
+        <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+        <span>{{ _('Add to Shelf') }}</span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="book-organizer-shelf-toggle">
+        {% for shelf_item in shelves %}
+        {% if not shelf_item.is_public or can_edit_public_shelf %}
+        <li role="presentation">
+          <a href="#"
+             role="menuitem"
+             data-organizer-action="add-to-shelf"
+             data-shelf-id="{{ shelf_item.id }}"
+             data-shelf-name="{{ shelf_item.name }}">
+            <span>{{ shelf_item.name }}</span>{% if shelf_item.is_public %} <small class="text-muted">{{ _('(Public)') }}</small>{% endif %}
+          </a>
+        </li>
+        {% endif %}
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    <div class="dropdown book-organizer-action-mark">
+      <button type="button"
+              class="btn btn-default dropdown-toggle"
+              id="book-organizer-mark-toggle"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false">
+        <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>
+        <span>{{ _('Mark') }}</span>
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="book-organizer-mark-toggle">
+        <li role="presentation">
+          <a href="#" role="menuitem" data-organizer-action="mark-read">
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+            <span>{{ _('Mark as read') }}</span>
+          </a>
+        </li>
+        <li role="presentation">
+          <a href="#" role="menuitem" data-organizer-action="mark-unread">
+            <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+            <span>{{ _('Mark as unread') }}</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+    {% if can_delete %}
+    <button type="button"
+            class="btn btn-danger book-organizer-action-delete"
+            data-organizer-action="delete-selected">
+      <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+      <span>{{ _('Delete') }}</span>
+    </button>
+    {% endif %}
+  </div>
+  <div class="book-organizer-actions-right">
+    <span class="book-organizer-count"
+          data-organizer-count
+          data-template-selected="{{ _('{n} selected') }}">{{ _('{n} selected').replace('{n}', '0') }}</span>
+    <button type="button" class="btn btn-primary book-organizer-action-done" data-organizer-action="exit">
+      {{ _('Done') }}
+    </button>
+  </div>
+</div>
+{% endif %}
+</div>
+{% endmacro %}
+
+
+{# ---- Page-specific helpers that build the sort_options list and call organizer_bar. ---- #}
+
+{# index.html / search.html book lists. `page` is the route page key, `id` is the book_id param. #}
+{% macro books_list_organizer(page, id, order, query=none, multiselect=true, settings=true, can_delete=false, can_edit_public_shelf=false, shelves=none) %}
+{% if page == 'hot' %}
+  {% set opts = [
+    {'key': 'hotasc', 'icons': ['glyphicon-sort-by-order'],
+     'label': _('Downloads, fewest first'),
+     'url': url_for('web.books_list', data=page, book_id=id, sort_param='hotasc')},
+    {'key': 'hotdesc', 'icons': ['glyphicon-sort-by-order-alt'],
+     'label': _('Downloads, most first'),
+     'url': url_for('web.books_list', data=page, book_id=id, sort_param='hotdesc')},
+  ] %}
+{% else %}
+  {% set opts = [] %}
+  {% if query is not none %}
+    {% set opts = opts + [
+      {'key': 'new', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order'],
+       'label': _('Date added, newest first'),
+       'url': url_for('web.books_list', data=page, sort_param='new', query=query)},
+      {'key': 'old', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+       'label': _('Date added, oldest first'),
+       'url': url_for('web.books_list', data=page, sort_param='old', query=query)},
+      {'key': 'abc', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet'],
+       'label': _('Title A → Z'),
+       'url': url_for('web.books_list', data=page, sort_param='abc', query=query)},
+      {'key': 'zyx', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet-alt'],
+       'label': _('Title Z → A'),
+       'url': url_for('web.books_list', data=page, sort_param='zyx', query=query)},
+      {'key': 'authaz', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet'],
+       'label': _('Author A → Z'),
+       'url': url_for('web.books_list', data=page, sort_param='authaz', query=query)},
+      {'key': 'authza', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet-alt'],
+       'label': _('Author Z → A'),
+       'url': url_for('web.books_list', data=page, sort_param='authza', query=query)},
+      {'key': 'pubnew', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order'],
+       'label': _('Published, newest first'),
+       'url': url_for('web.books_list', data=page, sort_param='pubnew', query=query)},
+      {'key': 'pubold', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+       'label': _('Published, oldest first'),
+       'url': url_for('web.books_list', data=page, sort_param='pubold', query=query)},
+    ] %}
+  {% else %}
+    {% set opts = opts + [
+      {'key': 'new', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order'],
+       'label': _('Date added, newest first'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='new')},
+      {'key': 'old', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+       'label': _('Date added, oldest first'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='old')},
+      {'key': 'abc', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet'],
+       'label': _('Title A → Z'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='abc')},
+      {'key': 'zyx', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet-alt'],
+       'label': _('Title Z → A'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='zyx')},
+      {'key': 'authaz', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet'],
+       'label': _('Author A → Z'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='authaz')},
+      {'key': 'authza', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet-alt'],
+       'label': _('Author Z → A'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='authza')},
+      {'key': 'pubnew', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order'],
+       'label': _('Published, newest first'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='pubnew')},
+      {'key': 'pubold', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+       'label': _('Published, oldest first'),
+       'url': url_for('web.books_list', data=page, book_id=id, sort_param='pubold')},
+    ] %}
+    {% if page == 'series' %}
+      {% set opts = opts + [
+        {'key': 'seriesasc', 'icons': ['glyphicon-sort-by-order'],
+         'label': _('Series number, ascending'),
+         'url': url_for('web.books_list', data=page, book_id=id, sort_param='seriesasc')},
+        {'key': 'seriesdesc', 'icons': ['glyphicon-sort-by-order-alt'],
+         'label': _('Series number, descending'),
+         'url': url_for('web.books_list', data=page, book_id=id, sort_param='seriesdesc')},
+      ] %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+{# remap order alias 'abc' is order key for title asc; the existing template uses order=='abc' so map matches #}
+{{ organizer_bar(active_key=order, sort_options=opts,
+                 multiselect=multiselect, settings=settings,
+                 can_delete=can_delete, can_edit_public_shelf=can_edit_public_shelf, shelves=shelves) }}
+{% endmacro %}
+
+
+{# author.html book lists #}
+{% macro author_organizer(id, order, can_delete=false, can_edit_public_shelf=false, shelves=none) %}
+{% set opts = [
+  {'key': 'new', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order'],
+   'label': _('Date added, newest first'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='new')},
+  {'key': 'old', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+   'label': _('Date added, oldest first'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='old')},
+  {'key': 'abc', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet'],
+   'label': _('Title A → Z'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='abc')},
+  {'key': 'zyx', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet-alt'],
+   'label': _('Title Z → A'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='zyx')},
+  {'key': 'pubnew', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order'],
+   'label': _('Published, newest first'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='pubnew')},
+  {'key': 'pubold', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+   'label': _('Published, oldest first'),
+   'url': url_for('web.books_list', data='author', book_id=id, sort_param='pubold')},
+] %}
+{{ organizer_bar(active_key=order, sort_options=opts,
+                 can_delete=can_delete, can_edit_public_shelf=can_edit_public_shelf, shelves=shelves) }}
+{% endmacro %}
+
+
+{# shelf.html book lists. `disabled` flips inert behavior when reorder mode is on. #}
+{% macro shelf_organizer(shelf_id, order, disabled=false, can_delete=false, can_edit_public_shelf=false, shelves=none) %}
+{% set opts = [
+  {'key': 'new', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order'],
+   'label': _('Date added, newest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='new')},
+  {'key': 'old', 'icons': ['glyphicon-book', 'glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+   'label': _('Date added, oldest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='old')},
+  {'key': 'abc', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet'],
+   'label': _('Title A → Z'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='abc')},
+  {'key': 'zyx', 'icons': ['glyphicon-font', 'glyphicon-sort-by-alphabet-alt'],
+   'label': _('Title Z → A'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='zyx')},
+  {'key': 'authaz', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet'],
+   'label': _('Author A → Z'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='authaz')},
+  {'key': 'authza', 'icons': ['glyphicon-user', 'glyphicon-sort-by-alphabet-alt'],
+   'label': _('Author Z → A'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='authza')},
+  {'key': 'pubnew', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order'],
+   'label': _('Published, newest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='pubnew')},
+  {'key': 'pubold', 'icons': ['glyphicon-calendar', 'glyphicon-sort-by-order-alt'],
+   'label': _('Published, oldest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='pubold')},
+  {'key': 'shelfnew', 'icons': ['glyphicon-list', 'glyphicon-sort-by-order'],
+   'label': _('Added to shelf, newest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='shelfnew')},
+  {'key': 'shelfold', 'icons': ['glyphicon-list', 'glyphicon-sort-by-order-alt'],
+   'label': _('Added to shelf, oldest first'),
+   'url': url_for('shelf.show_shelf', shelf_id=shelf_id, sort_param='shelfold')},
+] %}
+<div class="book-organizer-wrap{% if disabled %} book-organizer-wrap-disabled{% endif %}">
+{{ organizer_bar(active_key=order, sort_options=opts,
+                 can_delete=can_delete, can_edit_public_shelf=can_edit_public_shelf, shelves=shelves) }}
+</div>
+{% endmacro %}

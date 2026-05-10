@@ -107,6 +107,21 @@ def get_sidebar_config(kwargs=None):
     g.shelves_access = ub.session.query(ub.Shelf).filter(
         or_(ub.Shelf.is_public == 1, ub.Shelf.user_id == current_user.id)).order_by(ub.Shelf.name).all()
 
+    # Per-book shelf membership for cover badges. One query for all
+    # accessible shelves' rows; lookups in templates are O(1).
+    if g.shelves_access:
+        shelf_by_id = {s.id: s for s in g.shelves_access}
+        rows = ub.session.query(ub.BookShelf).filter(
+            ub.BookShelf.shelf.in_(list(shelf_by_id.keys()))).all()
+        book_shelves = {}
+        for bs in rows:
+            shelf_obj = shelf_by_id.get(bs.shelf)
+            if shelf_obj is not None:
+                book_shelves.setdefault(bs.book_id, []).append(shelf_obj)
+        g.book_shelves_map = book_shelves
+    else:
+        g.book_shelves_map = {}
+
     return sidebar, simple
 
 # Checks if an update for CWA is available, returning True if yes

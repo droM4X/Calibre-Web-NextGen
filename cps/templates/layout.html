@@ -24,6 +24,7 @@
       <link href="{{ url_for('static', filename='css/caliBlur_override.css') }}" rel="stylesheet" media="screen">
     {% endif %}
     <link href="{{ url_for('static', filename='css/cwa.css') }}" rel="stylesheet" media="screen">
+    <link href="{{ url_for('static', filename='css/book_organizer.css') }}" rel="stylesheet" media="screen">
     {% if current_user.is_authenticated and (current_user.role_admin() or current_user.role_edit()) %}
     <link href="{{ url_for('static', filename='css/duplicates-notifications.css') }}" rel="stylesheet" media="screen">
     {% endif %}
@@ -449,6 +450,118 @@
       window.cwaDuplicateBootstrap = {{ duplicate_notification|tojson if duplicate_notification is defined else '{}' }};
     </script>
     <script src="{{ url_for('static', filename='js/duplicate-notifier.js') }}"></script>
+    {% endif %}
+    <button id="scroll-to-top-btn" class="scroll-to-top-btn" type="button" aria-label="{{ _('Scroll to top') }}" hidden>
+      <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span>
+      <span class="scroll-to-top-label">{{ _('Top') }}</span>
+    </button>
+    <style>
+      .scroll-to-top-btn {
+        position: fixed;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        z-index: 1030;
+        padding: 6px 14px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(31, 42, 54, 0.94);
+        color: #fff;
+        font-weight: 600;
+        font-size: 13px;
+        display: none;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+        opacity: 0;
+        transition: opacity 0.18s ease, transform 0.18s ease;
+        cursor: pointer;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+      }
+      .scroll-to-top-btn .glyphicon { font-size: 11px; }
+      @media (max-width: 767px) {
+        .scroll-to-top-btn.is-visible {
+          display: inline-flex;
+          opacity: 1;
+          transform: translateX(-50%) translateY(0);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .scroll-to-top-btn { transition: none; }
+      }
+    </style>
+    <script>
+      (function () {
+        var btn = document.getElementById("scroll-to-top-btn");
+        if (!btn) return;
+        var THRESHOLD = 200;
+        function getScroller() {
+          // caliBlur scrolls on .col-sm-10.content-expanded, not on window.
+          return document.querySelector(".col-sm-10.content-expanded")
+              || document.scrollingElement
+              || document.documentElement;
+        }
+        function getScrollY() {
+          var s = getScroller();
+          return s === document.documentElement || s === document.body
+            ? window.scrollY
+            : s.scrollTop;
+        }
+        function update() {
+          var mobile = window.matchMedia("(max-width: 767px)").matches;
+          var show = mobile && getScrollY() > THRESHOLD;
+          btn.classList.toggle("is-visible", show);
+          if (show) btn.removeAttribute("hidden");
+        }
+        btn.addEventListener("click", function () {
+          var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          var s = getScroller();
+          var opts = { top: 0, behavior: reduced ? "auto" : "smooth" };
+          if (s === document.documentElement || s === document.body) {
+            window.scrollTo(opts);
+          } else {
+            s.scrollTo(opts);
+          }
+        });
+        // Listen on both — different layouts scroll different elements.
+        window.addEventListener("scroll", update, { passive: true });
+        window.addEventListener("resize", update);
+        document.addEventListener("DOMContentLoaded", function () {
+          var s = getScroller();
+          if (s !== document.documentElement && s !== document.body) {
+            s.addEventListener("scroll", update, { passive: true });
+          }
+          update();
+        });
+      })();
+    </script>
+    {% if current_user.is_authenticated %}
+    <div id="book-organizer-confirm-backdrop" class="book-organizer-confirm-backdrop" hidden>
+      <div class="book-organizer-confirm" role="dialog" aria-modal="true" aria-labelledby="book-organizer-confirm-title">
+        <div class="book-organizer-confirm-header" id="book-organizer-confirm-title"></div>
+        <div class="book-organizer-confirm-body" data-organizer-confirm-body></div>
+        <div class="book-organizer-confirm-footer">
+          <button type="button" class="btn btn-default" data-organizer-confirm-action="cancel">{{ _('Cancel') }}</button>
+          <button type="button" class="btn btn-danger" data-organizer-confirm-action="ok">{{ _('Confirm') }}</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.bookOrganizerI18n = {
+        addedToShelf: "{{ _('Added {n} books to {shelf}') }}",
+        addedToShelfPartial: "{{ _('Added {ok} of {n} books to {shelf} (rest were already there)') }}",
+        allAlreadyOnShelf: "{{ _('All {n} book(s) were already on {shelf}.') }}",
+        markedRead: "{{ _('Marked {n} books as read') }}",
+        markedUnread: "{{ _('Marked {n} books as unread') }}",
+        deleted: "{{ _('Deleted {n} books') }}",
+        confirmDeleteTitle: "{{ _('Delete books?') }}",
+        confirmDeleteBody: "{{ _('This will permanently delete {n} book(s) from your library. This cannot be undone.') }}",
+        nothingSelected: "{{ _('Select at least one book first.') }}",
+        requestFailed: "{{ _('Request failed: {err}') }}"
+      };
+    </script>
+    <script src="{{ url_for('static', filename='js/book_organizer.js') }}"></script>
     {% endif %}
   </body>
 </html>
