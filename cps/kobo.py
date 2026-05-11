@@ -1097,18 +1097,73 @@ def get_ub_read_status(kobo_read_status):
 
 
 def get_or_create_reading_state(book_id):
-    book_read = ub.session.query(ub.ReadBook).filter(ub.ReadBook.book_id == book_id,
-                                                     ub.ReadBook.user_id == int(current_user.id)).one_or_none()
-    if not book_read:
-        book_read = ub.ReadBook(user_id=current_user.id, book_id=book_id)
+    """Return the canonical KoboReadingState row for (current_user, book_id),
+    creating ReadBook + KoboReadingState (+ child rows) if missing.
+
+    Concurrency-safe: two simultaneous PUTs to /v1/library/<uuid>/state from
+    the same device — which legitimately happen on wake-from-sleep — would
+    otherwise race past the read-then-write check and both insert. The
+    audit-2026-05-11 fix:
+
+    1. Bottom-row creation uses INSERT ... ON CONFLICT(user_id, book_id) DO
+       NOTHING via the sqlite dialect insert, so duplicate inserts no-op
+       at the SQL layer.
+    2. The (user_id, book_id) UNIQUE index added in
+       ``migrate_kobo_unique_constraints`` backs the ON CONFLICT clause
+       and guarantees post-insert SELECT returns exactly one row.
+    3. We commit each create separately so a concurrent winner's insert
+       is visible to our subsequent SELECT — the ON CONFLICT path makes
+       this safe (no spurious IntegrityError to recover from).
+    """
+    from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+    user_id = int(current_user.id)
+
+    # 1. ReadBook (book_read_link). Atomic insert-if-missing.
+    rb_stmt = (
+        sqlite_insert(ub.ReadBook)
+        .values(user_id=user_id, book_id=book_id,
+                read_status=ub.ReadBook.STATUS_UNREAD,
+                times_started_reading=0)
+        .on_conflict_do_nothing(index_elements=["user_id", "book_id"])
+    )
+    ub.session.execute(rb_stmt)
+    ub.session.commit()
+    book_read = (
+        ub.session.query(ub.ReadBook)
+        .filter(ub.ReadBook.user_id == user_id,
+                ub.ReadBook.book_id == book_id)
+        .one()
+    )
+
+    # 2. KoboReadingState. Same pattern — but we also need the matching
+    #    KoboBookmark + KoboStatistics child rows. We create the parent
+    #    first, then attach children via the ORM if they're missing.
     if not book_read.kobo_reading_state:
-        kobo_reading_state = ub.KoboReadingState(user_id=book_read.user_id, book_id=book_id)
+        krs_stmt = (
+            sqlite_insert(ub.KoboReadingState)
+            .values(user_id=user_id, book_id=book_id)
+            .on_conflict_do_nothing(index_elements=["user_id", "book_id"])
+        )
+        ub.session.execute(krs_stmt)
+        ub.session.commit()
+        # Re-fetch via the relationship so SQLAlchemy's identity map picks
+        # up the row just inserted (possibly by us, possibly by a racing
+        # request). ``book_read.kobo_reading_state`` is a primaryjoin on
+        # (user_id, book_id), so the row will resolve automatically.
+        ub.session.refresh(book_read)
+
+    kobo_reading_state = book_read.kobo_reading_state
+
+    # 3. Child rows. These have an FK to KoboReadingState.id, so they
+    #    can be created via ORM safely (the parent row is now stable).
+    if kobo_reading_state.current_bookmark is None:
         kobo_reading_state.current_bookmark = ub.KoboBookmark()
+    if kobo_reading_state.statistics is None:
         kobo_reading_state.statistics = ub.KoboStatistics()
-        book_read.kobo_reading_state = kobo_reading_state
-    ub.session.add(book_read)
-    ub.session_commit()
-    return book_read.kobo_reading_state
+    ub.session.commit()
+
+    return kobo_reading_state
 
 
 def get_kobo_reading_state_response(book, kobo_reading_state):

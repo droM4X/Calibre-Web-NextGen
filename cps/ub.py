@@ -572,6 +572,13 @@ class ReadBook(Base):
     last_time_started_reading = Column(DateTime, nullable=True)
     times_started_reading = Column(Integer, default=0, nullable=False)
 
+    # Audit 2026-05-11: enforce per-(user, book) uniqueness so concurrent
+    # Kobo PUTs can't produce duplicate rows. The Kobo state handler reads
+    # via .one_or_none(); duplicates would surface as MultipleResultsFound.
+    __table_args__ = (
+        UniqueConstraint('user_id', 'book_id', name='uq_book_read_link_user_book'),
+    )
+
 
 class Bookmark(Base):
     __tablename__ = 'bookmark'
@@ -611,6 +618,13 @@ class ArchivedBook(Base):
     is_archived = Column(Boolean, unique=False)
     last_modified = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
+    # Audit 2026-05-11: enforce per-(user, book) uniqueness. Without it two
+    # concurrent Kobo PUTs could create duplicate rows; later reads
+    # (which use .one_or_none()) raise MultipleResultsFound -> 500.
+    __table_args__ = (
+        UniqueConstraint('user_id', 'book_id', name='uq_archived_book_user_book'),
+    )
+
 
 class UserHiddenBook(Base):
     """Per-user hidden books — fork issue #64.
@@ -644,6 +658,10 @@ class KoboSyncedBooks(Base):
     user_id = Column(Integer, ForeignKey('user.id'))
     book_id = Column(Integer)
 
+    __table_args__ = (
+        UniqueConstraint('user_id', 'book_id', name='uq_kobo_synced_books_user_book'),
+    )
+
 # The Kobo ReadingState API keeps track of 4 timestamped entities:
 #   ReadingState, StatusInfo, Statistics, CurrentBookmark
 # Which we map to the following 4 tables:
@@ -658,6 +676,10 @@ class KoboReadingState(Base):
     priority_timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     current_bookmark = relationship("KoboBookmark", uselist=False, backref="kobo_reading_state", cascade="all, delete")
     statistics = relationship("KoboStatistics", uselist=False, backref="kobo_reading_state", cascade="all, delete")
+
+    __table_args__ = (
+        UniqueConstraint('user_id', 'book_id', name='uq_kobo_reading_state_user_book'),
+    )
 
 
 class KoboBookmark(Base):
@@ -1110,6 +1132,293 @@ def migrate_magic_shelf_table(engine, _session):
         _run_ddl_with_retry(engine, "ALTER TABLE magic_shelf ADD column 'kobo_sync' Boolean DEFAULT 0")
 
 
+def migrate_kobo_unique_constraints(engine, _session):
+    """One-time migration: dedupe + uniquify (user_id, book_id) on Kobo
+    state tables (audit 2026-05-11).
+
+    Race condition: ``get_or_create_reading_state`` does read-then-write
+    without locking, so two concurrent Kobo PUTs to /v1/library/<uuid>/state
+    can both miss the existing row and both insert. The next read returns
+    multiple rows -> ``.one_or_none()`` raises MultipleResultsFound ->
+    500 to the device, which then retries forever.
+
+    The fix has two parts:
+
+    1. This migration: dedupe any existing duplicates, then create a
+       UNIQUE index on (user_id, book_id) so the DB rejects future races.
+       Winner per duplicate group is the row with the newest
+       ``last_modified`` (so the user's most recent reading position
+       survives). Child rows (KoboBookmark, KoboStatistics) are
+       reparented to the winning KoboReadingState; orphaned child rows
+       (the losers' children) are deleted only after their non-null
+       fields are merged into the winner's children — newest LM wins
+       per child too.
+
+    2. ``get_or_create_reading_state`` switches to an atomic
+       INSERT ... ON CONFLICT(user_id, book_id) DO NOTHING upsert so
+       the race itself can't produce a duplicate even before the DB
+       constraint trips.
+
+    Idempotent: gated by a marker file in CONFIG_DIR/.cwa_migrations/
+    so it runs at most once per install.
+    """
+    from sqlalchemy import inspect as sa_inspect
+    marker_path = os.path.join(constants.CONFIG_DIR, ".cwa_migrations",
+                               "kobo_unique_constraints_v1")
+    if os.path.isfile(marker_path):
+        return
+
+    inspector = sa_inspect(engine)
+    tables_present = set(inspector.get_table_names())
+
+    # All four tables share the (user_id, book_id) shape. Dedupe rules
+    # differ slightly per table; see _dedupe_* helpers below.
+    plan = [
+        ("kobo_reading_state", _dedupe_kobo_reading_state,
+         "uq_kobo_reading_state_user_book"),
+        ("book_read_link", _dedupe_book_read_link,
+         "uq_book_read_link_user_book"),
+        ("kobo_synced_books", _dedupe_kobo_synced_books,
+         "uq_kobo_synced_books_user_book"),
+        ("archived_book", _dedupe_archived_book,
+         "uq_archived_book_user_book"),
+    ]
+
+    try:
+        for table_name, dedupe_fn, index_name in plan:
+            if table_name not in tables_present:
+                continue
+            removed = dedupe_fn(_session)
+            if removed:
+                log.info(
+                    "[kobo-unique-migration] %s: merged %d duplicate row(s)",
+                    table_name, removed,
+                )
+        _session.commit()
+    except Exception as e:
+        log.error("[kobo-unique-migration] dedupe failed: %s", e)
+        _safe_session_rollback(_session, "kobo_unique_constraints/dedupe")
+        return
+
+    # Now that duplicates are gone, create the UNIQUE indexes. SQLite
+    # doesn't support ALTER TABLE ADD CONSTRAINT; a UNIQUE INDEX has
+    # equivalent semantics for INSERT ... ON CONFLICT routing and is
+    # what SQLAlchemy's UniqueConstraint generates on new installs.
+    ddl = [
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_kobo_reading_state_user_book "
+        "ON kobo_reading_state(user_id, book_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_book_read_link_user_book "
+        "ON book_read_link(user_id, book_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_kobo_synced_books_user_book "
+        "ON kobo_synced_books(user_id, book_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_archived_book_user_book "
+        "ON archived_book(user_id, book_id)",
+    ]
+    # Skip statements for tables that don't exist yet (fresh install path
+    # where add_missing_tables hasn't run create_all on a particular
+    # table — defensive only; current order has add_missing_tables first).
+    ddl = [s for s in ddl
+           if s.split(" ON ")[1].split("(")[0] in tables_present]
+    try:
+        _run_ddl_with_retry(engine, ddl)
+    except Exception as e:
+        log.error("[kobo-unique-migration] index creation failed: %s", e)
+        return
+
+    try:
+        os.makedirs(os.path.dirname(marker_path), exist_ok=True)
+        with open(marker_path, "w", encoding="utf-8") as fh:
+            fh.write(datetime.now(timezone.utc).isoformat())
+    except OSError as e:
+        # Marker is a perf optimization, not correctness — the migration
+        # is idempotent because the indexes already exist and dedupe is
+        # a no-op on a clean DB. Log but continue.
+        log.warning(
+            "[kobo-unique-migration] could not write marker %s: %s",
+            marker_path, e,
+        )
+
+
+def _dedupe_kobo_reading_state(_session):
+    """Pick winner per (user, book): newest last_modified. Reparent
+    KoboBookmark + KoboStatistics children to the winner, merging
+    non-null fields from losers' children (newest LM wins per child).
+    Returns count of losing rows deleted.
+    """
+    dup_groups = _find_duplicate_groups(_session, KoboReadingState)
+    deleted = 0
+    for (user_id, book_id), rows in dup_groups.items():
+        # Sort by last_modified DESC, NULL last; then id DESC as tiebreak.
+        rows.sort(
+            key=lambda r: (
+                r.last_modified or datetime.min.replace(tzinfo=timezone.utc),
+                r.id,
+            ),
+            reverse=True,
+        )
+        winner, losers = rows[0], rows[1:]
+        for loser in losers:
+            _merge_kobo_bookmark(_session, winner, loser)
+            _merge_kobo_statistics(_session, winner, loser)
+            _session.delete(loser)
+            deleted += 1
+    if deleted:
+        _session.flush()
+    return deleted
+
+
+def _merge_kobo_bookmark(_session, winner, loser):
+    """Merge loser.current_bookmark into winner.current_bookmark.
+    Newest last_modified wins per field; non-null beats null when LM
+    is missing. Loser's bookmark is left dangling (will be cascade-
+    deleted when loser KoboReadingState is deleted).
+    """
+    if loser.current_bookmark is None:
+        return
+    if winner.current_bookmark is None:
+        # Steal the row outright. Re-point its FK.
+        loser.current_bookmark.kobo_reading_state_id = winner.id
+        winner.current_bookmark = loser.current_bookmark
+        loser.current_bookmark = None
+        return
+    w, l = winner.current_bookmark, loser.current_bookmark
+    if _loser_wins_lm(l, w):
+        for attr in ("location_source", "location_type", "location_value",
+                     "progress_percent", "content_source_progress_percent",
+                     "last_modified"):
+            setattr(w, attr, getattr(l, attr))
+    else:
+        # Even if winner's bookmark is newer overall, prefer non-null
+        # losing fields if the winner has nulls there (defensive).
+        for attr in ("location_source", "location_type", "location_value",
+                     "progress_percent", "content_source_progress_percent"):
+            if getattr(w, attr) is None and getattr(l, attr) is not None:
+                setattr(w, attr, getattr(l, attr))
+
+
+def _merge_kobo_statistics(_session, winner, loser):
+    if loser.statistics is None:
+        return
+    if winner.statistics is None:
+        loser.statistics.kobo_reading_state_id = winner.id
+        winner.statistics = loser.statistics
+        loser.statistics = None
+        return
+    w, l = winner.statistics, loser.statistics
+    if _loser_wins_lm(l, w):
+        for attr in ("remaining_time_minutes", "spent_reading_minutes",
+                     "last_modified"):
+            setattr(w, attr, getattr(l, attr))
+    else:
+        for attr in ("remaining_time_minutes", "spent_reading_minutes"):
+            if getattr(w, attr) is None and getattr(l, attr) is not None:
+                setattr(w, attr, getattr(l, attr))
+
+
+def _dedupe_book_read_link(_session):
+    """ReadBook winner: prefer rows with the highest read_status (FINISHED
+    > IN_PROGRESS > UNREAD), tiebreak by newest last_modified, then by
+    highest times_started_reading. Sum times_started_reading from losers
+    into the winner so the user doesn't lose their read-counter total.
+    """
+    dup_groups = _find_duplicate_groups(_session, ReadBook)
+    deleted = 0
+    for (user_id, book_id), rows in dup_groups.items():
+        rows.sort(
+            key=lambda r: (
+                r.read_status or 0,
+                r.last_modified or datetime.min.replace(tzinfo=timezone.utc),
+                r.times_started_reading or 0,
+                r.id,
+            ),
+            reverse=True,
+        )
+        winner, losers = rows[0], rows[1:]
+        for loser in losers:
+            winner.times_started_reading = (
+                (winner.times_started_reading or 0)
+                + (loser.times_started_reading or 0)
+            )
+            if (loser.last_time_started_reading is not None and
+                (winner.last_time_started_reading is None or
+                 loser.last_time_started_reading > winner.last_time_started_reading)):
+                winner.last_time_started_reading = loser.last_time_started_reading
+            _session.delete(loser)
+            deleted += 1
+    if deleted:
+        _session.flush()
+    return deleted
+
+
+def _dedupe_kobo_synced_books(_session):
+    """No payload to merge — just keep one row (lowest id) per (user, book)."""
+    dup_groups = _find_duplicate_groups(_session, KoboSyncedBooks)
+    deleted = 0
+    for (user_id, book_id), rows in dup_groups.items():
+        rows.sort(key=lambda r: r.id)
+        for loser in rows[1:]:
+            _session.delete(loser)
+            deleted += 1
+    if deleted:
+        _session.flush()
+    return deleted
+
+
+def _dedupe_archived_book(_session):
+    """ArchivedBook winner: is_archived=True takes precedence over False
+    (archived is the more-recent semantic signal), then newest LM, then
+    highest id.
+    """
+    dup_groups = _find_duplicate_groups(_session, ArchivedBook)
+    deleted = 0
+    for (user_id, book_id), rows in dup_groups.items():
+        rows.sort(
+            key=lambda r: (
+                1 if r.is_archived else 0,
+                r.last_modified or datetime.min.replace(tzinfo=timezone.utc),
+                r.id,
+            ),
+            reverse=True,
+        )
+        for loser in rows[1:]:
+            _session.delete(loser)
+            deleted += 1
+    if deleted:
+        _session.flush()
+    return deleted
+
+
+def _find_duplicate_groups(_session, model):
+    """Return dict {(user_id, book_id): [rows]} for groups with size >= 2."""
+    from sqlalchemy import func as sa_func
+    dup_keys = (
+        _session.query(model.user_id, model.book_id)
+        .group_by(model.user_id, model.book_id)
+        .having(sa_func.count(model.id) > 1)
+        .all()
+    )
+    groups = {}
+    for user_id, book_id in dup_keys:
+        rows = (
+            _session.query(model)
+            .filter(model.user_id == user_id, model.book_id == book_id)
+            .all()
+        )
+        groups[(user_id, book_id)] = rows
+    return groups
+
+
+def _loser_wins_lm(loser, winner):
+    """True if loser.last_modified > winner.last_modified (strictly newer)."""
+    lo = getattr(loser, "last_modified", None)
+    wn = getattr(winner, "last_modified", None)
+    if lo is None:
+        return False
+    if wn is None:
+        return True
+    return lo > wn
+
+
 # Migrate database to current version, has to be updated after every database change. Currently migration from
 # maybe 4/5 versions back to current should work.
 # Migration is done by checking if relevant columns are existing, and then adding rows with SQL commands
@@ -1122,6 +1431,7 @@ def migrate_Database(_session):
     migrate_oauth_provider_table(engine, _session)
     migrate_config_table(engine, _session)
     migrate_magic_shelf_table(engine, _session)
+    migrate_kobo_unique_constraints(engine, _session)
 
     # Ensure progress syncing tables in app.db (user-related tables)
     from .progress_syncing.models import ensure_app_db_tables
