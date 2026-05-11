@@ -69,7 +69,7 @@ jobs:
 
       # --- 3. Build & Push (Digest Only) ---
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           driver-opts: network=host
 
@@ -178,7 +178,7 @@ jobs:
 
       # --- 3. Build & Push (Digest Only) ---
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
         with:
           driver-opts: network=host
 
@@ -317,7 +317,7 @@ jobs:
           merge-multiple: true
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
