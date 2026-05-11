@@ -117,8 +117,17 @@ def create_authenticated_user(username, email=None, auth_source="unknown"):
 
 @auth.verify_password
 def verify_password(username, password):
+    # Issue #121: OPDS clients (Readest, etc.) commonly issue an
+    # unauthenticated probe before sending credentials, which lands here as
+    # ``verify_password("", "")`` and used to log a WARN per request — log
+    # spam without any signal. Short-circuit cleanly: an empty username is
+    # "no credentials submitted," not a login failure. The decorator
+    # ``requires_basic_auth_if_no_ano`` will fall back to Guest if anonymous
+    # browsing is enabled, otherwise return 401.
+    if not username:
+        return None
     user = ub.session.query(ub.User).filter(func.lower(ub.User.name) == username.lower()).first()
-    
+
     # Handle existing users
     if user:
         if user.name.lower() == "guest":
@@ -169,7 +178,11 @@ def verify_password(username, password):
         except Exception as ex:
             log.error("LDAP auto-creation error for OPDS user '%s': %s", username, ex)
     
-    # Use request.remote_addr (already corrected by ProxyFix) instead of raw header
+    # Issue #121: only warn when a non-empty username actually failed to
+    # authenticate. The empty-username probe case is filtered out at the
+    # top of this function, so reaching here means real credentials were
+    # rejected — that's worth a WARN. The previous code warned for the
+    # probe too, spamming the logs on every OPDS catalogue fetch.
     ip_address = request.remote_addr
     log.warning('OPDS Login failed for user "%s" IP-address: %s', username, ip_address)
     return None
@@ -183,11 +196,26 @@ def requires_basic_auth_if_no_ano(f):
         user = None
         if config.config_allow_reverse_proxy_header_login and not authorisation:
             user = load_user_from_reverse_proxy_header(request)
+        # Issue #121: when anonymous browsing is enabled, the previous code
+        # only substituted Guest when no auth header was present at all —
+        # so a client sending credentials with an empty or wrong username
+        # got a 401 instead of the Guest catalog it would have seen without
+        # credentials. Anon-enabled deployments should behave the same
+        # whether the client tries to authenticate or not: real creds win
+        # if they validate, otherwise fall through to Guest.
         if config.config_anonbrowse == 1 and not authorisation:
             authorisation = Authorization(
                 b"Basic", {'username': "Guest", 'password': ""})
         if not user:
             user = auth.authenticate(authorisation, "")
+        # Issue #121 part 2: graceful fallback to Guest when auth was
+        # attempted but failed and anonymous browsing is on. Without this
+        # the OPDS client never sees the anon catalog whenever it has a
+        # bad/empty credential cached.
+        if user in (False, None) and config.config_anonbrowse == 1:
+            guest_auth = Authorization(
+                b"Basic", {'username': "Guest", 'password': ""})
+            user = auth.authenticate(guest_auth, "")
         if user in (False, None):
             status = 401
         if status:

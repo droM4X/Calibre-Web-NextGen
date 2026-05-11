@@ -12,6 +12,7 @@ from urllib.parse import unquote_plus
 from flask import Blueprint, request, render_template, make_response, abort, Response, g, url_for
 from flask_babel import get_locale
 from flask_babel import gettext as _
+from flask_babel import lazy_gettext as N_
 
 
 from sqlalchemy.sql.expression import func, text, or_, and_, true
@@ -47,101 +48,107 @@ OPDS_ROOT_ORDER_DEFAULT = [
     'magic_shelves',
 ]
 
+# Issue #121: title/description strings on every entry below are wrapped with
+# `N_()` (lazy_gettext) so pybabel-extract picks them up into messages.pot. The
+# pre-fix dict held bare Python literals — pybabel can't follow `_(variable)`
+# at extract time, so newer keys (`books`, `recent`, `magic_shelves`) never
+# made it into the catalog and rendered as English even on a Hungarian-locale
+# UI while the older keys (`hot`, `read`) showed translated.
 OPDS_ROOT_ENTRY_DEFS = {
     'books': {
         'endpoint': 'opds.feed_booksindex',
-        'title': 'Alphabetical Books',
-        'description': 'Books sorted alphabetically',
+        'title': N_('Alphabetical Books'),
+        'description': N_('Books sorted alphabetically'),
         'visible': lambda user, allow_anonymous: True,
     },
     'hot': {
         'endpoint': 'opds.feed_hot',
-        'title': 'Hot Books',
-        'description': 'Popular publications from this catalog based on Downloads.',
+        'title': N_('Hot Books'),
+        'description': N_('Popular publications from this catalog based on Downloads.'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_HOT),
     },
     'top_rated': {
         'endpoint': 'opds.feed_best_rated',
-        'title': 'Top Rated Books',
-        'description': 'Popular publications from this catalog based on Rating.',
+        'title': N_('Top Rated Books'),
+        'description': N_('Popular publications from this catalog based on Rating.'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_BEST_RATED),
     },
     'recent': {
         'endpoint': 'opds.feed_new',
-        'title': 'Recently added Books',
-        'description': 'The latest Books',
+        'title': N_('Recently added Books'),
+        'description': N_('The latest Books'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_RECENT),
     },
     'random': {
         'endpoint': 'opds.feed_discover',
-        'title': 'Random Books',
-        'description': 'Show Random Books',
+        'title': N_('Random Books'),
+        'description': N_('Show Random Books'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_RANDOM),
     },
     'read': {
         'endpoint': 'opds.feed_read_books',
-        'title': 'Read Books',
-        'description': 'Read Books',
+        'title': N_('Read Books'),
+        'description': N_('Read Books'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_READ_AND_UNREAD) and not user.is_anonymous,
     },
     'unread': {
         'endpoint': 'opds.feed_unread_books',
-        'title': 'Unread Books',
-        'description': 'Unread Books',
+        'title': N_('Unread Books'),
+        'description': N_('Unread Books'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_READ_AND_UNREAD) and not user.is_anonymous,
     },
     'authors': {
         'endpoint': 'opds.feed_authorindex',
-        'title': 'Authors',
-        'description': 'Books ordered by Author',
+        'title': N_('Authors'),
+        'description': N_('Books ordered by Author'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_AUTHOR),
     },
     'publishers': {
         'endpoint': 'opds.feed_publisherindex',
-        'title': 'Publishers',
-        'description': 'Books ordered by publisher',
+        'title': N_('Publishers'),
+        'description': N_('Books ordered by publisher'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_PUBLISHER),
     },
     'categories': {
         'endpoint': 'opds.feed_categoryindex',
-        'title': 'Categories',
-        'description': 'Books ordered by category',
+        'title': N_('Categories'),
+        'description': N_('Books ordered by category'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_CATEGORY),
     },
     'series': {
         'endpoint': 'opds.feed_seriesindex',
-        'title': 'Series',
-        'description': 'Books ordered by series',
+        'title': N_('Series'),
+        'description': N_('Books ordered by series'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_SERIES),
     },
     'languages': {
         'endpoint': 'opds.feed_languagesindex',
-        'title': 'Languages',
-        'description': 'Books ordered by Languages',
+        'title': N_('Languages'),
+        'description': N_('Books ordered by Languages'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_LANGUAGE),
     },
     'ratings': {
         'endpoint': 'opds.feed_ratingindex',
-        'title': 'Ratings',
-        'description': 'Books ordered by Rating',
+        'title': N_('Ratings'),
+        'description': N_('Books ordered by Rating'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_RATING),
     },
     'formats': {
         'endpoint': 'opds.feed_formatindex',
-        'title': 'File formats',
-        'description': 'Books ordered by file formats',
+        'title': N_('File formats'),
+        'description': N_('Books ordered by file formats'),
         'visible': lambda user, __: user.check_visibility(constants.SIDEBAR_FORMAT),
     },
     'shelves': {
         'endpoint': 'opds.feed_shelfindex',
-        'title': 'Shelves',
-        'description': 'Books organized in shelves',
+        'title': N_('Shelves'),
+        'description': N_('Books organized in shelves'),
         'visible': lambda user, allow_anonymous: user.is_authenticated or allow_anonymous,
     },
     'magic_shelves': {
         'endpoint': 'opds.feed_magic_shelfindex',
-        'title': 'Magic Shelves',
-        'description': 'Books organized in magic shelves',
+        'title': N_('Magic Shelves'),
+        'description': N_('Books organized in magic shelves'),
         'visible': lambda user, allow_anonymous: user.is_authenticated or allow_anonymous,
     },
 }
