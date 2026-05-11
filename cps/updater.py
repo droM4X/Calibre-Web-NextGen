@@ -24,7 +24,34 @@ from .file_helper import get_temp_dir
 
 
 log = logger.create()
-_REPOSITORY_API_URL = 'https://api.github.com/repos/janeczku/calibre-web'
+
+# Release-check target. PR #28 (v4.0.8) pointed the s6-init bootstrap probe
+# at this fork; the in-app "Check for Update" button kept hitting janeczku
+# until #125 — leaving the admin updater advertising obsolete versions. The
+# env override matches the contract from #28 so downstreams can still pin to
+# upstream or another fork by name.
+_REPOSITORY_SLUG = os.environ.get("CWA_RELEASE_REPO", "new-usemame/Calibre-Web-NextGen").strip() or "new-usemame/Calibre-Web-NextGen"
+_REPOSITORY_API_URL = 'https://api.github.com/repos/' + _REPOSITORY_SLUG
+
+
+def _normalize_tag(tag_name):
+    """Return a 3-tuple (major, minor, patch) of ints for a release tag.
+
+    Accepts both ``vX.Y.Z`` (our fork format) and ``X.Y.Z`` (upstream's
+    format). Returns ``None`` if the tag doesn't parse — callers must
+    handle that, since GitHub Releases can legitimately carry non-semver
+    tags (alpha builds, manual rebuilds, etc.).
+    """
+    if not tag_name:
+        return None
+    s = tag_name.strip().lstrip("vV")
+    parts = s.split(".")
+    if len(parts) < 3:
+        return None
+    try:
+        return (int(parts[0]), int(parts[1]), int(parts[2]))
+    except (TypeError, ValueError):
+        return None
 
 
 def is_sha1(sha1):
@@ -503,7 +530,8 @@ class Updater(threading.Thread):
         return status
 
     def _stable_updater_parse_major_version(self, commit, i, parents, current_version, status):
-        if int(commit[i + 1]['tag_name'].split('.')[1]) == current_version[1]:
+        next_parsed = _normalize_tag(commit[i + 1]['tag_name']) if i + 1 < len(commit) else None
+        if next_parsed is not None and next_parsed[1] == current_version[1]:
             parents.append([commit[i]['tag_name'],
                             commit[i]['body'].replace('\r\n', '<p>').replace('\n', '<p>')])
             status.update({
@@ -541,7 +569,12 @@ class Updater(threading.Thread):
                 status['message'] = _(u'No release information available')
                 return json.dumps(status)
             version = status['current_commit_hash']
-            current_version = status['current_commit_hash'].split('.')
+            current_parts = _normalize_tag(version)
+            if current_parts is None:
+                status['message'] = _(u'Unexpected data while reading update information')
+                log.error("Unexpected installed-version format: %s", version)
+                return json.dumps(status)
+            current_version = list(current_parts)
 
             # we are already on newest version, no update available
             if 'tag_name' not in commit[0]:
@@ -562,16 +595,14 @@ class Updater(threading.Thread):
                 if 'tag_name' not in commit[i] or 'body' not in commit[i] or 'zipball_url' not in commit[i]:
                     status['message'] = _(u'Unexpected data while reading update information')
                     return json.dumps(status)
-                major_version_update = int(commit[i]['tag_name'].split('.')[0])
-                minor_version_update = int(commit[i]['tag_name'].split('.')[1])
-                patch_version_update = int(commit[i]['tag_name'].split('.')[2])
-
-                current_version[0] = int(current_version[0])
-                current_version[1] = int(current_version[1])
-                try:
-                    current_version[2] = int(current_version[2])
-                except ValueError:
-                    current_version[2] = int(current_version[2].replace("b", "").split(' ')[0])-1
+                parsed = _normalize_tag(commit[i]['tag_name'])
+                if parsed is None:
+                    # Skip releases with non-semver tags rather than blowing up
+                    # the whole check on one weird tag.
+                    log.debug("skipping unparseable tag %s", commit[i]['tag_name'])
+                    i -= 1
+                    continue
+                major_version_update, minor_version_update, patch_version_update = parsed
 
                 # Check if major versions are identical search for newest non-equal commit and update to this one
                 if major_version_update == current_version[0]:
