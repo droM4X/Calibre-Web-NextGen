@@ -902,6 +902,33 @@ class CalibreDB:
         self.ensure_session()
         return self.session.query(Books).filter(Books.uuid == book_uuid).first()
 
+    def get_book_by_uuid_for_kobo(self, book_uuid, *, enforce_policy):
+        """Return the Books row by uuid for the Kobo blueprint.
+
+        ``enforce_policy=True``: applies ``common_filters`` (hidden,
+        denied-tags, language, custom-column ACL) so policy-restricted
+        books are invisible — symmetric with what the web UI / OPDS /
+        sync push show. Pass on policy-boundary endpoints (metadata GET,
+        shelf-add).
+
+        ``enforce_policy=False``: bypasses filters. Use on device-
+        trailing endpoints (state GET/PUT) and on destructive user-
+        initiated ops (shelf-remove, book DELETE) so the device can
+        always clean up and keep sync state working for books already
+        on the device.
+
+        ``allow_show_archived=True`` always on the Kobo path — the
+        ``ArchivedBook`` table doubles as the Kobo's "deleted locally"
+        track. Filtering on it would 404 the device's own deletions.
+
+        Decision matrix: notes/KOBO-B4-COMMON-FILTERS-POLICY.md.
+        """
+        self.ensure_session()
+        q = self.session.query(Books).filter(Books.uuid == book_uuid)
+        if enforce_policy:
+            q = q.filter(self.common_filters(allow_show_archived=True))
+        return q.first()
+
     def get_book_format(self, book_id, file_format):
         self.ensure_session()
         return self.session.query(Data).filter(Data.book == book_id).filter(Data.format == file_format).first()

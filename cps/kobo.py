@@ -466,7 +466,9 @@ def HandleMetadataRequest(book_uuid):
     if not current_app.wsgi_app.is_proxied:
         log.debug('Kobo: Received unproxied request, changed request port to external server port')
     log.info("Kobo library metadata request received for book %s" % book_uuid)
-    book = calibre_db.get_book_by_uuid(book_uuid)
+    # Policy boundary: metadata GET. Symmetric with web/OPDS — books the
+    # user can't see in the web UI shouldn't expose metadata via Kobo.
+    book = calibre_db.get_book_by_uuid_for_kobo(book_uuid, enforce_policy=True)
     if not book or not book.data:
         log.info("Book %s not found in database", book_uuid)
         return redirect_or_proxy_request()
@@ -747,7 +749,13 @@ def add_items_to_shelf(items, shelf):
                 items_unknown_to_calibre.append(item)
                 continue
 
-            book = calibre_db.get_book_by_uuid(item["RevisionId"])
+            # Policy boundary: shelf-add. Adding a denied/hidden book to a
+            # Kobo-synced shelf would leak it to every other Kobo on the
+            # same account. Treat as unknown-to-calibre so the device
+            # silently drops it (existing items_unknown_to_calibre path).
+            book = calibre_db.get_book_by_uuid_for_kobo(
+                item["RevisionId"], enforce_policy=True,
+            )
             if not book:
                 items_unknown_to_calibre.append(item)
                 continue
@@ -819,7 +827,12 @@ def HandleTagRemoveItem(tag_id):
                 items_unknown_to_calibre.append(item)
                 continue
 
-            book = calibre_db.get_book_by_uuid(item["RevisionId"])
+            # Destructive, user-initiated: shelf-remove. Never block on
+            # policy filters — the user must be able to clean up shelves
+            # even when the underlying book is now hidden / denied / etc.
+            book = calibre_db.get_book_by_uuid_for_kobo(
+                item["RevisionId"], enforce_policy=False,
+            )
             if not book:
                 items_unknown_to_calibre.append(item)
                 continue
@@ -946,7 +959,11 @@ def create_kobo_tag_magic(shelf, books):
 @kobo.route("/v1/library/<book_uuid>/state", methods=["GET", "PUT"])
 @requires_kobo_auth
 def HandleStateRequest(book_uuid):
-    book = calibre_db.get_book_by_uuid(book_uuid)
+    # Device-trailing: state GET/PUT. The book is already on the Kobo;
+    # reading progress must keep syncing even if the book later becomes
+    # hidden/denied (otherwise the device retries forever and the user
+    # sees sync failures). Sync push handler is the policy boundary.
+    book = calibre_db.get_book_by_uuid_for_kobo(book_uuid, enforce_policy=False)
     if not book or not book.data:
         log.info("Book %s not found in database", book_uuid)
         return redirect_or_proxy_request()
@@ -1241,7 +1258,10 @@ def TopLevelEndpoint():
 @requires_kobo_auth
 def HandleBookDeletionRequest(book_uuid):
     log.info("Kobo book delete request received for book %s", book_uuid)
-    book = calibre_db.get_book_by_uuid(book_uuid)
+    # Destructive, user-initiated: book DELETE. Never block on policy
+    # filters — user must be able to remove a book from their Kobo
+    # regardless of current hidden / denied / language state.
+    book = calibre_db.get_book_by_uuid_for_kobo(book_uuid, enforce_policy=False)
     if not book:
         log.info("Book %s not found in database", book_uuid)
         return redirect_or_proxy_request()
