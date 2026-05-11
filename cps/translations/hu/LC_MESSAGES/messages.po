@@ -1693,6 +1693,22 @@ msgstr "Népszerű könyvek"
 msgid "Show Hot Books"
 msgstr "Népszerű könyvek megjelenítése"
 
+#: cps/opds.py:60
+msgid "Alphabetical Books"
+msgstr "Könyvek ábécé sorrendben"
+
+#: cps/opds.py:78
+msgid "Recently added Books"
+msgstr "Nemrég hozzáadott könyvek"
+
+#: cps/opds.py:150
+msgid "Magic Shelves"
+msgstr "Varázspolcok"
+
+#: cps/opds.py:66
+msgid "Random Books"
+msgstr "Véletlenszerű könyvek"
+
 #: cps/render_template.py:47 cps/render_template.py:52
 msgid "Downloaded Books"
 msgstr "Letöltött könyvek"

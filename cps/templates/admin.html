@@ -255,7 +255,13 @@
           <tr id="current_version">
             <td>Calibre-Web NextGen</td>
             <td>{{cwa_version}} </td>
-            <td><i>{{_('Current Version')}}</i></td>
+            <td>
+              {% if cwa_is_outdated and cwa_latest_tag %}
+                <i style="color:#cc7b19;">{{_('Update available')}}: <strong>{{cwa_latest_tag}}</strong> — <code>docker pull ghcr.io/new-usemame/calibre-web-nextgen:latest</code></i>
+              {% else %}
+                <i>{{_('Current Version')}}</i>
+              {% endif %}
+            </td>
           </tr>
           <tr id="current_version">
             <td>Calibre</td>

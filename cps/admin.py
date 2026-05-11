@@ -519,11 +519,33 @@ def cwa_get_package_versions() -> tuple[str, str, str, str]:
     return cwa_version, kepubify_version, calibre_version
 
 
+def cwa_get_update_indicator() -> tuple[bool, str]:
+    """Return ``(is_outdated, latest_tag)`` for the admin Version
+    Information table (fork issue #125 follow-up). Docker builds disable
+    ``feature_support['updater']`` so the "Check for Update" button never
+    renders — Docker users (the operator's deployment, plus everyone
+    pulling ``ghcr.io/new-usemame/calibre-web-nextgen``) had no way to
+    learn that a newer release existed from the admin UI.
+    ``s6-init/cwa-init`` (per PR #28) already writes the latest fork tag
+    to ``/app/CWA_STABLE_RELEASE`` at container boot; we just need to
+    surface it next to the installed version in the admin table.
+    Returns ``(False, "")`` on any error so the page never fails to
+    render because of a version-probe glitch.
+    """
+    try:
+        from .render_template import cwa_update_available
+        is_newer, _current, latest = cwa_update_available()
+        return bool(is_newer), (latest or "")
+    except Exception:
+        return False, ""
+
+
 @admi.route("/admin/view")
 @user_login_required
 @admin_required
 def admin():
     cwa_version, kepubify_version, calibre_version = cwa_get_package_versions()
+    is_outdated, latest_tag = cwa_get_update_indicator()
 
     all_user = ub.session.query(ub.User).all()
     # email_settings = mail_config.get_mail_settings()
@@ -533,7 +555,10 @@ def admin():
 
     return render_title_template("admin.html", allUser=all_user, config=config,
                                  cwa_version=cwa_version, kepubify_version=kepubify_version,
-                                 calibre_version=calibre_version, feature_support=feature_support,
+                                 calibre_version=calibre_version,
+                                 cwa_is_outdated=is_outdated,
+                                 cwa_latest_tag=latest_tag,
+                                 feature_support=feature_support,
                                  schedule_time=schedule_time, schedule_duration=schedule_duration,
                                  title=_("Admin page"), page="admin")
 
