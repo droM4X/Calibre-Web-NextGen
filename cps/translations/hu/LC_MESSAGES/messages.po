@@ -7147,9 +7147,6 @@ msgstr "Olvasott/olvasatlan mutatása"
 #~ msgid "The latest Books"
 #~ msgstr "A legfrissebb könyvek"
 
-#~ msgid "Random Books"
-#~ msgstr "Könyvek találomra"
-
 #~ msgid "Books ordered by Author"
 #~ msgstr "Könyvek szerző szerint rendezve"
 
