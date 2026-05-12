@@ -1516,7 +1516,7 @@ msgstr ""
 #: cps/helper.py:1053 cps/helper.py:1061
 #, python-format
 msgid "Cover image exceeds maximum size of %(size)s MB"
-msgstr "La imagen de portada supera el tamaño máximo de %(tamaño)s MB"
+msgstr "La imagen de portada supera el tamaño máximo de %(size)s MB"
 
 #: cps/helper.py:1072
 msgid "Error Downloading Cover"

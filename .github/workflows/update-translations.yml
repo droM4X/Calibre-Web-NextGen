@@ -24,6 +24,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           persist-credentials: true
+          # GH_PAT is a personal token belonging to new-usemame (the repo
+          # admin). The "main protection" ruleset blocks direct pushes to
+          # main for everyone except admins, so the default GITHUB_TOKEN
+          # (which authenticates as github-actions[bot]) gets rejected
+          # with GH013. Using GH_PAT lets the workflow's translation
+          # commit land on main under new-usemame's admin-bypass.
+          token: ${{ secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -44,8 +51,10 @@ jobs:
 
       - name: Commit translation updates
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Identity must be new-usemame: validate-author + the main
+          # branch ruleset bypass list both key off this committer email.
+          git config --global user.name "new-usemame"
+          git config --global user.email "248195428+new-usemame@users.noreply.github.com"
           git add -f messages.pot cps/translations/*/LC_MESSAGES/messages.po README.md
           if git diff --cached --quiet; then
             echo "No translation changes to commit"
