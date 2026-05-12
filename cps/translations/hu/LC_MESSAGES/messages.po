@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-Automated\n"
 "POT-Creation-Date: 2026-05-08 21:16+0200\n"
-"PO-Revision-Date: 2026-05-08 22:36+0200\n"
+"PO-Revision-Date: 2026-05-12 00:06+0200\n"
 "Last-Translator: Gabor L. <nom@il.thx>\n"
 "Language-Team: \n"
 "Language: hu\n"
@@ -4801,6 +4801,9 @@ msgid ""
 "for metadata fetching and other processing to complete before sending. Only applies to users who "
 "have enabled auto-send in their profile."
 msgstr ""
+"Késleltetés (percben) az újonnan beolvasott könyvek automatikus elküldése előtt az e-olvasókra. Ez "
+"időt ad a metaadatok lekérésének és egyéb feldolgozások befejezésének a küldés előtt. Csak azokra a "
+"felhasználókra vonatkozik, akik engedélyezték az automatikus küldést a profiljukban."
 
 #: cps/templates/cwa_settings.html:494
 msgid "Delay (minutes):"
@@ -4819,10 +4822,14 @@ msgid ""
 "Configure the order in which metadata providers are searched when automatically fetching metadata "
 "for new books. Drag and drop to reorder providers. Only enabled providers will be used."
 msgstr ""
+"Állítsd be a metaadat-szolgáltatók keresési sorrendjét az új könyvek metaadatainak automatikus "
+"lekérésekor. A szolgáltatók sorrendje fogd és vidd módszerrel módosítható. Csak az engedélyezett "
+"szolgáltatók lesznek használva."
 
 #: cps/templates/cwa_settings.html:526
 msgid "Providers are tried in order from top to bottom. Drag to reorder."
 msgstr ""
+"A szolgáltatók felülről lefelé haladva kerülnek kipróbálásra. Húzd át őket a sorrend módosításához."
 
 #: cps/templates/cwa_settings.html:535
 msgid "Enabled Metadata Providers"
@@ -4855,6 +4862,9 @@ msgid ""
 "environment variables or configure a global token in Basic Configuration. Without a valid token, "
 "this feature will remain disabled."
 msgstr ""
+"A Hardcover automatikus lekérésének engedélyezéséhez érvényes HARDCOVER_TOKEN értéket kell megadnod "
+"a docker-compose környezeti változói között, vagy be kell állítanod egy globális tokent az Alap "
+"konfigurációban. Érvényes token nélkül ez a funkció letiltva marad."
 
 #: cps/templates/cwa_settings.html:569
 msgid "Enable Hardcover Auto-Fetch"
@@ -4865,6 +4875,9 @@ msgid ""
 "Automatically search Hardcover for books without Hardcover IDs. High-confidence matches are applied "
 "automatically; low-confidence matches are queued for manual review."
 msgstr ""
+"Automatikusan keres a Hardcoverben azoknál a könyveknél, amelyek nem rendelkeznek Hardcover "
+"azonosítóval. A nagy megbízhatóságú találatok automatikusan alkalmazásra kerülnek, az alacsony "
+"megbízhatóságúak pedig manuális ellenőrzési sorba kerülnek."
 
 #: cps/templates/cwa_settings.html:576
 msgid "Run Schedule:"
@@ -4872,7 +4885,7 @@ msgstr "Futási időzítés:"
 
 #: cps/templates/cwa_settings.html:597
 msgid "How often to automatically run the Hardcover ID fetch task"
-msgstr ""
+msgstr "Milyen gyakran fusson automatikusan a Hardcover azonosítók lekérési feladata"
 
 #: cps/templates/cwa_settings.html:677
 msgid "Minimum Confidence Threshold:"
@@ -4887,6 +4900,9 @@ msgid ""
 "Matches with confidence scores above this threshold are automatically applied. Lower scores are "
 "queued for manual review. Higher values = fewer auto-matches but higher accuracy."
 msgstr ""
+"Az ennél magasabb megbízhatósági pontszámú találatok automatikusan alkalmazásra kerülnek. Az "
+"alacsonyabb pontszámúak manuális ellenőrzési sorba kerülnek. A magasabb érték kevesebb automatikus "
+"egyezést, de nagyobb pontosságot jelent."
 
 #: cps/templates/cwa_settings.html:695
 msgid "Batch Size:"
@@ -4894,13 +4910,15 @@ msgstr "Tételmennyiség:"
 
 #: cps/templates/cwa_settings.html:705
 msgid "Range: 10-200 books per run (default: 50)"
-msgstr ""
+msgstr "Tartomány: 10–200 könyv futásonként (alapértelmezett: 50)"
 
 #: cps/templates/cwa_settings.html:707
 msgid ""
 "Number of books to process in each scheduled run. Smaller batches reduce API load; larger batches "
 "process your library faster."
 msgstr ""
+"Egy ütemezett futás során feldolgozandó könyvek száma. A kisebb kötegek csökkentik az API "
+"terhelését, a nagyobb kötegek gyorsabban feldolgozzák a könyvtárat."
 
 #: cps/templates/cwa_settings.html:713
 msgid "Rate Limit Delay (seconds):"
@@ -4915,12 +4933,17 @@ msgid ""
 "Delay between API requests to Hardcover. Prevents rate limiting and protects your API key. Uses "
 "exponential backoff on errors."
 msgstr ""
+"Késleltetés a Hardcover API kérések között. Segít elkerülni a rate limitet és védi az API kulcsot. "
+"Hibák esetén exponenciális visszalépést (backoff) használ."
 
 #: cps/templates/cwa_settings.html:731
 msgid ""
 "You can manually trigger the Hardcover auto-fetch task from the Admin panel at any time. Check the "
 "CWA Stats page to see progress and review queued matches that need manual approval."
 msgstr ""
+"A Hardcover automatikus lekérési feladatot bármikor manuálisan elindíthatod az Admin panelről. A "
+"folyamat állapotát a CWA Stats oldalon követheted, ahol a manuális jóváhagyásra váró egyezéseket is "
+"át tudod nézni."
 
 #: cps/templates/cwa_settings.html:738
 msgid "Web UI Settings"
@@ -4955,6 +4978,8 @@ msgid ""
 "When active, your Magic Shelves will be synced to your Kobo device as collections. Note: You must "
 "also enable Kobo Sync in Basic Configuration."
 msgstr ""
+"Aktiválás esetén a Magic Shelves gyűjteményekként szinkronizálódnak a Kobo eszközödre. Megjegyzés: a "
+"Kobo Sync-et is engedélyezned kell az Alap konfigurációban."
 
 #: cps/templates/cwa_settings.html:775
 msgid "Enable Blurred Backgrounds on Mobile (&lt;768px)"
@@ -5031,6 +5056,8 @@ msgid ""
 "When the Auto-Convert feature is active, all ingested books will be automatically converted to the "
 "format chosen here (except those formats selected in the ignore list below)"
 msgstr ""
+"Az Auto-Convert funkció aktív állapotában minden beolvasott könyv automatikusan az itt kiválasztott "
+"formátumra lesz konvertálva (kivéve az alább az ignorálási listában megadott formátumokat)."
 
 #: cps/templates/cwa_settings.html:833
 msgid "Choose a target format:"
@@ -5041,6 +5068,8 @@ msgid ""
 "Note: CWA's Metadata Enforcement service can currently only support file in either EPUB and AZW3 "
 "format. Files in other formats will simply be ignored by the service"
 msgstr ""
+"Megjegyzés: a CWA Metadata Enforcement szolgáltatás jelenleg csak EPUB és AZW3 formátumú fájlokat "
+"támogat. A többi formátumú fájlokat a rendszer egyszerűen figyelmen kívül hagyja."
 
 #: cps/templates/cwa_settings.html:851
 msgid "CWA Auto-Convert - Ignored Formats"
@@ -5051,6 +5080,8 @@ msgid ""
 "The formats selected here will be ignored by CWA's Auto-Conversion feature when it's active, meaning "
 "they will be imported as is."
 msgstr ""
+"Az itt kiválasztott formátumokat a CWA Auto-Conversion funkció figyelmen kívül hagyja, amikor aktív, "
+"vagyis ezek változtatás nélkül kerülnek importálásra."
 
 #: cps/templates/cwa_settings.html:878
 msgid "CWA Auto-Convert - Retained Formats"
@@ -5062,6 +5093,9 @@ msgid ""
 "to the target format. However, if the format is in the \"CWA Auto-Ingest - Ignored Formats\" list, "
 "it will not be imported. Note that the target format is always retained."
 msgstr ""
+"Az itt kiválasztott formátumok mindig bekerülnek a könyvtárba, még akkor is, ha már át lettek "
+"konvertálva a célformátumra. Viszont ha egy formátum szerepel a „CWA Auto-Ingest – Ignored Formats” "
+"listában, akkor nem kerül importálásra. A célformátum minden esetben megmarad."
 
 #: cps/templates/cwa_settings.html:907
 msgid "CWA Auto-Ingest Automerge"
@@ -5069,7 +5103,7 @@ msgstr "CWA automatikus beolvasás automatikus egyesítés"
 
 #: cps/templates/cwa_settings.html:910
 msgid "Calibre can detect Duplicate Book Titles on Import and depending on the"
-msgstr ""
+msgstr "A Calibre importáláskor képes felismerni az azonos könyvcímeket, és ennek megfelelően a"
 
 #: cps/templates/cwa_settings.html:910
 msgid "automerge"
@@ -5078,18 +5112,20 @@ msgstr "automatikus egyesítés"
 #: cps/templates/cwa_settings.html:911
 msgid "setting. It can be set to delete either instance of a duplicated book or keep both (default)."
 msgstr ""
+"beállítástól függően. Beállítható úgy, hogy törölje a duplikált könyvek egyik példányát, vagy "
+"mindkettőt megtartsa (alapértelmezett)."
 
 #: cps/templates/cwa_settings.html:929
 msgid "Discards duplicate import, keeps library copy"
-msgstr ""
+msgstr "Elveti a duplikált importot, a könyvtári példányt megtartja"
 
 #: cps/templates/cwa_settings.html:933
 msgid "Overwrites library copy with newly imported file"
-msgstr ""
+msgstr "Felülírja a könyvtári példányt az újonnan importált fájllal"
 
 #: cps/templates/cwa_settings.html:937
 msgid "Creates a duplicate record, keeping both copies"
-msgstr ""
+msgstr "Duplikált rekordot hoz létre, mindkét példányt megtartja"
 
 #: cps/templates/cwa_settings.html:943
 msgid "CWA Auto-Ingest - Ignored Formats"
@@ -5100,6 +5136,8 @@ msgid ""
 "The formats selected here will be ignored by CWA's Auto-Ingest feature, meaning files in these "
 "formats won't be added to the library by CWA during the ingest process"
 msgstr ""
+"Az itt kiválasztott formátumokat a CWA Auto-Ingest funkció figyelmen kívül hagyja, vagyis az ilyen "
+"formátumú fájlokat a rendszer nem adja hozzá a könyvtárhoz az ingest folyamat során."
 
 #: cps/templates/cwa_settings.html:970
 msgid "CWA Duplicate Detection System"
@@ -5110,6 +5148,8 @@ msgid ""
 "Enable or disable the duplicate detection system. When disabled, duplicate scanning will not run and "
 "no notifications will be shown."
 msgstr ""
+"Engedélyezi vagy letiltja a duplikátum-észlelő rendszert. Kikapcsolt állapotban a duplikátumkeresés "
+"nem fut le, és nem jelennek meg értesítések."
 
 #: cps/templates/cwa_settings.html:978
 msgid "Enable Duplicate Detection"
@@ -5117,7 +5157,7 @@ msgstr "Ismétlődő könyvek felismerésének engedélyezése"
 
 #: cps/templates/cwa_settings.html:982
 msgid "When enabled, CWA will scan for duplicate books after each import"
-msgstr ""
+msgstr "Engedélyezés esetén a CWA minden import után megvizsgálja, vannak-e duplikált könyvek."
 
 #: cps/templates/cwa_settings.html:990
 msgid "Duplicate Detection Method"
@@ -5140,6 +5180,8 @@ msgid ""
 "Hybrid mode uses a fast SQL pre-filter to narrow candidates, then applies the robust Python logic "
 "for final results."
 msgstr ""
+"A hibrid mód egy gyors SQL előszűrőt használ a lehetséges találatok szűkítésére, majd a végső "
+"eredményekhez egy megbízhatóbb Python logikát alkalmaz."
 
 #: cps/templates/cwa_settings.html:1014
 msgid "Automatic Duplicate Scanning"
@@ -5148,6 +5190,8 @@ msgstr "Automatikus ismétlődő könyv keresés"
 #: cps/templates/cwa_settings.html:1017
 msgid "Configure background duplicate scans. These run automatically without blocking the UI."
 msgstr ""
+"Állítsd be a háttérben futó duplikátum-ellenőrzéseket. Ezek automatikusan futnak, és nem blokkolják "
+"a felhasználói felületet."
 
 #: cps/templates/cwa_settings.html:1022
 msgid "Enable automatic duplicate scans"
@@ -5171,7 +5215,7 @@ msgstr "Várakozás importálás után (másodpercben)"
 
 #: cps/templates/cwa_settings.html:1046
 msgid "Wait this many seconds after the last import before starting a background scan."
-msgstr ""
+msgstr "Ennyi másodpercet vár az utolsó import után, mielőtt elindítaná a háttérben futó ellenőrzést."
 
 #: cps/templates/cwa_settings.html:1051
 msgid "Scheduled scans (cron expression)"
@@ -5186,6 +5230,9 @@ msgid ""
 "If enabled, after-import scans and cron scans can both run. Use “Manual only” to disable after-"
 "import scans while keeping cron schedules."
 msgstr ""
+"Ha engedélyezve van, az import utáni és az időzített (cron) ellenőrzések is lefuthatnak. A „csak "
+"manuális” opcióval az import utáni ellenőrzések letilthatók, miközben a cron ütemezések továbbra is "
+"aktívak maradnak."
 
 #: cps/templates/cwa_settings.html:1069 cps/templates/duplicates.html:398
 msgid "Next scheduled scan:"
@@ -5200,26 +5247,29 @@ msgid ""
 "Configure which metadata fields are used to determine if books are duplicates. Books must match ALL "
 "selected criteria to be considered duplicates."
 msgstr ""
+"Állítsd be, hogy mely metaadat mezők alapján dönti el a rendszer, hogy a könyvek duplikátumok-e. A "
+"könyveknek az összes kiválasztott feltételnek meg kell felelniük ahhoz, hogy duplikátumnak "
+"számítsanak."
 
 #: cps/templates/cwa_settings.html:1086
 msgid "Consider book titles when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a könyvcímeket a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1092
 msgid "Consider book authors when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a szerzőket a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1098
 msgid "Consider book language when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a könyv nyelvét a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1104
 msgid "Consider book series when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a könyvsorozatot a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1110
 msgid "Consider book publisher when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a kiadót a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1115
 msgid "Format"
@@ -5227,7 +5277,7 @@ msgstr "Fájlformátum"
 
 #: cps/templates/cwa_settings.html:1116
 msgid "Consider file format when detecting duplicates"
-msgstr ""
+msgstr "Vegye figyelembe a fájlformátumot a duplikátumok észlelésekor"
 
 #: cps/templates/cwa_settings.html:1122 cps/templates/cwa_settings.html:1208
 msgid "Note:"
@@ -5236,6 +5286,7 @@ msgstr "Megjegyzés:"
 #: cps/templates/cwa_settings.html:1122
 msgid "At least one criterion must be selected. Title and Author are recommended as core criteria."
 msgstr ""
+"Legalább egy feltételt ki kell választani. A cím és a szerző használata ajánlott alapkritériumként."
 
 #: cps/templates/cwa_settings.html:1128
 msgid "Duplicate Format Priority Ranking"
@@ -5246,6 +5297,9 @@ msgid ""
 "Configure which file formats are preferred when using the \"Highest Quality Format\" auto-resolution "
 "strategy. Drag and drop to reorder formats by priority (higher = better)."
 msgstr ""
+"Állítsd be, hogy mely fájlformátumok részesüljenek előnyben a „Legjobb minőségű formátum” "
+"automatikus kiválasztási stratégia használatakor. A formátumok sorrendje húzással módosítható, a "
+"magasabb pozíció nagyobb prioritást jelent."
 
 #: cps/templates/cwa_settings.html:1144
 msgid "Tip:"
@@ -5256,6 +5310,9 @@ msgid ""
 "When resolving duplicates with \"Highest Quality Format\" strategy, books with higher-ranked formats "
 "will be kept. Lower priority formats will be deleted."
 msgstr ""
+"Duplikátumok feloldásakor a „Legjobb minőségű formátum” stratégia alapján a magasabb prioritású "
+"formátumokkal rendelkező könyvek kerülnek megtartásra. Az alacsonyabb prioritású formátumok törlésre "
+"kerülnek."
 
 #: cps/templates/cwa_settings.html:1152
 msgid "Duplicate Notifications & Auto-Resolution"
@@ -5265,6 +5322,8 @@ msgstr "Ismétlődő könyv értesítések és automatikus megszüntetés"
 msgid ""
 "Configure how you are notified about duplicate books and optionally enable automatic resolution."
 msgstr ""
+"Állítsd be, hogyan kapj értesítést a duplikált könyvekről, és opcionálisan engedélyezheted az "
+"automatikus feloldást is."
 
 #: cps/templates/cwa_settings.html:1160
 msgid "Enable Duplicate Notifications"
@@ -5275,6 +5334,9 @@ msgid ""
 "Show popup notifications when unresolved duplicates are detected. Admins and users with edit rights "
 "will see a badge on the Duplicates sidebar button and a notification popup when they login."
 msgstr ""
+"Felugró értesítések megjelenítése, amikor feloldatlan duplikátumokat észlel a rendszer. Az adminok "
+"és a szerkesztési jogosultsággal rendelkező felhasználók jelzést (badge-et) látnak a Duplikátumok "
+"oldalsáv gombon, valamint bejelentkezéskor értesítő felugró ablakot kapnak."
 
 #: cps/templates/cwa_settings.html:1166
 msgid "Enable Automatic Duplicate Resolution"
@@ -5288,6 +5350,8 @@ msgstr "Figyelmeztetés:"
 msgid ""
 "This will automatically delete books based on the strategy below. Original files will be backed up to"
 msgstr ""
+"Ez a funkció automatikusan törli a könyveket az alábbi stratégia alapján. Az eredeti fájlokról "
+"biztonsági mentés készül ide:"
 
 #: cps/templates/cwa_settings.html:1173
 msgid "Auto-Resolution Strategy"
@@ -5299,7 +5363,7 @@ msgstr "Legújabb megtartása"
 
 #: cps/templates/cwa_settings.html:1176
 msgid "Delete older copies, keep the most recently added book"
-msgstr ""
+msgstr "Törölje a régebbi példányokat, és a legutóbb hozzáadott könyvet tartsa meg"
 
 #: cps/templates/cwa_settings.html:1179
 msgid "Keep Oldest"
@@ -5307,7 +5371,7 @@ msgstr "Legrégebbi megtartása"
 
 #: cps/templates/cwa_settings.html:1179
 msgid "Delete newer copies, keep the earliest added"
-msgstr ""
+msgstr "Törölje az újabb példányokat, és a legkorábban hozzáadott könyvet tartsa meg"
 
 #: cps/templates/cwa_settings.html:1182
 msgid "Merge Formats"
@@ -5315,7 +5379,7 @@ msgstr "Formátumok egyesítése"
 
 #: cps/templates/cwa_settings.html:1182
 msgid "Merge formats into the newest book, delete the rest"
-msgstr ""
+msgstr "A formátumokat egyesíti a legújabb könyvbe, a többi példányt törli"
 
 #: cps/templates/cwa_settings.html:1185
 msgid "Keep Highest Quality Format"
@@ -5323,7 +5387,7 @@ msgstr "Legmagasabb minőségű formátum megtartása"
 
 #: cps/templates/cwa_settings.html:1185
 msgid "Prefer formats based on your Duplicate Format Priority Ranking"
-msgstr ""
+msgstr "A formátumokat a Duplikátum Formátum Prioritási sorrended alapján részesíti előnyben"
 
 #: cps/templates/cwa_settings.html:1188
 msgid "Keep Most Metadata"
@@ -5343,7 +5407,7 @@ msgstr "Legnagyobb méretű fájllal rendelkező könyv megtartása"
 
 #: cps/templates/cwa_settings.html:1194
 msgid "Choose which book to keep when duplicates are automatically resolved."
-msgstr ""
+msgstr "Válaszd ki, melyik könyv maradjon meg a duplikátumok automatikus feloldásakor."
 
 #: cps/templates/cwa_settings.html:1198
 msgid "Rate Limiting"
@@ -5358,12 +5422,16 @@ msgid ""
 "Minimum time between automatic resolutions (0 to disable). Prevents rapid-fire deletions during "
 "batch imports."
 msgstr ""
+"Minimális idő az automatikus feloldások között (0 = kikapcsolva). Megakadályozza a gyors, egymás "
+"utáni törléseket tömeges importálások során."
 
 #: cps/templates/cwa_settings.html:1208
 msgid ""
 "Auto-resolution runs after duplicate scans detect new duplicates. Dismissed duplicate groups are "
 "never auto-resolved."
 msgstr ""
+"Az automatikus feloldás a duplikátum-ellenőrzés után fut le, amikor új duplikátumokat észlel. Az "
+"elutasított duplikátumcsoportok soha nem kerülnek automatikus feloldásra."
 
 #: cps/templates/cwa_stats.html:66 cps/templates/cwa_stats_system.html:58
 #, python-format
@@ -5552,6 +5620,7 @@ msgid ""
 "Books with matching titles, authors, and languages. Books in different languages are not considered "
 "duplicates."
 msgstr ""
+"Azonos című, szerzőjű és nyelvű könyvek. A különböző nyelvű könyvek nem számítanak duplikátumnak."
 
 #: cps/templates/duplicates.html:373
 msgid "Scan for Duplicates Now"
@@ -5582,6 +5651,8 @@ msgid ""
 "Automatically resolve all duplicate groups by keeping one book and deleting others based on a "
 "strategy."
 msgstr ""
+"Automatikusan feloldja az összes duplikátumcsoportot úgy, hogy egy könyvet megtart, a többit pedig "
+"törli egy kiválasztott stratégia alapján."
 
 #: cps/templates/duplicates.html:417
 msgid "Strategy:"
@@ -5590,18 +5661,22 @@ msgstr "Stratégia:"
 #: cps/templates/duplicates.html:419
 msgid "Keep Newest - Delete older copies, keep the most recently added"
 msgstr ""
+"Legújabbat tartja meg – a régebbi példányokat törli, és a legutóbb hozzáadott könyvet hagyja meg"
 
 #: cps/templates/duplicates.html:420
 msgid "Keep Oldest - Delete newer copies, keep the earliest added"
 msgstr ""
+"Legrégebbit tartja meg – az újabb példányokat törli, és a legkorábban hozzáadott könyvet hagyja meg"
 
 #: cps/templates/duplicates.html:421
 msgid "Merge Formats - Merge formats into the newest book, delete the rest"
-msgstr ""
+msgstr "Formátumok egyesítése – a formátumokat a legújabb könyvbe egyesíti, a többi példányt törli"
 
 #: cps/templates/duplicates.html:422
 msgid "Keep Highest Quality Format - Prefer formats based on your Duplicate Format Priority Ranking"
 msgstr ""
+"Legjobb minőségű formátum megtartása – a formátumokat a Duplikátum Formátum Prioritási sorrended "
+"alapján részesíti előnyben"
 
 #: cps/templates/duplicates.html:423
 msgid "Keep Most Metadata - Keep book with most complete information"
@@ -5610,6 +5685,7 @@ msgstr "Legtöbb metaadat megtartása - Legtöbb metaadattal rendelkező könyv 
 #: cps/templates/duplicates.html:424
 msgid "Keep Largest File Size - Keep book with largest total file size"
 msgstr ""
+"Legnagyobb fájlméret megtartása – azt a könyvet tartja meg, amelynek a teljes fájlmérete a legnagyobb"
 
 #: cps/templates/duplicates.html:428
 msgid "Preview"
@@ -5621,7 +5697,7 @@ msgstr "Megszüntetés végrehajtása"
 
 #: cps/templates/duplicates.html:438
 msgid "This will permanently delete books. Original files will be backed up to"
-msgstr ""
+msgstr "Ez véglegesen törli a könyveket. Az eredeti fájlokról biztonsági mentés készül ide:"
 
 #: cps/templates/duplicates.html:456
 msgid "Merge Selected"
@@ -5653,11 +5729,11 @@ msgstr "Nem található ismétlődő könyv"
 
 #: cps/templates/duplicates.html:517
 msgid "Your library has no books with duplicate title and author combinations."
-msgstr ""
+msgstr "A könyvtáradban nincs olyan könyv, amelynél a cím és a szerző kombinációja duplikált lenne."
 
 #: cps/templates/duplicates.html:518
 msgid "This search looks for books with identical titles AND authors to avoid false positives."
-msgstr ""
+msgstr "Ez a keresés azonos című ÉS szerzőjű könyveket keres, hogy elkerülje a téves egyezéseket."
 
 #: cps/templates/duplicates.html:532
 msgid "The following books will be permanently deleted:"
@@ -5681,7 +5757,7 @@ msgstr "A következő könyvek egyesítve lesznek vele (és utána törölve)"
 
 #: cps/templates/duplicates.html:563
 msgid "Note: File formats from source books will be added to the target book."
-msgstr ""
+msgstr "Megjegyzés: a forráskönyvek fájlformátumai hozzá lesznek adva a célkönyvhöz."
 
 #: cps/templates/duplicates.html:580
 msgid "Resolution Preview"
@@ -5693,7 +5769,7 @@ msgstr "Siker"
 
 #: cps/templates/duplicates.html:605
 msgid "Selected duplicate books have been deleted successfully!"
-msgstr ""
+msgstr "A kijelölt duplikált könyvek sikeresen törlésre kerültek!"
 
 #: cps/templates/duplicates.html:627
 msgid "An error occurred while processing your request."
@@ -5771,6 +5847,8 @@ msgstr "(Varázs)"
 #: cps/templates/generate_kobo_auth_url.html:6
 msgid "Open the .kobo/Kobo/Kobo eReader.conf file in a text editor and add (or edit):"
 msgstr ""
+"Nyisd meg a .kobo/Kobo/Kobo eReader.conf fájlt egy szövegszerkesztőben, és add hozzá (vagy "
+"módosítsd):"
 
 #: cps/templates/generate_kobo_auth_url.html:11
 msgid "Kobo Token:"
@@ -5793,6 +5871,8 @@ msgid ""
 "There are no pending Hardcover matches requiring review. New matches will appear here when the auto-"
 "fetch task runs."
 msgstr ""
+"Nincsenek manuális ellenőrzést igénylő, függőben lévő Hardcover egyezések. Új találatok akkor "
+"jelennek meg itt, amikor az automatikus lekérési feladat lefut."
 
 #: cps/templates/hardcover_review_matches.html:61
 msgid "Back to Admin Panel"
@@ -5808,6 +5888,8 @@ msgid ""
 "%(count)s book(s) have ambiguous Hardcover matches. Please review each match and select the correct "
 "result, or skip/reject if no good match exists."
 msgstr ""
+"%(count)s könyvhez többértelmű Hardcover egyezés tartozik. Kérlek, ellenőrizd az egyes találatokat, "
+"és válaszd ki a helyeset, vagy hagyd ki / utasítsd el, ha nincs megfelelő egyezés."
 
 #: cps/templates/hardcover_review_matches.html:73
 msgid "Pending Matches"
@@ -5818,6 +5900,8 @@ msgid ""
 "Review and approve ambiguous Hardcover ID matches for your books. High-confidence matches are "
 "applied automatically; these require manual verification."
 msgstr ""
+"Nézd át és hagyd jóvá a könyveidhez tartozó, többértelmű Hardcover azonosító egyezéseket. A nagy "
+"megbízhatóságú találatok automatikusan alkalmazásra kerülnek; ezeket manuálisan kell ellenőrizni."
 
 #: cps/templates/hardcover_review_matches.html:81
 msgid "Reject All Pending"
@@ -5928,7 +6012,7 @@ msgstr "Mobil értesítés"
 
 #: cps/templates/index.html:119
 msgid "Magic shelf editing works best on desktop or tablet devices."
-msgstr ""
+msgstr "A Magic shelf szerkesztése asztali gépen vagy tableten működik a legjobban."
 
 #: cps/templates/index.html:134
 msgid "Refresh shelf to update with latest changes"
@@ -5985,6 +6069,8 @@ msgstr "KOReader szinkronizáció letiltva."
 #: cps/templates/kosync_plugin.html:113
 msgid "Enable it in CWA Settings to activate the /kosync endpoints and checksum generation."
 msgstr ""
+"Engedélyezd a CWA beállításokban, hogy aktiváld a /kosync végpontokat és az ellenőrzőösszeg "
+"(checksum) generálást."
 
 #: cps/templates/kosync_plugin.html:115
 msgid "Open CWA Settings"
@@ -5992,7 +6078,7 @@ msgstr "CWA beállítások megnyitása"
 
 #: cps/templates/kosync_plugin.html:139
 msgid "Download is available after enabling KOReader Sync in CWA Settings."
-msgstr ""
+msgstr "A letöltés akkor érhető el, ha a CWA beállításokban engedélyezed a KOReader Sync funkciót."
 
 #: cps/templates/layout.html:93 cps/templates/login.html:51
 msgid "Home"
@@ -6074,7 +6160,7 @@ msgstr "Ismétlődő könyvek találva"
 
 #: cps/templates/layout.html:428
 msgid "You have unresolved duplicate books in your library"
-msgstr ""
+msgstr "A könyvtáradban feloldatlan duplikált könyvek vannak."
 
 #: cps/templates/layout.html:433
 msgid "Duplicate Groups Found"
@@ -6125,6 +6211,7 @@ msgstr "Belépés SSO-val"
 #: cps/templates/login.html:102
 msgid "Standard login is disabled. Please use one of the alternative login methods."
 msgstr ""
+"A hagyományos bejelentkezés le van tiltva. Kérlek, használj egy alternatív bejelentkezési módot."
 
 #: cps/templates/logviewer.html:6
 msgid "Show Calibre-Web Log: "
@@ -6156,7 +6243,7 @@ msgstr "Rendszer sablon"
 
 #: cps/templates/magic_shelf_edit.html:332
 msgid "This is a pre-configured template shelf. You can edit it freely."
-msgstr ""
+msgstr "Ez egy előre beállított sablonpolc. Szabadon szerkeszthető."
 
 #: cps/templates/magic_shelf_edit.html:399
 msgid "Share with Everyone (Public)"
@@ -6166,6 +6253,8 @@ msgstr "Megosztás mindenkivel (Publikus)"
 msgid ""
 "Other users can view this shelf. Users with \"Edit Public Shelves\" permission can edit/delete it."
 msgstr ""
+"Más felhasználók is láthatják ezt a polcot. A „Nyilvános polcok szerkesztése” jogosultsággal "
+"rendelkező felhasználók szerkeszthetik vagy törölhetik."
 
 #: cps/templates/modal_dialogs.html:6
 msgid "Select Allowed/Denied Tags"
@@ -6206,6 +6295,7 @@ msgstr " és a merevlemezről"
 #: cps/templates/modal_dialogs.html:56
 msgid "Important Kobo Note: deleted books will remain on any paired Kobo device."
 msgstr ""
+"Fontos Kobo megjegyzés: a törölt könyvek továbbra is megmaradnak minden párosított Kobo eszközön."
 
 #: cps/templates/modal_dialogs.html:57
 msgid "Books must first be archived and the device synced before a book can safely be deleted."
@@ -6761,7 +6851,7 @@ msgstr "E-olvasóra küldés e-mail cím"
 
 #: cps/templates/user_edit.html:216
 msgid "Use comma to separate multiple addresses"
-msgstr "Több cím esetén vesszőt használj az elválasztáshoz."
+msgstr "Több cím esetén vesszőt használj az elválasztáshoz"
 
 #: cps/templates/user_edit.html:217
 msgid "Email address(es) for your eReader devices. Separate multiple addresses with commas."
@@ -6769,7 +6859,7 @@ msgstr "Az e-olvasó eszközeid e-mail címe(i). Több címet vesszővel elvála
 
 #: cps/templates/user_edit.html:228
 msgid "Enable Send-to-eReader Pop-up Modal"
-msgstr "„Küldés e-olvasóra” felugró ablak engedélyezése."
+msgstr "„Küldés e-olvasóra” felugró ablak engedélyezése"
 
 #: cps/templates/user_edit.html:230
 msgid ""
@@ -6887,7 +6977,7 @@ msgstr ""
 
 #: cps/templates/user_edit.html:385
 msgid "e.g. Kobo Forma, KOReader iPad"
-msgstr "pl.: Kobo Forma, KOReader iPad "
+msgstr "pl.: Kobo Forma, KOReader iPad"
 
 #: cps/templates/user_edit.html:387
 msgid "Create app password"
