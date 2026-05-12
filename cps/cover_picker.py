@@ -41,7 +41,7 @@ from flask_babel import get_locale
 from . import calibre_db, config, helper, logger, ub
 from .cw_login import current_user
 from .render_template import render_title_template
-from .services import cover_extract, cover_padding, cover_picker as cover_picker_svc, cover_url_validator
+from .services import cover_extract, cover_preview, cover_picker as cover_picker_svc, cover_url_validator
 from .usermanagement import user_login_required
 
 
@@ -251,14 +251,14 @@ def cover_picker_lock(book_id):
     return jsonify({"locked": record.locked})
 
 
-# ---- Kobo cover preview (issue #84) --------------------------------------
+# ---- E-reader cover preview (was Kobo, generalized 2026-05) --------------
 
 
-@cover_picker.route("/book/<int:book_id>/cover/kobo-preview", methods=["POST"])
+@cover_picker.route("/book/<int:book_id>/cover/ereader-preview", methods=["POST"])
 @user_login_required
 @edit_required
-def cover_picker_kobo_preview(book_id):
-    """Re-render an image through the Kobo cover-padding pipeline and
+def cover_picker_ereader_preview(book_id):
+    """Re-render an image through the e-reader cover-padding pipeline and
     return a base64 data URL the picker page can drop straight into an
     ``<img src>``. Picker-session-local: aspect / fill_mode / color come
     from the request, not from global config, so users can preview
@@ -310,20 +310,31 @@ def cover_picker_kobo_preview(book_id):
         blob = _resolve_preview_source(book, candidate_url, use_embedded)
         if blob is None:
             return None
-        return cover_padding.render_kobo_preview_data_url(
+        return cover_preview.render_preview_data_url(
             blob, aspect=aspect, fill_mode=fill_mode, color=color,
         )
 
     try:
-        data_url = cover_padding._run_in_pool(_resolve_then_render)
+        data_url = cover_preview._run_in_pool(_resolve_then_render)
     except Exception as exc:  # pragma: no cover - defensive
-        log.warning("cover_picker_kobo_preview render failed: %s", exc)
-        return _json_error("render_failed", _(u"Could not render the Kobo preview."), 500)
+        log.warning("cover_picker_ereader_preview render failed: %s", exc)
+        return _json_error("render_failed", _(u"Could not render the e-reader preview."), 500)
 
     if data_url is None:
         return _json_error("source_unavailable", _(u"Could not load a source image to preview."), 502)
 
     return jsonify({"ok": True, "data_url": data_url})
+
+
+# Backwards-compat alias. Remove in the release AFTER the one that
+# ships this rename. Kept so in-flight client bookmarks don't 404.
+@cover_picker.route("/book/<int:book_id>/cover/kobo-preview", methods=["POST"])
+@user_login_required
+def cover_picker_kobo_preview_legacy(book_id):
+    return redirect(
+        url_for("cover_picker.cover_picker_ereader_preview", book_id=book_id),
+        code=308,
+    )
 
 
 def _resolve_preview_source(book, candidate_url: str, use_embedded: bool) -> Optional[bytes]:
@@ -420,7 +431,7 @@ def _fetch_url_bytes(url: str) -> Optional[bytes]:
         # a 1 GB image instead of waiting to stream past max_bytes.
         size_hint = resp.headers.get("Content-Length")
         if size_hint and size_hint.isdigit() and int(size_hint) > max_bytes:
-            log.info("cover_picker_kobo_preview rejecting %s — Content-Length %s exceeds cap", url, size_hint)
+            log.info("cover_picker_ereader_preview rejecting %s — Content-Length %s exceeds cap", url, size_hint)
             return None
         chunks = []
         total = 0
@@ -435,7 +446,7 @@ def _fetch_url_bytes(url: str) -> Optional[bytes]:
         _fetch_cache_put(url, data)
         return data
     except Exception as exc:
-        log.warning("cover_picker_kobo_preview fetch failed for %s: %s", url, exc)
+        log.warning("cover_picker_ereader_preview fetch failed for %s: %s", url, exc)
         return None
 
 
@@ -451,7 +462,7 @@ def _read_current_cover_bytes(book) -> Optional[bytes]:
         with open(cover_path, "rb") as fh:
             return fh.read()
     except Exception as exc:
-        log.warning("cover_picker_kobo_preview disk-cover read failed: %s", exc)
+        log.warning("cover_picker_ereader_preview disk-cover read failed: %s", exc)
         return None
 
 

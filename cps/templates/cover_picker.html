@@ -90,19 +90,19 @@
         </details>
 
         {% if config.config_kobo_cover_padding_enabled %}
-        <details class="cwa-cover-picker__panel" id="cwa-cover-picker-kobo-panel">
-          <summary>{{ _('Kobo preview') }}</summary>
+        <details class="cwa-cover-picker__panel" id="cwa-cover-picker-ereader-panel">
+          <summary>{{ _('E-reader preview') }}</summary>
           <div class="cwa-cover-picker__panel-body">
-            <label class="cwa-cover-picker__kobo-toggle">
-              <input type="checkbox" id="cwa-cover-picker-kobo-enabled">
-              <span>{{ _('Show how each cover would look on a Kobo') }}</span>
-              <span id="cwa-cover-picker-kobo-status" class="cwa-cover-picker__kobo-status" hidden></span>
+            <label class="cwa-cover-picker__ereader-toggle">
+              <input type="checkbox" id="cwa-cover-picker-ereader-enabled">
+              <span>{{ _('Show how each cover would look on your e-reader') }}</span>
+              <span id="cwa-cover-picker-ereader-status" class="cwa-cover-picker__ereader-status" hidden></span>
             </label>
 
-            <div class="cwa-cover-picker__kobo-controls">
+            <div class="cwa-cover-picker__ereader-controls">
               <div class="form-group">
-                <label for="cwa-cover-picker-kobo-aspect">{{ _('Target aspect ratio') }}</label>
-                <select id="cwa-cover-picker-kobo-aspect" class="form-control">
+                <label for="cwa-cover-picker-ereader-aspect">{{ _('Target aspect ratio') }}</label>
+                <select id="cwa-cover-picker-ereader-aspect" class="form-control">
                   <option value="kobo_libra_color" {% if config.config_kobo_cover_padding_aspect == 'kobo_libra_color' %}selected{% endif %}>{{_('Kobo Libra Color / Libra 2 (1264x1680)')}}</option>
                   <option value="kobo_clara" {% if config.config_kobo_cover_padding_aspect == 'kobo_clara' %}selected{% endif %}>{{_('Kobo Clara HD / 2E / BW / Colour (1072x1448)')}}</option>
                   <option value="3:4" {% if config.config_kobo_cover_padding_aspect == '3:4' %}selected{% endif %}>{{_('3:4 (generic)')}}</option>
@@ -111,8 +111,8 @@
               </div>
 
               <div class="form-group">
-                <label for="cwa-cover-picker-kobo-fill-mode">{{ _('Border fill style') }}</label>
-                <select id="cwa-cover-picker-kobo-fill-mode" class="form-control">
+                <label for="cwa-cover-picker-ereader-fill-mode">{{ _('Border fill style') }}</label>
+                <select id="cwa-cover-picker-ereader-fill-mode" class="form-control">
                   <option value="edge_mirror" {% if config.config_kobo_cover_padding_fill_mode == 'edge_mirror' %}selected{% endif %}>{{_('Edge mirror — extend the artwork (recommended)')}}</option>
                   <option value="edge_blur" {% if config.config_kobo_cover_padding_fill_mode == 'edge_blur' %}selected{% endif %}>{{_('Edge blur — soft bokeh border')}}</option>
                   <option value="gradient" {% if config.config_kobo_cover_padding_fill_mode == 'gradient' %}selected{% endif %}>{{_('Gradient — palette-matched top/bottom blend')}}</option>
@@ -123,8 +123,8 @@
               </div>
 
               <div class="form-group">
-                <label for="cwa-cover-picker-kobo-color">{{ _('Custom border color (hex)') }}</label>
-                <input type="text" id="cwa-cover-picker-kobo-color" class="form-control" maxlength="9"
+                <label for="cwa-cover-picker-ereader-color">{{ _('Custom border color (hex)') }}</label>
+                <input type="text" id="cwa-cover-picker-ereader-color" class="form-control" maxlength="9"
                        placeholder="#1a1a1a"
                        value="{{ config.config_kobo_cover_padding_color or '' }}">
               </div>
@@ -211,7 +211,7 @@ window.cwaCoverPicker = {
     extract:    "{{ url_for('cover_picker.cover_picker_extract',    book_id=book.id) }}",
     apply:      "{{ url_for('cover_picker.cover_picker_apply',      book_id=book.id) }}",
     lock:       "{{ url_for('cover_picker.cover_picker_lock',       book_id=book.id) }}",
-    koboPreview:"{{ url_for('cover_picker.cover_picker_kobo_preview', book_id=book.id) }}",
+    ereaderPreview:"{{ url_for('cover_picker.cover_picker_ereader_preview', book_id=book.id) }}",
     keysList:   "{{ url_for('metadata.metadata_keys') }}",
     keysSave:   "{{ url_for('metadata.metadata_keys_save', prov_id='__PROV__') }}",
     coverGet:   "{{ url_for('web.get_cover', book_id=book.id, resolution='og') }}",
@@ -224,7 +224,7 @@ window.cwaCoverPicker = {
     applying:  {{ _('Applying…')|tojson|safe }},
     applied:   {{ _('Cover updated.')|tojson|safe }},
     error:     {{ _('Something went wrong. Try again.')|tojson|safe }},
-    koboRendering: {{ _('Rendering Kobo previews:')|tojson|safe }},
+    ereaderRendering: {{ _('Rendering e-reader previews:')|tojson|safe }},
   },
 };
 </script>

@@ -428,7 +428,7 @@
   document.addEventListener("DOMContentLoaded", loadCandidates);
   if (document.readyState !== "loading") loadCandidates();
 
-  // -------- Kobo preview (issue #84) ----------------------------------------
+  // -------- E-reader preview (issue #84) ------------------------------------
   // When the operator has Kobo cover padding enabled at the admin level,
   // the template renders an extra <details> panel with a toggle + the same
   // aspect / fill_mode / color controls that live in Settings. Flipping the
@@ -442,16 +442,16 @@
   // `cache` keyed by settings populates regardless of generation, so a
   // late-arriving response is never wasted — the user will see it the next
   // time those settings come back.
-  (function setupKoboPreview() {
-    const panel = document.getElementById("cwa-cover-picker-kobo-panel");
+  (function setupEreaderPreview() {
+    const panel = document.getElementById("cwa-cover-picker-ereader-panel");
     if (!panel) return;
 
-    const toggle = document.getElementById("cwa-cover-picker-kobo-enabled");
-    const aspectSel = document.getElementById("cwa-cover-picker-kobo-aspect");
-    const fillSel = document.getElementById("cwa-cover-picker-kobo-fill-mode");
-    const colorInput = document.getElementById("cwa-cover-picker-kobo-color");
-    const statusEl = document.getElementById("cwa-cover-picker-kobo-status");
-    const endpoint = cfg.endpoints.koboPreview;
+    const toggle = document.getElementById("cwa-cover-picker-ereader-enabled");
+    const aspectSel = document.getElementById("cwa-cover-picker-ereader-aspect");
+    const fillSel = document.getElementById("cwa-cover-picker-ereader-fill-mode");
+    const colorInput = document.getElementById("cwa-cover-picker-ereader-color");
+    const statusEl = document.getElementById("cwa-cover-picker-ereader-status");
+    const endpoint = cfg.endpoints.ereaderPreview;
     if (!toggle || !aspectSel || !fillSel || !colorInput || !endpoint) return;
 
     const cache = new WeakMap();
@@ -463,7 +463,7 @@
     function updateStatus() {
       if (!statusEl) return;
       if (activeInFlight > 0) {
-        statusEl.textContent = " · " + (cfg.i18n.koboRendering || "Rendering Kobo previews:") + " " + activeInFlight + "…";
+        statusEl.textContent = " · " + (cfg.i18n.ereaderRendering || "Rendering e-reader previews:") + " " + activeInFlight + "…";
         statusEl.hidden = false;
       } else {
         statusEl.hidden = true;
@@ -491,10 +491,10 @@
     fillSel.addEventListener("change", syncColorEnabled);
 
     function originalSrcOf(img) {
-      if (!img.dataset.koboOriginalSrc) {
-        img.dataset.koboOriginalSrc = img.src;
+      if (!img.dataset.ereaderOriginalSrc) {
+        img.dataset.ereaderOriginalSrc = img.src;
       }
-      return img.dataset.koboOriginalSrc;
+      return img.dataset.ereaderOriginalSrc;
     }
 
     function isSameOriginCoverUrl(url) {
@@ -523,14 +523,14 @@
         body: JSON.stringify(body),
         signal,
       });
-      if (!resp.ok) throw new Error("kobo-preview HTTP " + resp.status);
+      if (!resp.ok) throw new Error("ereader-preview HTTP " + resp.status);
       const data = await resp.json();
-      if (!data || !data.ok) throw new Error("kobo-preview body !ok");
+      if (!data || !data.ok) throw new Error("ereader-preview body !ok");
       return data.data_url;
     }
 
     function revertImg(img) {
-      const orig = img.dataset.koboOriginalSrc;
+      const orig = img.dataset.ereaderOriginalSrc;
       if (orig) img.src = orig;
     }
 
@@ -556,7 +556,7 @@
     // SSL fetches to candidate cover URLs); subsequent bursts hit the
     // server's URL cache and are CPU-bound (Wand only). 8 keeps both
     // paths near full utilization without starving other routes.
-    const KOBO_MAX_CONCURRENT = 8;
+    const EREADER_MAX_CONCURRENT = 8;
 
     function refreshAll() {
       if (!toggle.checked) {
@@ -610,7 +610,7 @@
           }
         }).catch(function (e) {
           if (e && e.name === "AbortError") return;
-          console.info("[cover-picker] kobo preview unavailable for one cover", e);
+          console.info("[cover-picker] ereader preview unavailable for one cover", e);
         }).finally(function () {
           if (activeGen === myGen) {
             activeInFlight = Math.max(0, activeInFlight - 1);
@@ -622,7 +622,7 @@
         });
       }
 
-      const slots = Math.min(KOBO_MAX_CONCURRENT, queue.length);
+      const slots = Math.min(EREADER_MAX_CONCURRENT, queue.length);
       for (let i = 0; i < slots; i++) runOne(i);
     }
 

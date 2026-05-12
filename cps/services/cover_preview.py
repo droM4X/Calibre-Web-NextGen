@@ -4,39 +4,21 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See CONTRIBUTORS for full list of authors.
 
-"""Aspect-ratio padding for book covers served to Kobo devices.
+"""Aspect-ratio padding for book covers served at e-reader dimensions.
 
-Kobo e-ink screens (Libra Color, Libra 2 = 1264x1680; Clara family =
-1072x1448) are roughly 3:4. Most publisher cover art is closer to 2:3
-(taller and narrower). Modern Kobo firmware fits-to-screen and pads the
-mismatch with white bars, which looks cheap on the home screen and the
-sleep cover.
+This module pads source covers to a target aspect ratio server-side so
+the consuming surface (Kobo sync, library preview, shelf rendering)
+receives an image that already matches its target screen and renders
+without letterboxing or pillarboxing.
 
-This module pads source covers to a target aspect ratio *server-side* so
-the device receives an image that already matches its screen and renders
-edge-to-edge.
+Supported targets include common Kobo / Kindle / PocketBook / Boox
+models plus a custom W×H fallback. Fill modes are `edge_mirror` (extend
+the artwork), `edge_blur` (blurred extension), `gradient`, `average` or
+`dominant` color, and `manual` solid color.
 
-Six fill modes:
-
-    - "edge_mirror"   - mirror the cover's outer edge into the pad area;
-                        feels like a natural continuation of the artwork
-    - "edge_blur"     - take the outer edge column/row, stretch it across
-                        the pad area, blur heavily; soft "bokeh" border
-    - "gradient"      - top-to-bottom gradient between the cover's top-edge
-                        dominant color and bottom-edge dominant color;
-                        looks "designed" and palette-matched without the
-                        edge-replication artifacts of mirror/blur
-    - "average"       - solid pad, color = average pixel of the cover
-    - "dominant"      - solid pad, color = quantized-mode pixel
-    - "manual"        - solid pad, color = a hex string supplied by the
-                        admin
-
-The pure-functional API takes JPEG bytes and returns JPEG bytes. The
-serve-side wrapper adds a filesystem cache keyed by source mtime + a
-settings hash so changes in the admin panel invalidate cleanly.
-
-Wand (ImageMagick) is the only image dependency; this module degrades to
-a no-op (returns source bytes unchanged) when Wand is unavailable.
+This was originally the Kobo-sync padding pipeline. The engine is
+device-neutral; "Kobo" in the codebase now refers only to the Kobo sync
+protocol layer above this module, not to this rendering itself.
 """
 from __future__ import annotations
 
@@ -81,13 +63,83 @@ except (ImportError, RuntimeError):  # ImageMagick missing → degrade gracefull
 FILL_MODES = ("edge_mirror", "edge_blur", "gradient", "average", "dominant", "manual")
 DEFAULT_FILL_MODE = "edge_mirror"
 
-# 1264:1680 = Libra Color / Libra 2 native; 1072:1448 = Clara family. We
-# default to Libra Color since it has the larger user base in the fork.
+# Aspect-ratio presets grouped by manufacturer. Values are device screen
+# resolutions in PIXELS — width × height when the device is held in
+# portrait. The padding engine only uses the ratio (W/H), not absolute
+# dimensions, so a "1264×1680" entry just locks the ratio to 1264:1680
+# regardless of actual cover resolution.
+#
+# Sources: device-spec pages from each manufacturer. Verified 2026-05.
 PRESET_ASPECTS = {
-    "kobo_libra_color": (1264, 1680),
-    "kobo_libra_2": (1264, 1680),
-    "kobo_clara": (1072, 1448),
+    # Kobo
+    "kobo_libra_color":   (1264, 1680),
+    "kobo_libra_2":       (1264, 1680),
+    "kobo_clara_color":   (1072, 1448),
+    "kobo_clara_bw":      (1072, 1448),
+    "kobo_clara_2e":      (1072, 1448),
+    "kobo_clara":         (1072, 1448),
+    "kobo_sage":          (1440, 1920),
+    "kobo_elipsa_2e":     (1404, 1872),
+    "kobo_forma":         (1440, 1920),
+    # Kindle
+    "kindle_paperwhite":  (1236, 1648),
+    "kindle_oasis":       (1264, 1680),
+    "kindle_basic":       (1072, 1448),
+    "kindle_scribe":      (1860, 2480),
+    # PocketBook
+    "pocketbook_era":     (1264, 1680),
+    "pocketbook_inkpad":  (1404, 1872),
+    "pocketbook_color":   (1264, 1680),
+    # Boox
+    "boox_page":          (1264, 1680),
+    "boox_leaf":          (1264, 1680),
+    "boox_note_air":      (1404, 1872),
+    # Generic e-ink classes
+    "generic_6in_eink":   (1072, 1448),
+    "generic_7in_eink":   (1264, 1680),
+    "generic_10in_eink":  (1404, 1872),
 }
+
+# Human-friendly labels grouped for the UI. Order intentionally
+# matches PRESET_GROUPS below — the dict insertion order is iteration
+# order in Python 3.7+, so dropdowns can iterate this dict directly.
+PRESET_LABELS = {
+    "kobo_libra_color":   "Kobo Libra Color (1264×1680)",
+    "kobo_libra_2":       "Kobo Libra 2 (1264×1680)",
+    "kobo_clara_color":   "Kobo Clara Color (1072×1448)",
+    "kobo_clara_bw":      "Kobo Clara BW (1072×1448)",
+    "kobo_clara_2e":      "Kobo Clara 2E (1072×1448)",
+    "kobo_clara":         "Kobo Clara HD (1072×1448)",
+    "kobo_sage":          "Kobo Sage (1440×1920)",
+    "kobo_elipsa_2e":     "Kobo Elipsa 2E (1404×1872)",
+    "kobo_forma":         "Kobo Forma (1440×1920)",
+    "kindle_paperwhite":  "Kindle Paperwhite (1236×1648)",
+    "kindle_oasis":       "Kindle Oasis (1264×1680)",
+    "kindle_basic":       "Kindle Basic (1072×1448)",
+    "kindle_scribe":      "Kindle Scribe (1860×2480)",
+    "pocketbook_era":     "PocketBook Era (1264×1680)",
+    "pocketbook_inkpad":  "PocketBook InkPad (1404×1872)",
+    "pocketbook_color":   "PocketBook Color (1264×1680)",
+    "boox_page":          "Boox Page (1264×1680)",
+    "boox_leaf":          "Boox Leaf (1264×1680)",
+    "boox_note_air":      "Boox Note Air (1404×1872)",
+    "generic_6in_eink":   "Generic 6\" e-ink (1072×1448)",
+    "generic_7in_eink":   "Generic 7\" e-ink (1264×1680)",
+    "generic_10in_eink":  "Generic 10\" e-ink (1404×1872)",
+}
+
+# Manufacturer-grouped tuples for rendering optgroup-style dropdowns.
+# Iterate these in the UI; each tuple is (group_label, (key, key, ...)).
+PRESET_GROUPS = (
+    ("Kobo", ("kobo_libra_color", "kobo_libra_2", "kobo_clara_color",
+              "kobo_clara_bw", "kobo_clara_2e", "kobo_clara",
+              "kobo_sage", "kobo_elipsa_2e", "kobo_forma")),
+    ("Kindle", ("kindle_paperwhite", "kindle_oasis", "kindle_basic", "kindle_scribe")),
+    ("PocketBook", ("pocketbook_era", "pocketbook_inkpad", "pocketbook_color")),
+    ("Boox", ("boox_page", "boox_leaf", "boox_note_air")),
+    ("Generic e-ink", ("generic_6in_eink", "generic_7in_eink", "generic_10in_eink")),
+)
+
 DEFAULT_PRESET = "kobo_libra_color"
 
 # How close the source must be to the target ratio to skip padding entirely.
@@ -103,7 +155,7 @@ _JPEG_QUALITY = 88
 
 
 @dataclass(frozen=True)
-class PaddingSettings:
+class CoverPreviewSettings:
     """Snapshot of the admin's Kobo-padding configuration.
 
     Hashable + frozen so it can be passed around safely and used as a cache key.
@@ -154,7 +206,7 @@ def parse_target_ratio(target_aspect: str) -> float:
         except (ValueError, TypeError):
             pass
 
-    log.warning("cover_padding: unrecognized target_aspect %r, using default", target_aspect)
+    log.warning("cover_preview: unrecognized target_aspect %r, using default", target_aspect)
     w, h = PRESET_ASPECTS[DEFAULT_PRESET]
     return w / h
 
@@ -169,7 +221,7 @@ def _hex_to_color(hex_str: str):
     try:
         return Color(candidate)
     except Exception:  # Wand raises ValueError-likes for unparseable colors
-        log.warning("cover_padding: invalid manual color %r, using white", hex_str)
+        log.warning("cover_preview: invalid manual color %r, using white", hex_str)
         return Color("white")
 
 
@@ -455,7 +507,7 @@ def _composite_edge_blur(img, new_w: int, new_h: int, orient: str):
     return canvas
 
 
-def pad_blob(blob: bytes, settings: PaddingSettings) -> bytes:
+def pad_blob(blob: bytes, settings: CoverPreviewSettings) -> bytes:
     """Top-level pure entry point. JPEG bytes in, JPEG bytes out.
 
     No-ops (returns input unchanged) when:
@@ -507,7 +559,7 @@ def pad_blob(blob: bytes, settings: PaddingSettings) -> bytes:
             finally:
                 padded.close()
     except Exception as ex:
-        log.warning("cover_padding: pad_blob failed (%s); returning source", ex)
+        log.warning("cover_preview: pad_blob failed (%s); returning source", ex)
         return blob
 
 
@@ -560,7 +612,7 @@ def _run_in_pool(fn, *args, **kwargs):
 
     Reentrant: if we're already executing on a worker thread of this pool
     (e.g. ``cover_picker_kobo_preview`` dispatched a fetch+pad pipeline that
-    internally calls ``render_kobo_preview_data_url``), call ``fn`` directly
+    internally calls ``render_preview_data_url``), call ``fn`` directly
     rather than dispatching to the pool again. Otherwise nested calls
     consume two pool slots per request and can deadlock once the pool's
     4 slots are saturated by the burst.
@@ -583,7 +635,7 @@ def _run_in_pool(fn, *args, **kwargs):
     return _PREVIEW_POOL.submit(_marked_call).result()
 
 
-def render_kobo_preview_data_url(
+def render_preview_data_url(
     blob: bytes,
     aspect: str,
     fill_mode: str,
@@ -609,7 +661,7 @@ def render_kobo_preview_data_url(
     C calls — and the calling greenlet yields the gevent loop instead of
     blocking it.
     """
-    settings = PaddingSettings(
+    settings = CoverPreviewSettings(
         enabled=True,
         target_aspect=aspect or "",
         fill_mode=fill_mode or DEFAULT_FILL_MODE,
@@ -628,7 +680,7 @@ def pad_path_to_cache(
     src_path: str,
     cache_dir: str,
     cache_filename: str,
-    settings: PaddingSettings,
+    settings: CoverPreviewSettings,
 ) -> Optional[str]:
     """Read src_path, pad, write to cache_dir/cache_filename. Returns the
     cache file path on success (or if the cache hit already exists), None
@@ -651,7 +703,7 @@ def pad_path_to_cache(
         with open(src_path, "rb") as fh:
             blob = fh.read()
     except OSError as ex:
-        log.warning("cover_padding: cannot read %s: %s", src_path, ex)
+        log.warning("cover_preview: cannot read %s: %s", src_path, ex)
         return None
 
     padded = pad_blob(blob, settings)
@@ -664,7 +716,7 @@ def pad_path_to_cache(
                 out_fh.write(blob)
             return target
         except OSError as ex:
-            log.warning("cover_padding: cannot write passthrough %s: %s", target, ex)
+            log.warning("cover_preview: cannot write passthrough %s: %s", target, ex)
             return None
 
     try:
@@ -677,13 +729,17 @@ def pad_path_to_cache(
         os.replace(tmp, target)
         return target
     except OSError as ex:
-        log.warning("cover_padding: cannot write padded %s: %s", target, ex)
+        log.warning("cover_preview: cannot write padded %s: %s", target, ex)
         return None
 
 
-def cache_filename_for(book_uuid: str, resolution, src_mtime: int, settings: PaddingSettings) -> str:
+def cache_filename_for(book_uuid: str, resolution, src_mtime: int, settings: CoverPreviewSettings) -> str:
     """Deterministic cache filename. Encodes everything that could change
     the rendered output."""
+    # TODO(Task 5 cleanup): rename cache prefix from `kobopad-` to a
+    # device-neutral name (e.g. `preview-`) when cover_padding.py is
+    # deleted. Doing it then bundles the cache-invalidation event with the
+    # module rename, rather than splitting it across two releases.
     return "kobopad-{uuid}-{res}-{mtime}-{hash}.jpg".format(
         uuid=book_uuid,
         res=int(resolution) if resolution else 0,

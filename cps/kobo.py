@@ -45,7 +45,7 @@ from .constants import COVER_THUMBNAIL_SMALL, COVER_THUMBNAIL_MEDIUM, COVER_THUM
 from .kobo_cover_cache import build_cover_image_id, normalize_cover_uuid
 from .helper import get_download_link
 from .services import SyncToken as SyncToken, hardcover
-from .services import cover_padding as kobo_cover_padding
+from .services import cover_preview
 from .fs import FileSystem
 from .web import download_required
 from .kobo_auth import requires_kobo_auth, get_auth_token
@@ -571,7 +571,7 @@ def _normalize_cover_uuid(image_id):
 def _current_padding_settings():
     """Snapshot of the admin's Kobo-padding config. Centralized so the
     sync-metadata path and the cover-serving path agree on the same hash."""
-    return kobo_cover_padding.PaddingSettings(
+    return cover_preview.CoverPreviewSettings(
         enabled=bool(getattr(config, "config_kobo_cover_padding_enabled", False)),
         target_aspect=getattr(config, "config_kobo_cover_padding_aspect", "kobo_libra_color") or "kobo_libra_color",
         fill_mode=getattr(config, "config_kobo_cover_padding_fill_mode", "edge_mirror") or "edge_mirror",
@@ -1235,7 +1235,7 @@ def _serve_padded_cover_if_enabled(book_uuid, resolution):
     source mtime + settings hash.
     """
     settings = _current_padding_settings()
-    if not settings.enabled or not kobo_cover_padding.use_IM:
+    if not settings.enabled or not cover_preview.use_IM:
         return None
 
     source = helper.get_kobo_cover_source_path(book_uuid, resolution)
@@ -1250,11 +1250,11 @@ def _serve_padded_cover_if_enabled(book_uuid, resolution):
 
     cache = FileSystem()
     cache_dir = cache.get_cache_dir(CACHE_TYPE_THUMBNAILS)
-    cache_filename = kobo_cover_padding.cache_filename_for(
+    cache_filename = cover_preview.cache_filename_for(
         book_uuid, resolution, src_mtime, settings,
     )
 
-    target = kobo_cover_padding.pad_path_to_cache(
+    target = cover_preview.pad_path_to_cache(
         src_full, cache_dir, cache_filename, settings,
     )
     if not target:

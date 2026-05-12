@@ -3,15 +3,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # See CONTRIBUTORS for full list of authors.
 
-"""Unit + smoke tests for the Kobo cover preview endpoint (issue #84).
+"""Unit + smoke tests for the e-reader cover preview endpoint (issue #84).
 
-The endpoint at POST /book/<id>/cover/kobo-preview re-renders an image
-through the existing cover_padding pipeline and returns a base64 data
+The endpoint at POST /book/<id>/cover/ereader-preview re-renders an image
+through the existing cover_preview pipeline and returns a base64 data
 URL. We test:
 
-1. The new pure helper render_kobo_preview_data_url() in
-   cps.services.cover_padding (extends the existing module rather than
-   adding a new one — pad_blob lives there too).
+1. The pure helper render_preview_data_url() in
+   cps.services.cover_preview (which exports pad_blob too).
 2. Static structure of the Flask endpoint registered in
    cps.cover_picker (route present, function name, calls pad_blob,
    returns JSON).
@@ -68,14 +67,14 @@ def _ensure_cps_stub():
         sys.modules["cps.services"] = services_pkg
 
 
-def _load_cover_padding():
+def _load_cover_preview():
     _ensure_cps_stub()
     spec = importlib.util.spec_from_file_location(
-        "cps.services.cover_padding",
-        REPO_ROOT / "cps" / "services" / "cover_padding.py",
+        "cps.services.cover_preview",
+        REPO_ROOT / "cps" / "services" / "cover_preview.py",
     )
     module = importlib.util.module_from_spec(spec)
-    sys.modules["cps.services.cover_padding"] = module
+    sys.modules["cps.services.cover_preview"] = module
     spec.loader.exec_module(module)
     return module
 
@@ -99,18 +98,18 @@ def _make_jpeg_bytes(width: int = 200, height: int = 300, color=(180, 60, 60)) -
 # --------------------------------------------------------------------- helper
 
 
-class TestRenderKoboPreviewDataUrl:
+class TestRenderPreviewDataUrl:
     """The new helper: takes JPEG bytes + settings, returns a base64 data URL."""
 
     def test_returns_data_url_prefixed_with_image_jpeg(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail(
-                "cps.services.cover_padding.render_kobo_preview_data_url is not implemented yet"
+                "cps.services.cover_preview.render_preview_data_url is not implemented yet"
             )
 
         jpeg = _make_jpeg_bytes()
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg,
             aspect="kobo_libra_color",
             fill_mode="edge_mirror",
@@ -120,12 +119,12 @@ class TestRenderKoboPreviewDataUrl:
         assert url.startswith("data:image/jpeg;base64,")
 
     def test_decoded_payload_is_jpeg_magic_bytes(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
 
         jpeg = _make_jpeg_bytes()
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg, aspect="kobo_libra_color", fill_mode="edge_mirror", color=""
         )
         b64 = url.split(",", 1)[1]
@@ -134,8 +133,8 @@ class TestRenderKoboPreviewDataUrl:
         assert decoded[:2] == b"\xff\xd8"
 
     def test_padded_output_has_target_aspect_ratio(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
 
         try:
@@ -145,7 +144,7 @@ class TestRenderKoboPreviewDataUrl:
 
         # 2:3 publisher cover (200x300) padded to Libra Color 1264x1680 (3:4ish)
         jpeg = _make_jpeg_bytes(width=200, height=300)
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg, aspect="kobo_libra_color", fill_mode="edge_mirror", color=""
         )
         decoded = base64.b64decode(url.split(",", 1)[1])
@@ -156,12 +155,12 @@ class TestRenderKoboPreviewDataUrl:
         assert abs(ratio - (1264 / 1680)) < 0.01
 
     def test_manual_color_is_honored(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
 
         jpeg = _make_jpeg_bytes(width=200, height=300, color=(255, 255, 255))
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg,
             aspect="kobo_libra_color",
             fill_mode="manual",
@@ -176,14 +175,14 @@ class TestRenderKoboPreviewDataUrl:
         # New "gradient" fill mode (operator-requested 2026-05-08): builds a
         # palette-matched top→bottom gradient on the pad area. Must round-trip
         # to a valid JPEG.
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
-        if "gradient" not in cover_padding.FILL_MODES:
+        if "gradient" not in cover_preview.FILL_MODES:
             pytest.fail("'gradient' must be a registered fill mode")
 
         jpeg = _make_jpeg_bytes(width=200, height=300)
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg, aspect="kobo_libra_color", fill_mode="gradient", color="",
         )
         assert url.startswith("data:image/jpeg;base64,")
@@ -191,8 +190,8 @@ class TestRenderKoboPreviewDataUrl:
         assert decoded[:2] == b"\xff\xd8"
 
     def test_gradient_mode_produces_target_aspect(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
         try:
             from wand.image import Image
@@ -200,7 +199,7 @@ class TestRenderKoboPreviewDataUrl:
             pytest.skip("Wand not available")
 
         jpeg = _make_jpeg_bytes(width=200, height=300)
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg, aspect="kobo_libra_color", fill_mode="gradient", color="",
         )
         decoded = base64.b64decode(url.split(",", 1)[1])
@@ -209,15 +208,15 @@ class TestRenderKoboPreviewDataUrl:
         assert abs(ratio - (1264 / 1680)) < 0.01
 
     def test_invalid_aspect_falls_back_to_default_or_raises_clear_error(self):
-        cover_padding = _load_cover_padding()
-        if not hasattr(cover_padding, "render_kobo_preview_data_url"):
+        cover_preview = _load_cover_preview()
+        if not hasattr(cover_preview, "render_preview_data_url"):
             pytest.fail("helper not implemented")
 
         jpeg = _make_jpeg_bytes()
         # parse_target_ratio is documented to fall back to default for
         # bad input, so this should NOT raise — but the output should
         # still be a valid JPEG.
-        url = cover_padding.render_kobo_preview_data_url(
+        url = cover_preview.render_preview_data_url(
             jpeg,
             aspect="not-a-real-aspect",
             fill_mode="edge_mirror",
@@ -229,7 +228,7 @@ class TestRenderKoboPreviewDataUrl:
 # --------------------------------------------------------------------- endpoint structure
 
 
-class TestKoboPreviewEndpointStructure:
+class TestEreaderPreviewEndpointStructure:
     """Static-source checks that the Flask endpoint exists with the
     right shape. Exercising the route itself requires full app init,
     which the smoke layer doesn't take on; the e2e Playwright pass
@@ -243,8 +242,8 @@ class TestKoboPreviewEndpointStructure:
     def test_endpoint_route_is_registered(self):
         src = self._read()
         assert (
-            '@cover_picker.route("/book/<int:book_id>/cover/kobo-preview"' in src
-            or "'/book/<int:book_id>/cover/kobo-preview'" in src
+            '@cover_picker.route("/book/<int:book_id>/cover/ereader-preview"' in src
+            or "'/book/<int:book_id>/cover/ereader-preview'" in src
         ), "kobo-preview route missing from cover_picker blueprint"
 
     def test_endpoint_uses_post_method(self):
@@ -254,7 +253,7 @@ class TestKoboPreviewEndpointStructure:
             'methods=["POST"]' in src or "methods=['POST']" in src
         ), "POST method should be declared"
         # And the kobo-preview route should be near a POST decorator
-        kobo_idx = src.find("/book/<int:book_id>/cover/kobo-preview")
+        kobo_idx = src.find("/book/<int:book_id>/cover/ereader-preview")
         assert kobo_idx != -1
         # Look back ~80 chars for a methods=POST marker on the same decorator
         window = src[max(0, kobo_idx - 200):kobo_idx + 200]
@@ -262,17 +261,17 @@ class TestKoboPreviewEndpointStructure:
 
     def test_endpoint_function_name_matches_convention(self):
         src = self._read()
-        assert "def cover_picker_kobo_preview(" in src, (
-            "endpoint handler should be named cover_picker_kobo_preview "
+        assert "def cover_picker_ereader_preview(" in src, (
+            "endpoint handler should be named cover_picker_ereader_preview "
             "to match the existing cover_picker_* naming pattern"
         )
 
     def test_endpoint_is_login_and_edit_gated(self):
         src = self._read()
-        kobo_idx = src.find("def cover_picker_kobo_preview")
-        assert kobo_idx != -1
+        ereader_idx = src.find("def cover_picker_ereader_preview")
+        assert ereader_idx != -1
         # Decorators sit above the function — look at the 400 chars before
-        prefix = src[max(0, kobo_idx - 400):kobo_idx]
+        prefix = src[max(0, ereader_idx - 400):ereader_idx]
         assert "@user_login_required" in prefix, "endpoint must be auth-gated"
         assert "@edit_required" in prefix, "endpoint must be edit-gated"
 
@@ -281,16 +280,16 @@ class TestKoboPreviewEndpointStructure:
         # Must reach the padding pipeline, either via the helper we add
         # or pad_blob directly.
         assert (
-            "render_kobo_preview_data_url" in src or "pad_blob" in src
-        ), "endpoint must route through cover_padding"
+            "render_preview_data_url" in src or "pad_blob" in src
+        ), "endpoint must route through cover_preview"
 
     def test_endpoint_rejects_non_http_scheme(self):
         # Defense-in-depth: cw_advocate is the SSRF guard, but we don't
         # actively maintain it. Reject file:// / javascript: / data: / etc.
         # at the endpoint before they ever hit the fetch path.
         src = self._read()
-        kobo_idx = src.find("def cover_picker_kobo_preview")
-        block = src[kobo_idx:kobo_idx + 2500]
+        ereader_idx = src.find("def cover_picker_ereader_preview")
+        block = src[ereader_idx:ereader_idx + 2500]
         assert (
             'scheme not in ("http", "https")' in block
             or "scheme not in ('http', 'https')" in block
@@ -340,7 +339,7 @@ class TestCoverPickerJsKoboPreview:
         return self.JS_FILE.read_text(encoding="utf-8")
 
     def test_js_has_kobo_setup_block(self):
-        assert "setupKoboPreview" in self._read()
+        assert "setupEreaderPreview" in self._read()
 
     def test_js_caches_per_settings(self):
         # Settings-change refresh must hit cache for previously-fetched
@@ -378,7 +377,7 @@ class TestCoverPickerJsKoboPreview:
         # User-visible feedback while a burst is processing — no more
         # 5 seconds of "did the toggle even work?"
         src = self._read()
-        assert "cwa-cover-picker-kobo-status" in src, "must read the status pill element"
+        assert "cwa-cover-picker-ereader-status" in src, "must read the status pill element"
         assert "activeInFlight" in src, "must track the active in-flight count"
 
     def test_js_refresh_on_aspect_change(self):
@@ -425,7 +424,7 @@ class TestCoverPickerJsKoboPreview:
         # routes until the burst drains.
         src = self._read()
         assert (
-            "KOBO_MAX_CONCURRENT" in src
+            "EREADER_MAX_CONCURRENT" in src
         ), "must declare a client-side max-concurrency cap"
 
     def test_js_uses_generation_for_race_safety(self):
@@ -441,7 +440,7 @@ class TestCoverPickerJsKoboPreview:
         ), "completion handlers must gate on generation match"
 
 
-class TestCoverPaddingConcurrencyCap:
+class TestCoverPreviewConcurrencyCap:
     """Server-side concurrency cap around pad_blob so a single user's burst
     can't starve all gunicorn workers on a multi-user instance.
 
@@ -450,7 +449,7 @@ class TestCoverPaddingConcurrencyCap:
     whole gevent loop. Real OS threads + ImageMagick releasing the GIL gives
     actual parallelism."""
 
-    PAD_FILE = REPO_ROOT / "cps" / "services" / "cover_padding.py"
+    PAD_FILE = REPO_ROOT / "cps" / "services" / "cover_preview.py"
 
     def _read(self) -> str:
         return self.PAD_FILE.read_text(encoding="utf-8")
@@ -458,7 +457,7 @@ class TestCoverPaddingConcurrencyCap:
     def test_module_uses_gevent_aware_threadpool(self):
         src = self._read()
         assert "gevent.threadpool" in src, (
-            "cover_padding must prefer gevent.threadpool.ThreadPool — "
+            "cover_preview must prefer gevent.threadpool.ThreadPool — "
             "stdlib ThreadPoolExecutor.Future.result() blocks the gevent loop."
         )
         assert "_PREVIEW_POOL_SIZE" in src, "must declare pool size constant"
@@ -473,11 +472,11 @@ class TestCoverPaddingConcurrencyCap:
 
     def test_render_helper_offloads_to_pool(self):
         src = self._read()
-        helper_idx = src.find("def render_kobo_preview_data_url")
+        helper_idx = src.find("def render_preview_data_url")
         block = src[helper_idx:helper_idx + 2000]
         assert (
             "_run_in_pool" in block
-        ), "render_kobo_preview_data_url must dispatch through _run_in_pool"
+        ), "render_preview_data_url must dispatch through _run_in_pool"
 
     def test_run_in_pool_uses_gevent_apply_when_available(self):
         src = self._read()
@@ -518,31 +517,31 @@ class TestCoverPickerTemplateSurface:
         src = self._read()
         assert (
             "config.config_kobo_cover_padding_enabled" in src
-        ), "Kobo preview panel must be conditional on config_kobo_cover_padding_enabled"
+        ), "E-reader preview panel must be conditional on config_kobo_cover_padding_enabled"
 
-    def test_template_includes_kobo_preview_panel_id(self):
+    def test_template_includes_ereader_preview_panel_id(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-panel"' in src
-        ), "Kobo preview panel needs a stable ID for JS hookup"
+            'id="cwa-cover-picker-ereader-panel"' in src
+        ), "E-reader preview panel needs a stable ID for JS hookup"
 
-    def test_template_includes_kobo_preview_toggle(self):
+    def test_template_includes_ereader_preview_toggle(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-enabled"' in src
-        ), "Kobo preview toggle checkbox needs a stable ID"
+            'id="cwa-cover-picker-ereader-enabled"' in src
+        ), "E-reader preview toggle checkbox needs a stable ID"
 
     def test_template_includes_aspect_select(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-aspect"' in src
-        ), "Kobo aspect select needs a stable ID"
+            'id="cwa-cover-picker-ereader-aspect"' in src
+        ), "E-reader aspect select needs a stable ID"
 
     def test_template_includes_fill_mode_select(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-fill-mode"' in src
-        ), "Kobo fill-mode select needs a stable ID"
+            'id="cwa-cover-picker-ereader-fill-mode"' in src
+        ), "E-reader fill-mode select needs a stable ID"
 
     def test_template_includes_gradient_option(self):
         # The new gradient mode must be selectable in both the picker and
@@ -554,17 +553,117 @@ class TestCoverPickerTemplateSurface:
     def test_template_includes_color_input(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-color"' in src
-        ), "Kobo manual-color input needs a stable ID"
+            'id="cwa-cover-picker-ereader-color"' in src
+        ), "E-reader manual-color input needs a stable ID"
 
-    def test_template_passes_kobo_preview_endpoint_to_js(self):
+    def test_template_passes_ereader_preview_endpoint_to_js(self):
+        # Pinned in Task 8 (template rename): the template must call the new
+        # endpoint name. If anyone reverts to cover_picker_kobo_preview, the
+        # page will raise werkzeug.routing.BuildError at render time -- this
+        # assertion catches it before render.
         src = self._read()
         assert (
-            "cover_picker.cover_picker_kobo_preview" in src
-        ), "the kobo-preview endpoint URL must be in window.cwaCoverPicker.endpoints"
+            "cover_picker.cover_picker_ereader_preview" in src
+        ), "the cover-preview endpoint URL must be in window.cwaCoverPicker.endpoints"
+        assert (
+            "cover_picker.cover_picker_kobo_preview" not in src
+        ), "template must not call the legacy endpoint name (BuildError after Task 4)"
 
     def test_template_includes_loading_status_pill(self):
         src = self._read()
         assert (
-            'id="cwa-cover-picker-kobo-status"' in src
-        ), "Kobo loading status pill needs a stable ID"
+            'id="cwa-cover-picker-ereader-status"' in src
+        ), "E-reader loading status pill needs a stable ID"
+
+
+# --------------------------------------------------------------------- legacy URL 308 redirect
+
+
+class TestLegacyKoboPreviewUrlRedirect:
+    """Pin the 308 redirect from /book/<id>/cover/kobo-preview to
+    /book/<id>/cover/ereader-preview. The legacy URL must keep working
+    for one release after the rename, preserving POST method semantics.
+    Remove this test (and the redirect itself) in the release AFTER the
+    one shipping the rename.
+
+    These tests inspect the cover_picker.py source directly (rather than
+    importing the live blueprint) because cps.cover_picker pulls in
+    flask_babel + the full cps package init, which the unit-test layer
+    deliberately avoids. The integration suite exercises the live route.
+    """
+
+    BLUEPRINT_FILE = REPO_ROOT / "cps" / "cover_picker.py"
+
+    def _read(self) -> str:
+        return self.BLUEPRINT_FILE.read_text(encoding="utf-8")
+
+    def test_legacy_route_decorator_is_registered(self):
+        """Confirm /book/<int:book_id>/cover/kobo-preview is still wired up
+        with a POST method handler — the legacy URL must keep working."""
+        src = self._read()
+        assert (
+            '@cover_picker.route("/book/<int:book_id>/cover/kobo-preview", methods=["POST"])' in src
+            or "@cover_picker.route('/book/<int:book_id>/cover/kobo-preview', methods=['POST'])" in src
+        ), "legacy /cover/kobo-preview POST route must remain registered"
+
+    def test_legacy_handler_function_name_is_distinct(self):
+        """The legacy shim and the canonical handler must be DIFFERENT
+        endpoints, not the same handler reachable by two paths. Distinct
+        endpoint names let the canonical one be promoted and the legacy
+        one retired cleanly in a future release."""
+        src = self._read()
+        assert "def cover_picker_kobo_preview_legacy(" in src, (
+            "legacy shim must be named cover_picker_kobo_preview_legacy"
+        )
+        assert "def cover_picker_ereader_preview(" in src, (
+            "canonical handler must be cover_picker_ereader_preview"
+        )
+        # Sanity: the legacy name without _legacy suffix must NOT exist as
+        # a standalone def (would shadow url_for resolution unpredictably).
+        assert "def cover_picker_kobo_preview(" not in src, (
+            "old function name cover_picker_kobo_preview must not exist — "
+            "use cover_picker_kobo_preview_legacy (shim) or "
+            "cover_picker_ereader_preview (canonical)"
+        )
+
+    def test_legacy_handler_returns_308_to_canonical(self):
+        """The shim must 308-redirect (preserves POST) to the canonical
+        URL — not 301 (rewrites to GET on most clients) or 302. Source-
+        pin: redirect() called with code=308 and target =
+        cover_picker_ereader_preview."""
+        src = self._read()
+        idx = src.find("def cover_picker_kobo_preview_legacy")
+        assert idx != -1, "legacy shim function must exist"
+        # Inspect the next ~600 chars — the whole function body.
+        body = src[idx:idx + 600]
+        assert "redirect(" in body, "legacy shim must call redirect()"
+        assert "code=308" in body, (
+            "must use HTTP 308 (preserves POST method) — NOT 301 or 302"
+        )
+        assert "cover_picker.cover_picker_ereader_preview" in body, (
+            "must redirect to the canonical cover_picker_ereader_preview endpoint"
+        )
+
+    def test_legacy_handler_function_body_is_only_a_redirect(self):
+        """Source-pin: the legacy shim must NOT silently grow business
+        logic. It's a redirect, period. Future maintainers shouldn't
+        adopt it for warts."""
+        src = self._read()
+        idx = src.find("def cover_picker_kobo_preview_legacy")
+        # Find the next top-level def (or end of file)
+        next_def = src.find("\ndef ", idx + 1)
+        next_route = src.find("\n@cover_picker.route", idx + 1)
+        # The body ends at the next def/route decorator, whichever comes first
+        candidates = [c for c in (next_def, next_route) if c != -1]
+        end = min(candidates) if candidates else len(src)
+        body = src[idx:end]
+        # Must redirect — that's the entire job.
+        assert "redirect(" in body
+        assert "code=308" in body
+        # No DB writes, no pad_blob, no service calls.
+        assert "pad_blob" not in body, "shim must not invoke pad_blob"
+        assert "calibre_db" not in body, "shim must not touch the calibre DB"
+        assert "ub.session" not in body, "shim must not touch the user DB session"
+        assert "render_preview_data_url" not in body, (
+            "shim must not invoke the preview helper"
+        )
