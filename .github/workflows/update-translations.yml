@@ -43,6 +43,27 @@ jobs:
       - name: Install gettext
         run: sudo apt-get update && sudo apt-get install -y gettext
 
+      - name: Detect commit PAT
+        # The "main protection" ruleset blocks direct pushes to main for
+        # everyone except admins, and personal repos can't bypass that
+        # for the github-actions[bot] integration. Pushing the
+        # translation-status commit therefore requires GH_PAT (new-usemame's
+        # personal token, admin-bypass eligible). When the secret is
+        # missing, the workflow still runs — it just skips the commit and
+        # logs a notice. README translation status will go stale until
+        # someone runs `scripts/update_translations.sh` locally and pushes
+        # via a normal PR, or until GH_PAT is added to repo secrets.
+        id: commit_pat
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -n "${GH_PAT}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::GH_PAT secret not set; skipping translation auto-commit. Add a new-usemame PAT as GH_PAT to enable README auto-updates."
+          fi
+
       - name: Run update_translations.sh
         run: bash scripts/update_translations.sh
 
@@ -50,6 +71,7 @@ jobs:
         run: python scripts/generate_translation_status.py
 
       - name: Commit translation updates
+        if: steps.commit_pat.outputs.available == 'true'
         run: |
           # Identity must be new-usemame: validate-author + the main
           # branch ruleset bypass list both key off this committer email.
@@ -82,32 +104,20 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/docker-image-build-dev.yml/dispatches \
             -d "{\"ref\":\"main\",\"inputs\":{\"ref\":\"${DEV_BUILD_SHA}\",\"branch\":\"main\"}}"
 
-      - name: Detect wiki PAT
-        id: wiki_pat
-        env:
-          GH_PAT: ${{ secrets.GH_PAT }}
-        run: |
-          if [ -n "${GH_PAT}" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::GH_PAT secret not set; skipping wiki status sync."
-          fi
-
       - name: Clone wiki repo
-        if: steps.wiki_pat.outputs.available == 'true'
+        if: steps.commit_pat.outputs.available == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           git clone https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git wiki-tmp
 
       - name: Generate translation status table (in wiki repo)
-        if: steps.wiki_pat.outputs.available == 'true'
+        if: steps.commit_pat.outputs.available == 'true'
         run: |
           python scripts/generate_translation_status.py wiki-tmp/Contributing-Translations.md
 
       - name: Commit and push wiki update
-        if: steps.wiki_pat.outputs.available == 'true'
+        if: steps.commit_pat.outputs.available == 'true'
         run: |
           cd wiki-tmp
           git config --global user.name "github-actions[bot]"
