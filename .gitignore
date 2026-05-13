@@ -62,6 +62,14 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Re-include source directories accidentally matched by the broad
+# Python-packaging `lib/` rule above. These ship source, not build output.
+!scripts/lib/
+!scripts/lib/**
+# But still ignore build artifacts inside those source dirs.
+scripts/lib/**/__pycache__/
+scripts/lib/**/*.pyc
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
