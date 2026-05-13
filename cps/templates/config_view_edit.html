@@ -173,6 +173,17 @@
         </select>
         <p class="settings-explanation">{{_('Default book language filter for new users.')}}</p>
       </div>
+
+      <div class="form-group">
+        <label for="config_opds_default_locale">{{_('OPDS Default Locale for Anonymous Clients')}}</label>
+        <select name="config_opds_default_locale" id="config_opds_default_locale" class="form-control">
+          <option value="" {% if not conf.config_opds_default_locale %}selected{% endif %}>{{_('(none — fall back to English)')}}</option>
+          {%  for translation in translations %}
+            <option value="{{translation}}" {% if translation|string == conf.config_opds_default_locale %}selected{% endif %}>{{ translation.display_name|capitalize }}</option>
+          {% endfor %}
+        </select>
+        <p class="settings-explanation">{{_('Used for anonymous OPDS feed responses when the client does not send an Accept-Language header and the request does not include a ?lang= override. Authenticated users keep their own selected locale.')}}</p>
+      </div>
     </div>
     
     <!-- Default Visibilities for New Users Card -->

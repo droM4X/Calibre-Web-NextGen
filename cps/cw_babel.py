@@ -17,10 +17,38 @@ log = logger.create()
 babel = Babel()
 
 
+def _coerce_locale(raw, available):
+    """Parse a raw locale string and return it if it's one we ship a
+    translation for. Returns None on any failure — caller falls through."""
+    if not raw:
+        return None
+    try:
+        candidate = str(Locale.parse(raw.replace('-', '_')))
+    except (UnknownLocaleError, ValueError) as e:
+        log.debug('Could not parse locale "%s": %s', raw, e)
+        return None
+    if candidate in available:
+        return candidate
+    return None
+
+
 def get_locale():
     # If no request context (e.g. background thread), fall back to English
     if not has_request_context():
         return 'en'
+
+    available = get_available_translations()
+
+    # Fork issue #160: per-request ?lang= override. droM4X's specific ask —
+    # lets a user point any OPDS client at /opds?lang=hu and force Hungarian
+    # even when the client (Readest, some Kobo readers) sends no
+    # Accept-Language header. Validated against the locales we actually ship
+    # so an unknown value falls through cleanly instead of returning a 500.
+    lang_param = request.args.get('lang')
+    coerced = _coerce_locale(lang_param, available)
+    if coerced:
+        return coerced
+
     # if a user is logged in, use the locale from the user settings
     if current_user is not None and hasattr(current_user, "locale"):
         # if the account is the guest account bypass the config lang settings
@@ -28,7 +56,7 @@ def get_locale():
             return current_user.locale
 
     preferred = list()
-    if has_request_context() and request.accept_languages:
+    if request.accept_languages:
         for x in request.accept_languages.values():
             # Skip wildcard '*' from Accept-Language headers (common in internal API requests)
             if x == '*':
@@ -38,7 +66,28 @@ def get_locale():
             except (UnknownLocaleError, ValueError) as e:
                 log.debug('Could not parse locale "%s": %s', x, e)
 
-    return negotiate_locale(preferred or ['en'], get_available_translations())
+    if preferred:
+        negotiated = negotiate_locale(preferred, available)
+        if negotiated:
+            return negotiated
+
+    # Fork issue #160 / #121 follow-up: anonymous OPDS clients commonly send
+    # no Accept-Language at all (Readest, KOReader's built-in OPDS browser).
+    # When that happens AND no per-request override is set, fall back to the
+    # operator-configured OPDS default locale before the final 'en' fallback.
+    # Scoped to /opds paths so we don't accidentally lock the web UI into a
+    # non-English default for users who haven't configured anything.
+    if request.path.startswith('/opds'):
+        try:
+            from . import config
+            opds_default = getattr(config, 'config_opds_default_locale', '') or ''
+        except Exception:
+            opds_default = ''
+        coerced = _coerce_locale(opds_default, available)
+        if coerced:
+            return coerced
+
+    return negotiate_locale(preferred or ['en'], available)
 
 
 def get_user_locale_language(user_language):

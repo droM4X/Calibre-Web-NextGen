@@ -99,6 +99,11 @@ class _Settings(_Base):
     config_default_show = Column(SmallInteger, default=constants.ADMIN_USER_SIDEBAR)
     config_default_language = Column(String(3), default="all")
     config_default_locale = Column(String(2), default="en")
+    # Fork issue #160: locale fallback for anonymous OPDS clients (Readest,
+    # KOReader, Aldiko) that don't send Accept-Language. Empty string keeps
+    # the existing 'en' fallback; setting a value pins anon OPDS responses
+    # to that locale unless the client overrides via ?lang= or Accept-Language.
+    config_opds_default_locale = Column(String(8), default="")
     config_columns_to_ignore = Column(String)
 
     config_denied_tags = Column(String, default="")
