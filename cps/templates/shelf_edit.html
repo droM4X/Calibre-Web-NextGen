@@ -22,6 +22,13 @@
           </label>
       </div>
     {% endif %}
+    {% if sync_only_selected_opds_shelves %}
+      <div class="checkbox">
+          <label> <input type="checkbox" name="opds_expose" {% if opds_expose_checked %}checked{% endif %}>
+              {{ _('Expose this shelf in my OPDS feed') }}
+          </label>
+      </div>
+    {% endif %}
     <div class="cwa-form-actions">
       {% if shelf.id != None %}
         <a href="{{ url_for('shelf.show_shelf', shelf_id=shelf.id) }}" class="btn btn-secondary">{{_('Cancel')}}</a>

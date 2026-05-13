@@ -863,7 +863,7 @@ def render_language_books(page, name, order):
                                  title=_("Language: %(name)s", name=lang_name), page="language", order=order[1])
 
 
-def render_read_books(page, are_read, as_xml=False, order=None):
+def render_read_books(page, are_read, as_xml=False, order=None, extra_filter=None):
     sort_param = order[0] if order else []
     if not config.config_read_column:
         if are_read:
@@ -893,7 +893,8 @@ def render_read_books(page, are_read, as_xml=False, order=None):
                                                             True, config.config_read_column,
                                                             db.books_series_link,
                                                             db.Books.id == db.books_series_link.c.book,
-                                                            db.Series)
+                                                            db.Series,
+                                                            extra_filter=extra_filter)
 
     if as_xml:
         return entries, pagination
@@ -1205,6 +1206,13 @@ def create_magic_shelf():
                 is_public=1 if is_public else 0
             )
             ub.session.add(new_shelf)
+            ub.session.flush()
+            if current_user.opds_only_shelves_sync:
+                ub.set_opds_magic_shelf_exposed_for_user(
+                    current_user.id,
+                    new_shelf.id,
+                    bool(data.get('opds_expose')),
+                )
             ub.session_commit()
             log.info(f"User {current_user.id} created magic shelf '{name}' (ID: {new_shelf.id})")
             return jsonify({"success": True, "shelf_id": new_shelf.id})
@@ -1227,6 +1235,8 @@ def create_magic_shelf():
     return render_title_template('magic_shelf_edit.html', 
                                  title=_("Create Magic Shelf"), 
                                  page="magic_shelf_create",
+                                 opds_expose_enabled=current_user.opds_only_shelves_sync,
+                                 opds_expose_checked=False,
                                  allowed_icons=ALLOWED_ICONS,
                                  languages=language_map)
 
@@ -1262,6 +1272,8 @@ def edit_magic_shelf(shelf_id):
     if not shelf:
         log.warning(f"Magic shelf {shelf_id} not found")
         abort(404)
+
+    opds_expose_checked = ub.is_opds_magic_shelf_exposed_for_user(current_user.id, shelf.id)
     
     # Check if user can edit this shelf (owner or admin only)
     if shelf.user_id != current_user.id and not current_user.role_admin():
@@ -1299,6 +1311,12 @@ def edit_magic_shelf(shelf_id):
             shelf.kobo_sync = kobo_sync
             shelf.is_public = 1 if is_public else 0
             flag_modified(shelf, "rules")
+            if current_user.opds_only_shelves_sync:
+                ub.set_opds_magic_shelf_exposed_for_user(
+                    current_user.id,
+                    shelf.id,
+                    bool(data.get('opds_expose')),
+                )
             
             # Invalidate Complex Query Cache
             ub.session.query(ub.MagicShelfCache).filter_by(shelf_id=shelf.id).delete()
@@ -1334,6 +1352,8 @@ def edit_magic_shelf(shelf_id):
                                  shelf=shelf, 
                                  title=_("Edit Magic Shelf"), 
                                  page="magic_shelf_edit",
+                                 opds_expose_enabled=current_user.opds_only_shelves_sync,
+                                 opds_expose_checked=opds_expose_checked,
                                  allowed_icons=ALLOWED_ICONS,
                                  languages=language_map)
 
@@ -1421,6 +1441,7 @@ def delete_magic_shelf(shelf_id):
         shelf_name = shelf.name
         # Delete cache entries first
         ub.session.query(ub.MagicShelfCache).filter_by(shelf_id=shelf_id).delete()
+        ub.session.query(ub.OpdsMagicShelfExposure).filter_by(shelf_id=shelf_id).delete()
         # Delete any hide records for this shelf
         ub.session.query(ub.HiddenMagicShelfTemplate).filter_by(shelf_id=shelf_id).delete()
         # Delete the shelf
@@ -2504,6 +2525,7 @@ def change_profile(kobo_support, hardcover_support, local_oauth_check, oauth_sta
         current_user.kobo_only_shelves_sync = int(to_save.get("kobo_only_shelves_sync") == "on") or 0
         if old_state == 0 and current_user.kobo_only_shelves_sync == 1:
             kobo_sync_status.update_on_sync_shelfs(current_user.id)
+        current_user.opds_only_shelves_sync = int(to_save.get("opds_only_shelves_sync") == "on") or 0
         current_user.hardcover_token = to_save.get("hardcover_token","" ).replace("Bearer ","" ) or None
         # Auto-send and metadata fetch settings
         current_user.auto_send_enabled = to_save.get("auto_send_enabled") == "on"
