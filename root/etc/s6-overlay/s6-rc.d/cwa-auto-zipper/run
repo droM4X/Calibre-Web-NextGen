@@ -40,7 +40,14 @@ do
     echo "[cwa-auto-zipper] Next run in $SECS seconds."
     sleep $SECS &  # We sleep in the background to make the script interruptible via SIGTERM when running in docker
     wait $!
-    python3 /app/calibre-web-automated/scripts/auto_zip.py
+    # Drop privileges to abc (mapped to PUID:PGID by linuxserver/baseimage)
+    # before running auto_zip.py. Without this the resulting .zip archives
+    # are written as root:root while the .epub files in the same directory
+    # — produced by cwa-ingest-service, which already uses s6-setuidgid —
+    # are owned by PUID:PGID. The mismatch breaks host-side cleanup,
+    # backup, and rsync workflows for any deployment where PUID isn't 0.
+    # See issue #162.
+    s6-setuidgid abc python3 /app/calibre-web-automated/scripts/auto_zip.py
     if [[ $? == 1 ]]
     then
         echo "[cwa-auto-zipper] Error occurred during script initialisation (see errors above)."
