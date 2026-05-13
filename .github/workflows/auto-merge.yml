@@ -2,263 +2,197 @@ name: auto-merge
 
 # Tier-based auto-merge for safe-tier-1 / safe-tier-2 PRs.
 #
-# Runs in two modes:
-#   - on pull_request labeled / synchronize / reopened: re-evaluate the PR
-#   - on workflow_run completion of Test Suite OR validate-author: re-evaluate
-#     every open PR whose head SHA matches the just-completed run
-#
 # A PR is eligible to merge iff ALL of:
-#   1. State == OPEN, mergeable, no conflicts
+#   1. State == OPEN, mergeable, not draft, not from a fork.
 #   2. Has label `safe-tier-1` (or `safe-tier-2` and the operator has set
-#      repo variable AUTOPILOT_TIER2_ENABLED == 'true')
-#   3. Filename is NOT in FORBIDDEN_PATHS_REGEX (.github/policy/tier-policy.config)
-#   4. Diff content does NOT match FORBIDDEN_DIFF_CONTENT_REGEX (same file)
-#   5. Tier-2 only: actual diff size <= TIER2_MAX_ADDITIONS LOC and
-#      <= TIER2_MAX_FILES files (re-checked at merge time)
-#   6. Tier-2 only: non-translation/docs PRs update CHANGES-vs-upstream.md
-#   7. TIER{1,2}_REQUIRED_CHECKS (tier-policy.config) all green
+#      repo variable AUTOPILOT_TIER2_ENABLED == 'true').
+#      The label-as-contract is enforced by .github/workflows/
+#      tier-label-guard.yml: anyone outside TIER_LABEL_TRUSTED_LABELERS
+#      who applies a tier label has it stripped immediately. By the time
+#      this workflow sees the label, a trusted author has signed for it.
+#   3. Filename is NOT in FORBIDDEN_PATHS_REGEX (re-verified by
+#      `python -m scripts.lib.tier_policy validate-fork-pr`, since the
+#      PR head might have been updated after the label was applied).
+#   4. Diff content does NOT match FORBIDDEN_DIFF_CONTENT_REGEX.
+#   5. Tier-2 only: diff size <= TIER2_MAX_ADDITIONS LOC and
+#      <= TIER2_MAX_FILES files (re-verified at this step).
+#   6. Tier-2 only: non-translation/docs PRs update CHANGES-vs-upstream.md.
 #
-# All numeric/regex policy values live in .github/policy/tier-policy.config
-# — single source of truth shared with scripts/triage-prs.sh and the
-# autopilot test suite. To change them, edit that file, not this one.
+# If all of the above pass we call `gh pr merge --auto --squash`. GitHub
+# itself then waits for required status checks (per branch protection)
+# to become green before merging. We do NOT poll required checks here;
+# that responsibility is delegated to GitHub. The list of required
+# checks per tier (TIER{1,2}_REQUIRED_CHECKS in tier-policy.config) is
+# the documented contract for what branch protection should require —
+# `Test Suite Summary` is the unified gate (it knows about tier-2 via
+# the PR's labels and fails when Integration Tests didn't pass on a
+# tier-2 PR).
 #
+# All numeric/regex policy values live in .github/policy/tier-policy.config.
 # Anything else: the workflow comments why and stops. It never bypasses
-# checks, never merges without a label, and will demote labels on a PR
-# that touches forbidden paths.
+# checks, never merges without a label, never `--admin`-overrides.
 
 on:
   pull_request:
     types: [labeled, synchronize, reopened]
-  workflow_run:
-    workflows: ["Test Suite", "validate-author"]
-    types: [completed]
 
 permissions:
   pull-requests: write
   contents: write
   checks: read
-  actions: read
 
 concurrency:
-  group: auto-merge-tier-${{ github.event.pull_request.number || github.event.workflow_run.head_sha }}
+  group: auto-merge-tier-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   evaluate:
+    # Bail early for fork PRs — `gh pr merge --auto` won't work for them
+    # anyway (you can't enable auto-merge from outside the head repo),
+    # and we want one clear refusal line in the log rather than letting
+    # the later steps fail in confusing ways.
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main (for tier-policy.config)
-        # The evaluate step sources .github/policy/tier-policy.config. We
-        # check out main rather than the PR head so the policy values
-        # used to gate the PR are always the ones currently on main —
-        # a malicious PR can't widen its own auto-merge rules.
+      - name: Checkout main (for tier-policy.config + scripts/lib)
+        # Critical: ref must be main, NOT the PR head. The policy file
+        # and validator module used to gate the PR are always the ones
+        # currently on main; a malicious PR cannot widen its own auto-
+        # merge rules by editing the policy or shadowing the module in
+        # its branch.
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 1
 
-      - name: Resolve candidate PR numbers
-        id: prs
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          EVENT_PATH: ${{ github.event_path }}
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # Skip if the PR is from a fork — we can't auto-merge those safely.
-            if [ "${{ github.event.pull_request.head.repo.full_name }}" != "$REPO" ]; then
-              echo "PR head from a fork; refusing to auto-merge."
-              echo "numbers=" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            echo "numbers=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-          else
-            # workflow_run path: read related PRs from the event payload's
-            # workflow_run.pull_requests[].number. The earlier
-            # implementation searched PRs by SHA via gh pr list, which
-            # silently returned nothing because the gh search filter for
-            # "head" matches a branch name, not a SHA. The whole
-            # workflow_run branch no-op'd on every CI completion; three
-            # tier-1 PRs had to be manually nudged on 2026-05-02 because
-            # of this. Fall back to the commits/<SHA>/pulls API if the
-            # event array is empty (rare — happens for non-PR triggered
-            # runs).
-            HEAD_SHA="${{ github.event.workflow_run.head_sha }}"
-            NUMBERS=$(jq -r '.workflow_run.pull_requests[]?.number' "$EVENT_PATH" 2>/dev/null | tr '\n' ' ' || true)
-            if [ -z "${NUMBERS// }" ] && [ -n "$HEAD_SHA" ]; then
-              NUMBERS=$(gh api "repos/$REPO/commits/$HEAD_SHA/pulls" \
-                --jq '.[] | select(.state == "open") | .number' 2>/dev/null | tr '\n' ' ' || true)
-            fi
-            echo "numbers=$NUMBERS" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Set up Python (for scripts.lib.tier_policy)
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
 
-      - name: Evaluate and (maybe) merge each candidate
-        if: steps.prs.outputs.numbers != ''
+      - name: Evaluate and (maybe) enable auto-merge
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           TIER2_ENABLED: ${{ vars.AUTOPILOT_TIER2_ENABLED }}
         run: |
           set -euo pipefail
 
-          # Single source of truth for tier policy — values shared with
-          # scripts/triage-prs.sh and tests/autopilot/test_tier_policy.sh.
-          # Edit .github/policy/tier-policy.config to change any of these.
           if [ ! -f .github/policy/tier-policy.config ]; then
             echo "::error::missing .github/policy/tier-policy.config — auto-merge cannot run safely"
             exit 1
           fi
-          # shellcheck disable=SC1091
-          source .github/policy/tier-policy.config
-          : "${FORBIDDEN_PATHS_REGEX:?missing in tier-policy.config}"
-          : "${FORBIDDEN_DIFF_CONTENT_REGEX:?missing in tier-policy.config}"
-          : "${TIER2_MAX_ADDITIONS:?missing in tier-policy.config}"
-          : "${TIER2_MAX_FILES:?missing in tier-policy.config}"
-          : "${TIER1_REQUIRED_CHECKS:?missing in tier-policy.config}"
-          : "${TIER2_REQUIRED_CHECKS:?missing in tier-policy.config}"
-
-          # Aliases preserved so the rest of the script reads naturally.
-          FORBIDDEN_RE="$FORBIDDEN_PATHS_REGEX"
-          DIFF_SENSITIVE_RE="$FORBIDDEN_DIFF_CONTENT_REGEX"
 
           comment_and_skip() {
-            local n="$1" reason="$2"
-            gh pr comment "$n" --repo "$REPO" --body "🤖 auto-merge skipped: $reason"
-            echo "skip #$n: $reason"
+            local reason="$1"
+            gh pr comment "$PR_NUMBER" --repo "$REPO" --body "🤖 auto-merge skipped: $reason"
+            echo "skip #$PR_NUMBER: $reason"
+            exit 0
           }
 
-          for n in ${{ steps.prs.outputs.numbers }}; do
-            echo "=== evaluating PR #$n ==="
-            META=$(gh pr view "$n" --repo "$REPO" --json state,mergeable,labels,files,headRefName,headRefOid,title,isDraft)
-            state=$(jq -r .state <<<"$META")
-            mergeable=$(jq -r .mergeable <<<"$META")
-            is_draft=$(jq -r .isDraft <<<"$META")
-            labels=$(jq -r '.labels[].name' <<<"$META" | tr '\n' ',')
-            head_sha=$(jq -r .headRefOid <<<"$META")
+          echo "=== evaluating PR #$PR_NUMBER ==="
+          META=$(gh pr view "$PR_NUMBER" --repo "$REPO" \
+            --json state,mergeable,labels,files,headRefName,headRefOid,title,isDraft)
 
-            if [ "$state" != "OPEN" ]; then
-              echo "PR #$n state=$state, skipping"; continue
-            fi
-            if [ "$is_draft" = "true" ]; then
-              echo "PR #$n is draft, skipping"; continue
-            fi
-            if [ "$mergeable" != "MERGEABLE" ]; then
-              echo "PR #$n mergeable=$mergeable, skipping"; continue
-            fi
+          state=$(jq -r .state <<<"$META")
+          mergeable=$(jq -r .mergeable <<<"$META")
+          is_draft=$(jq -r .isDraft <<<"$META")
+          labels=$(jq -r '.labels[].name' <<<"$META" | tr '\n' ',')
 
-            # Tier label gate
-            tier=""
-            if [[ ",$labels," == *",safe-tier-1,"* ]]; then
+          if [ "$state" != "OPEN" ]; then
+              echo "PR state=$state, skipping"; exit 0
+          fi
+          if [ "$is_draft" = "true" ]; then
+              echo "PR is draft, skipping"; exit 0
+          fi
+          if [ "$mergeable" != "MERGEABLE" ]; then
+              echo "PR mergeable=$mergeable, skipping"; exit 0
+          fi
+
+          # Tier label gate. tier-label-guard.yml ensures the label was
+          # applied by a trusted account; if a stale safe-tier label
+          # somehow survives a force-push (rare — tier-label-guard.yml
+          # fires per-labeling, so a `synchronize` event that re-adds a
+          # label wouldn't re-trigger the guard), the validate step
+          # below catches forbidden content regardless.
+          if [[ ",$labels," == *",safe-tier-1,"* ]]; then
               tier="safe-tier-1"
-            elif [[ ",$labels," == *",safe-tier-2,"* ]]; then
+          elif [[ ",$labels," == *",safe-tier-2,"* ]]; then
               if [ "${TIER2_ENABLED:-false}" != "true" ]; then
-                echo "PR #$n has safe-tier-2 but AUTOPILOT_TIER2_ENABLED!=true, skipping"
-                continue
+                  echo "PR has safe-tier-2 but AUTOPILOT_TIER2_ENABLED!=true, skipping"
+                  exit 0
               fi
               tier="safe-tier-2"
-            else
-              echo "PR #$n no safe-tier label, skipping"; continue
-            fi
+          else
+              echo "PR has no safe-tier label, skipping"
+              exit 0
+          fi
+          echo "tier=$tier"
 
-            # Defensive: forbidden paths
-            files=$(jq -r '.files[].path' <<<"$META")
-            if printf '%s\n' "$files" | grep -qiE "$FORBIDDEN_RE"; then
-              echo "PR #$n touches forbidden paths; demoting label and skipping"
-              gh pr edit "$n" --repo "$REPO" --remove-label safe-tier-1 --remove-label safe-tier-2 --add-label needs-review || true
-              comment_and_skip "$n" "PR touches forbidden paths (auth/csrf/session/admin/migrations/deps/container); demoted to needs-review."
-              continue
-            fi
+          # ─── Run validation through the shared policy module ───────
+          # scripts/lib/tier_policy.py is the single source of truth.
+          # It owns: forbidden-path filename check, tier-2 LOC/file cap
+          # check, diff-content sensitive-token scan. The CLI returns
+          # JSON with `ok` + `category` + `reason`.
+          pr_json=$(mktemp)
+          diff_text=$(mktemp)
+          # `--json additions,files` mirrors what validate_fork_pr expects.
+          gh pr view "$PR_NUMBER" --repo "$REPO" --json additions,changedFiles,files > "$pr_json"
+          gh pr diff "$PR_NUMBER" --repo "$REPO" > "$diff_text"
 
-            # Tier-2 hard caps re-checked at merge time. The triage script
-            # may have applied the label based on stale data; re-verify.
-            if [ "$tier" = "safe-tier-2" ]; then
-              additions=$(gh pr view "$n" --repo "$REPO" --json additions --jq '.additions')
-              file_count=$(jq -r '.files | length' <<<"$META")
-              if [ "${additions:-0}" -gt "$TIER2_MAX_ADDITIONS" ] || [ "${file_count:-0}" -gt "$TIER2_MAX_FILES" ]; then
-                echo "PR #$n exceeds tier-2 caps (additions=$additions files=$file_count > $TIER2_MAX_ADDITIONS / $TIER2_MAX_FILES); demoting"
-                gh pr edit "$n" --repo "$REPO" --remove-label safe-tier-2 --add-label needs-review || true
-                comment_and_skip "$n" "PR is too large for safe-tier-2 (additions=$additions, files=$file_count; caps are $TIER2_MAX_ADDITIONS LOC / $TIER2_MAX_FILES files). Demoted to needs-review."
-                continue
-              fi
-            fi
+          result=$(python -m scripts.lib.tier_policy validate-fork-pr \
+              --tier "$tier" "$pr_json" "$diff_text")
+          rm -f "$pr_json" "$diff_text"
 
-            # Diff-content scan: catch sensitive tokens added in the
-            # diff itself, not just the filename. cw_advocate/auth/etc
-            # surfaces can be touched indirectly.
-            DIFF=$(gh pr diff "$n" --repo "$REPO" 2>/dev/null || true)
-            # Only scan added lines (those starting with +, but not the +++ header)
-            ADDED=$(printf '%s\n' "$DIFF" | grep -E '^\+[^+]' || true)
-            if printf '%s\n' "$ADDED" | grep -qE "$DIFF_SENSITIVE_RE"; then
-              echo "PR #$n diff contains sensitive tokens; demoting label and skipping"
-              gh pr edit "$n" --repo "$REPO" --remove-label safe-tier-1 --remove-label safe-tier-2 --add-label needs-review || true
-              hit=$(printf '%s\n' "$ADDED" | grep -oE "$DIFF_SENSITIVE_RE" | sort -u | head -3 | paste -sd ', ' -)
-              comment_and_skip "$n" "PR diff contains sensitive token(s) — \`$hit\` — demoted to needs-review for human eyes."
-              continue
-            fi
+          echo "validate-fork-pr result: $result"
+          ok=$(jq -r '.ok' <<<"$result")
+          category=$(jq -r '.category' <<<"$result")
+          reason=$(jq -r '.reason' <<<"$result")
 
-            # CHANGES-vs-upstream.md update required for non-trivial code
-            # PRs. Tier-1 (.po + *.md only) is exempt — translations don't
-            # need a CHANGES row. Tier-2 PRs that touch any non-doc, non-po
-            # file MUST also update CHANGES-vs-upstream.md.
-            if [ "$tier" = "safe-tier-2" ]; then
+          if [ "$ok" != "true" ]; then
+              # Demote to needs-review and stop. tier-2 demotion strips
+              # both labels because the operator may have intended tier-1
+              # but the validator caught something requiring eyes.
+              gh pr edit "$PR_NUMBER" --repo "$REPO" \
+                  --remove-label safe-tier-1 --remove-label safe-tier-2 \
+                  --add-label needs-review || true
+              comment_and_skip "$reason"
+          fi
+
+          # ─── Tier-2 only: CHANGES-vs-upstream.md update required ───
+          # Tier-2 PRs that touch any non-doc, non-po file MUST also
+          # update CHANGES-vs-upstream.md (CLAUDE.md hard rule for
+          # tracking divergence). Tier-1 (.po + *.md only) is exempt.
+          if [ "$tier" = "safe-tier-2" ]; then
+              files=$(jq -r '.files[].path' <<<"$META")
               has_code=0
               has_changes_update=0
               while IFS= read -r f; do
-                case "$f" in
-                  *.po|*.pot) ;;
-                  *.md|README*) ;;
-                  CHANGES-vs-upstream.md) has_changes_update=1 ;;
-                  *) has_code=1 ;;
-                esac
+                  case "$f" in
+                      *.po|*.pot) ;;
+                      *.md|README*) ;;
+                      CHANGES-vs-upstream.md) has_changes_update=1 ;;
+                      *) has_code=1 ;;
+                  esac
               done <<<"$files"
               if [ "$has_code" = "1" ] && [ "$has_changes_update" = "0" ]; then
-                echo "PR #$n is tier-2 with code changes but no CHANGES-vs-upstream.md update"
-                comment_and_skip "$n" "tier-2 PRs with code changes must update CHANGES-vs-upstream.md to document the divergence. Add a row, push, and CI will re-evaluate."
-                continue
+                  comment_and_skip "tier-2 PRs with code changes must update CHANGES-vs-upstream.md to document the divergence. Add a row, push, and CI will re-evaluate."
               fi
-            fi
+          fi
 
-            # Required checks must have run AND succeeded.
-            # Tier-2 adds Integration Tests as a hard gate — small code
-            # changes still need to clear the actual ingest/Calibre flow.
-            # Lists come from .github/policy/tier-policy.config for parity
-            # with the triage script + tests.
-            CHECKS=$(gh api "repos/$REPO/commits/$head_sha/check-runs" --jq '.check_runs')
-            if [ "$tier" = "safe-tier-2" ]; then
-              IFS=',' read -ra required <<< "$TIER2_REQUIRED_CHECKS"
-            else
-              IFS=',' read -ra required <<< "$TIER1_REQUIRED_CHECKS"
-            fi
-            all_ok=1
-            for req in "${required[@]}"; do
-              run=$(jq -c --arg n "$req" '.[] | select(.name == $n)' <<<"$CHECKS" | tail -1)
-              if [ -z "$run" ]; then
-                echo "PR #$n missing required check '$req'"
-                all_ok=0
-                break
-              fi
-              status=$(jq -r .status <<<"$run")
-              concl=$(jq -r .conclusion <<<"$run")
-              if [ "$status" != "completed" ] || { [ "$concl" != "success" ] && [ "$concl" != "skipped" ] && [ "$concl" != "neutral" ]; }; then
-                echo "PR #$n required check '$req' status=$status conclusion=$concl"
-                all_ok=0
-                break
-              fi
-            done
-            if [ "$all_ok" -ne 1 ]; then
-              echo "PR #$n required checks not green yet, skipping"
-              continue
-            fi
-
-            # No other check may be in a hard-failing state
-            failing=$(jq -r '.[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "cancelled" or .conclusion == "action_required") | .name' <<<"$CHECKS" || true)
-            if [ -n "$failing" ]; then
-              echo "PR #$n has failing checks: $failing"
-              continue
-            fi
-
-            echo "PR #$n eligible for merge under $tier"
-            gh pr merge "$n" --repo "$REPO" --squash --delete-branch
-            gh pr comment "$n" --repo "$REPO" --body "🤖 auto-merged under tier \`$tier\`. validate-author and Fast Tests confirmed green on \`$head_sha\`."
-          done
+          # ─── Enable auto-merge ────────────────────────────────────
+          # We do NOT poll required checks here. GitHub waits for them
+          # via branch protection (validate-author + Fast Tests + Test
+          # Suite Summary required; the summary is tier-aware and fails
+          # on integration-tests failure for safe-tier-2 PRs). This is
+          # the workflow_run polling loop that the old version did, but
+          # delegated to GitHub itself — fewer places for the state
+          # machine to live, no more race-on-completion bugs.
+          #
+          # --auto requires the repo to have "Allow auto-merge" enabled
+          # in settings (it is).
+          echo "Enabling auto-merge for PR #$PR_NUMBER under $tier"
+          gh pr merge "$PR_NUMBER" --repo "$REPO" --auto --squash --delete-branch
+          gh pr comment "$PR_NUMBER" --repo "$REPO" \
+              --body "🤖 auto-merge enabled under tier \`$tier\`. GitHub will merge once required status checks complete."

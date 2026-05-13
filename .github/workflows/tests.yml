@@ -337,27 +337,44 @@ jobs:
     runs-on: ubuntu-latest
     needs: [fast-tests, integration-tests, e2e-tests]
     if: always()
-    
+
+    # The unified gate that branch protection requires. auto-merge.yml
+    # leans on this job being strict-for-tier-2 instead of polling
+    # Integration Tests itself: when this summary is green, GitHub
+    # auto-merge fires.
     steps:
       - name: Check test results
+        env:
+          # contains() evaluates to a 'true' / 'false' string; we pass
+          # it through env to keep the shell predicate readable.
+          IS_TIER2_PR: ${{ contains(github.event.pull_request.labels.*.name, 'safe-tier-2') }}
         run: |
-          echo "Fast Tests: ${{ needs.fast-tests.result }}"
+          echo "Fast Tests:        ${{ needs.fast-tests.result }}"
           echo "Integration Tests: ${{ needs.integration-tests.result }}"
-          echo "E2E Tests: ${{ needs.e2e-tests.result }}"
-          
+          echo "E2E Tests:         ${{ needs.e2e-tests.result }}"
+          echo "Is tier-2 PR:      $IS_TIER2_PR"
+
           if [[ "${{ needs.fast-tests.result }}" == "failure" ]]; then
             echo "❌ Fast tests failed"
             exit 1
           fi
-          
+
+          # Integration Tests is a hard gate for safe-tier-2 PRs (the
+          # whole point of the tier — small code change must clear the
+          # actual ingest / Calibre flow). For tier-1 PRs and pushes to
+          # main/dev the suite is advisory (continue-on-error in the
+          # job definition keeps it from blocking auto-revert decisions).
           if [[ "${{ needs.integration-tests.result }}" == "failure" ]]; then
-            echo "⚠️ Integration tests failed"
-            # Don't fail the summary, just warn
+            if [[ "$IS_TIER2_PR" == "true" ]]; then
+              echo "❌ Integration tests failed on safe-tier-2 PR — auto-merge gate"
+              exit 1
+            fi
+            echo "⚠️ Integration tests failed (advisory; not a tier-2 PR)"
           fi
-          
+
           if [[ "${{ needs.e2e-tests.result }}" == "failure" ]]; then
             echo "⛔ E2E tests failed - do not release!"
-            # Don't fail the summary, just warn
+            # Don't fail the summary, just warn.
           fi
-          
+
           echo "✅ Test suite completed"
