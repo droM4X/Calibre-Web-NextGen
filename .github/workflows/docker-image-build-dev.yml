@@ -141,8 +141,13 @@ jobs:
   # JOB 2: Build ARM (arm64 Only) on Oracle Runner
   # --------------------------------------------------------------------------------
   build-arm:
-    # Use your self-hosted runner labels here
-    runs-on: [self-hosted, linux, ARM64]
+    # GitHub's free native ARM64 hosted runner. The workflow originally
+    # ran on a self-hosted Oracle Cloud ARM VM (inherited from upstream
+    # CWA), but no such runner exists on Calibre-Web-NextGen — the job
+    # had been queuing indefinitely. A self-hosted runner on a *public*
+    # repo is also a meaningful attack surface (any PR can execute on
+    # operator hardware), so GitHub-hosted is the safer default.
+    runs-on: ubuntu-24.04-arm
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Set build ref
