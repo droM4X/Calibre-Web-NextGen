@@ -23,7 +23,11 @@ class MyWSGIHandler(WSGIHandler):
             delta = '%.6f' % (self.time_finish - self.time_start)
         else:
             delta = '-'
-        forwarded = self.environ.get('HTTP_X_FORWARDED_FOR', None)
+        # gevent calls ``format_request`` for invalid requests too (e.g. a TLS
+        # ClientHello on a plain-HTTP listener). In that case ``get_environ``
+        # is never called and ``self.environ`` stays ``None`` — accessing
+        # ``.get`` would kill the access-log greenlet. See issue #147.
+        forwarded = self.environ.get('HTTP_X_FORWARDED_FOR', None) if self.environ else None
         if forwarded:
             client_address = forwarded
         else:
