@@ -1,0 +1,57 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+#------------------------------------------------------------------------------------------------------------------------
+#  Cover-preview disk-cache LRU sweeper (Phase 3 of cover-normalization).
+#
+#  Runs the cps.services.cover_preview_cache_sweeper hourly. The sweeper
+#  walks /config/.cwa-preview-cache (where the /cover/<id>/preview
+#  endpoint writes padded JPEG tiles) and evicts oldest-atime files
+#  until the total size is under CWA_PREVIEW_CACHE_MAX_MB (default 1024).
+#
+#  This is a longrun service with an inline sleep loop because s6
+#  oneshot doesn't run on a timer; we want continuous hourly sweeps for
+#  the lifetime of the container.
+#------------------------------------------------------------------------------------------------------------------------
+
+echo "[cwa-preview-cache-cleanup] Starting cover-preview disk-cache LRU sweeper..."
+
+# Match localtime/TZ for log clarity, same pattern as cwa-auto-zipper.
+tz=$(printcontenv TZ)
+if [[ $tz == "" ]]; then
+    echo "[cwa-preview-cache-cleanup] No TZ env found. Defaulting to UTC..."
+else
+    region=$(echo "$tz" | awk -F '/' '{ print $1 }')
+    city=$(echo "$tz" | awk -F '/' '{ print $2 }')
+    zoneinfo_file="/usr/share/zoneinfo/$region/$city"
+    if test -f "$zoneinfo_file"; then
+        ln -sfn "$zoneinfo_file" /etc/localtime
+        echo "$tz" > '/etc/timezone'
+        echo "[cwa-preview-cache-cleanup] Timezone set to $tz."
+    else
+        echo "[cwa-preview-cache-cleanup] Zoneinfo $tz not found. Using UTC."
+    fi
+fi
+
+# Sleep this long between sweeps. One hour is the canonical cadence; the
+# cache grows slowly under normal use, and rapid eviction during a burst
+# is undesirable (interactively-visible re-renders).
+SWEEP_INTERVAL_SECONDS=${CWA_PREVIEW_CACHE_SWEEP_INTERVAL:-3600}
+
+# A short startup delay so we don't compete with cwa-init / migration
+# work on a fresh container boot. The cache is empty on first boot
+# anyway; nothing to evict.
+INITIAL_DELAY_SECONDS=${CWA_PREVIEW_CACHE_INITIAL_DELAY:-120}
+
+echo "[cwa-preview-cache-cleanup] Initial delay: ${INITIAL_DELAY_SECONDS}s; sweep interval: ${SWEEP_INTERVAL_SECONDS}s; cap (MB): ${CWA_PREVIEW_CACHE_MAX_MB:-1024}"
+sleep "$INITIAL_DELAY_SECONDS"
+
+while true; do
+    # Run as the abc service user so unlink permissions match what the
+    # Flask endpoint wrote (write_to_cache runs in the gunicorn worker
+    # which is also abc).
+    s6-setuidgid abc python3 -m cps.services.cover_preview_cache_sweeper \
+        || echo "[cwa-preview-cache-cleanup] WARNING: sweeper exited non-zero; continuing schedule"
+
+    sleep "$SWEEP_INTERVAL_SECONDS"
+done
