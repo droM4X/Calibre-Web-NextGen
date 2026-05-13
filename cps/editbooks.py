@@ -754,7 +754,9 @@ def read_selected_books():
 @user_login_required
 @edit_required
 def merge_list_book():
-    vals = request.get_json().get('Merge_books')
+    payload = request.get_json()
+    vals = payload.get('Merge_books')
+    overwrite_formats = [f.upper() for f in payload.get('overwrite_formats', [])]
     to_file = list()
     if vals:
         # load all formats from target book
@@ -770,20 +772,26 @@ def merge_list_book():
                 from_book = calibre_db.get_book(book_id)
                 if from_book:
                     for element in from_book.data:
+                        filepath_new = os.path.normpath(os.path.join(config.get_book_path(),
+                                                                     to_book.path,
+                                                                     to_name + "." + element.format.lower()))
+                        filepath_old = os.path.normpath(os.path.join(config.get_book_path(),
+                                                                     from_book.path,
+                                                                     element.name + "." + element.format.lower()))
                         if element.format not in to_file:
-                            # create new data entry with: book_id, book_format, uncompressed_size, name
-                            filepath_new = os.path.normpath(os.path.join(config.get_book_path(),
-                                                                         to_book.path,
-                                                                         to_name + "." + element.format.lower()))
-                            filepath_old = os.path.normpath(os.path.join(config.get_book_path(),
-                                                                         from_book.path,
-                                                                         element.name + "." + element.format.lower()))
                             copyfile(filepath_old, filepath_new)
                             to_book.data.append(db.Data(to_book.id,
                                                         element.format,
                                                         element.uncompressed_size,
                                                         to_name))
                             to_file.append(element.format)
+                        elif element.format in overwrite_formats:
+                            # Replace keeper's existing format file and update its size
+                            copyfile(filepath_old, filepath_new)
+                            for data_entry in to_book.data:
+                                if data_entry.format == element.format:
+                                    data_entry.uncompressed_size = element.uncompressed_size
+                                    break
                     delete_book_from_table(from_book.id, "", True, skip_cache_invalidation=True)
             calibre_db.session.commit()
             

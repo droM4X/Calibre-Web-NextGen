@@ -28,6 +28,9 @@
     {% if current_user.is_authenticated and (current_user.role_admin() or current_user.role_edit()) %}
     <link href="{{ url_for('static', filename='css/duplicates-notifications.css') }}" rel="stylesheet" media="screen">
     {% endif %}
+    {% if current_user.is_authenticated and current_user.role_edit() %}
+    <link href="{{ url_for('static', filename='css/drag-drop-merge.css') }}" rel="stylesheet" media="screen">
+    {% endif %}
     <script>
       let checkMessagesInterval = null; // Store interval ID
 
@@ -419,6 +422,78 @@
         window.cwaUserData.canEditBooks = {{ 'true' if current_user.role_edit() else 'false' }};
       </script>
       <script src="{{ url_for('static', filename='js/caliBlur.js') }}"></script>
+    {% endif %}
+    {% if current_user.is_authenticated and current_user.role_edit() %}
+    <!-- Drag-and-drop merge modal -->
+    <div id="book-merge-modal"
+         class="book-merge-modal-backdrop"
+         hidden
+         aria-hidden="true"
+         aria-modal="true"
+         role="dialog"
+         aria-labelledby="book-merge-modal-title">
+      <div class="book-merge-modal-dialog">
+        <div class="book-merge-modal-header">
+          <h4 id="book-merge-modal-title">
+            <span class="glyphicon glyphicon-random" aria-hidden="true"></span>
+            {{_('Merge Books')}}
+          </h4>
+        </div>
+        <div class="book-merge-modal-body">
+          <p class="book-merge-warning">
+            <span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span>
+            {{_('This cannot be undone.')}}
+          </p>
+          <div class="book-merge-cards">
+            <div class="book-merge-card book-merge-card-source">
+              <div class="book-merge-card-label book-merge-label-delete">
+                <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                {{_('Will be deleted')}}
+              </div>
+              <div class="book-merge-card-title" data-merge-source-title></div>
+              <div class="book-merge-card-formats">
+                {{_('Formats:')}} <span data-merge-source-formats></span>
+              </div>
+            </div>
+            <div class="book-merge-arrow" aria-hidden="true">
+              <span class="glyphicon glyphicon-arrow-right"></span>
+            </div>
+            <div class="book-merge-card book-merge-card-keeper">
+              <div class="book-merge-card-label book-merge-label-keep">
+                <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                {{_('Will be kept')}}
+              </div>
+              <div class="book-merge-card-title" data-merge-keeper-title></div>
+              <div class="book-merge-card-formats">
+                {{_('Formats:')}} <span data-merge-keeper-formats></span>
+              </div>
+            </div>
+          </div>
+          <!-- Shown when source has formats the keeper already has -->
+          <div class="book-merge-conflicts" data-merge-conflicts hidden>
+            <div class="book-merge-conflicts-header">
+              <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+              {{_('Format conflicts — choose what to do:')}}
+            </div>
+            <div data-merge-conflict-rows></div>
+          </div>
+          <div class="book-merge-result">
+            <span class="glyphicon glyphicon-book" aria-hidden="true"></span>
+            {{_('Result will have formats:')}} <strong data-merge-result-formats></strong>
+          </div>
+        </div>
+        <div class="book-merge-modal-footer">
+          <button type="button" class="btn btn-default" data-merge-cancel>
+            {{_('Cancel')}}
+          </button>
+          <button type="button" class="btn btn-danger" data-merge-confirm>
+            <span class="glyphicon glyphicon-random" aria-hidden="true"></span>
+            {{_('Merge &amp; Delete Source')}}
+          </button>
+        </div>
+      </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/drag-drop-merge.js') }}"></script>
     {% endif %}
     {% block js %}{% endblock %}
     {% if current_user.is_authenticated %}
