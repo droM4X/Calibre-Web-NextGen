@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version:  Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-05-13 21:28+0000\n"
+"POT-Creation-Date: 2026-05-13 21:34+0000\n"
 "PO-Revision-Date: 2020-01-12 13:56+0100\n"
 "Last-Translator: Samuli Valavuo <svalavuo@gmail.com>\n"
 "Language-Team: \n"
@@ -122,7 +122,7 @@ msgstr "Perusasetukset"
 msgid "UI Configuration"
 msgstr "Käyttöliittymän asetukset"
 
-#: cps/admin.py:645 cps/admin.py:1328 cps/db.py:1022 cps/search.py:153
+#: cps/admin.py:645 cps/admin.py:1332 cps/db.py:1026 cps/search.py:153
 #: cps/web.py:553 cps/web.py:883
 #, python-format
 msgid "Custom Column No.%(column)d does not exist in calibre database"
@@ -133,12 +133,12 @@ msgstr ""
 msgid "Edit Users"
 msgstr "Pääkäyttäjä"
 
-#: cps/admin.py:707 cps/opds.py:805 cps/templates/grid.html:14
+#: cps/admin.py:707 cps/opds.py:942 cps/templates/grid.html:14
 #: cps/templates/list.html:19
 msgid "All"
 msgstr "Kaikki"
 
-#: cps/admin.py:734 cps/admin.py:1919
+#: cps/admin.py:734 cps/admin.py:1923
 msgid "User not found"
 msgstr ""
 
@@ -157,596 +157,602 @@ msgstr "Näytä kaikki"
 msgid "Malformed request"
 msgstr ""
 
-#: cps/admin.py:810 cps/admin.py:2831
+#: cps/admin.py:810 cps/admin.py:2837
 msgid "Guest Name can't be changed"
 msgstr ""
 
-#: cps/admin.py:824
+#: cps/admin.py:826
 msgid "Guest can't have this role"
 msgstr ""
 
-#: cps/admin.py:836 cps/admin.py:2656
+#: cps/admin.py:838 cps/admin.py:2661
 msgid "No admin user remaining, can't remove admin role"
 msgstr ""
 
-#: cps/admin.py:840 cps/admin.py:854
+#: cps/admin.py:842 cps/admin.py:856
 msgid "Value has to be true or false"
 msgstr ""
 
-#: cps/admin.py:842
+#: cps/admin.py:844
 msgid "Invalid role"
 msgstr ""
 
-#: cps/admin.py:846
+#: cps/admin.py:848
 msgid "Guest can't have this view"
 msgstr ""
 
-#: cps/admin.py:856
+#: cps/admin.py:858
 msgid "Invalid view"
 msgstr ""
 
-#: cps/admin.py:859
+#: cps/admin.py:861
 msgid "Guest's Locale is determined automatically and can't be set"
 msgstr ""
 
-#: cps/admin.py:863
+#: cps/admin.py:865
 msgid "No Valid Locale Given"
 msgstr ""
 
-#: cps/admin.py:874
+#: cps/admin.py:876
 msgid "No Valid Book Language Given"
 msgstr ""
 
-#: cps/admin.py:876 cps/editbooks.py:608
+#: cps/admin.py:878 cps/editbooks.py:608
 msgid "Parameter not found"
 msgstr ""
 
-#: cps/admin.py:913
+#: cps/admin.py:915
 msgid "Invalid Read Column"
 msgstr ""
 
-#: cps/admin.py:919
+#: cps/admin.py:921
 msgid "Invalid Restricted Column"
 msgstr ""
 
-#: cps/admin.py:940 cps/admin.py:2504
+#: cps/admin.py:942 cps/admin.py:2508
 #, fuzzy
 msgid "Calibre-Web Automated configuration updated"
 msgstr "Calibre-Web asetukset päivitetty"
 
-#: cps/admin.py:952
+#: cps/admin.py:954
 msgid "Do you really want to delete the Kobo Token?"
 msgstr ""
 
-#: cps/admin.py:954
+#: cps/admin.py:956
 msgid "Do you really want to delete this domain?"
 msgstr ""
 
-#: cps/admin.py:956
+#: cps/admin.py:958
 msgid "Do you really want to delete this user?"
 msgstr ""
 
-#: cps/admin.py:958
+#: cps/admin.py:960
 msgid "Are you sure you want to delete this shelf?"
 msgstr "Oletko varma, että haluat poistaa hyllyn?"
 
-#: cps/admin.py:960
+#: cps/admin.py:962
 #, fuzzy
 msgid "Are you sure you want to change locales of selected user(s)?"
 msgstr "Oletko varma, että haluat poistaa hyllyn?"
 
-#: cps/admin.py:962
+#: cps/admin.py:964
 msgid ""
 "Are you sure you want to change visible book languages for selected user(s)?"
 msgstr ""
 
-#: cps/admin.py:964
+#: cps/admin.py:966
 msgid ""
 "Are you sure you want to change the selected role for the selected user(s)?"
 msgstr ""
 
-#: cps/admin.py:966
+#: cps/admin.py:968
 #, fuzzy
 msgid ""
 "Are you sure you want to change the selected restrictions for the selected "
 "user(s)?"
 msgstr "Oletko varma, että haluat poistaa hyllyn?"
 
-#: cps/admin.py:968
+#: cps/admin.py:970
 msgid ""
 "Are you sure you want to change the selected visibility restrictions for the "
 "selected user(s)?"
 msgstr ""
 
-#: cps/admin.py:971
+#: cps/admin.py:973
 #, fuzzy
 msgid ""
 "Are you sure you want to change shelf sync behavior for the selected user(s)?"
 msgstr "Oletko varma, että haluat poistaa hyllyn?"
 
-#: cps/admin.py:973
+#: cps/admin.py:975
+#, fuzzy
+msgid ""
+"Are you sure you want to change OPDS shelf exposure for the selected user(s)?"
+msgstr "Oletko varma, että haluat poistaa hyllyn?"
+
+#: cps/admin.py:977
 #, fuzzy
 msgid "Are you sure you want to change Calibre library location?"
 msgstr "Haluatko varmasti pysäyttää Calibre-Webin?"
 
-#: cps/admin.py:975
+#: cps/admin.py:979
 msgid ""
 "Calibre-Web Automated will search for updated Covers and update Cover "
 "Thumbnails, this may take a while?"
 msgstr ""
 
-#: cps/admin.py:978
+#: cps/admin.py:982
 msgid ""
 "Are you sure you want delete Calibre-Web Automated's sync database to force "
 "a full sync with your Kobo Reader?"
 msgstr ""
 
-#: cps/admin.py:1217 cps/admin.py:1223 cps/admin.py:1233 cps/admin.py:1243
+#: cps/admin.py:1221 cps/admin.py:1227 cps/admin.py:1237 cps/admin.py:1247
 #: cps/templates/modal_dialogs.html:29 cps/templates/user_table.html:41
 #: cps/templates/user_table.html:58
 msgid "Deny"
 msgstr ""
 
-#: cps/admin.py:1219 cps/admin.py:1225 cps/admin.py:1235 cps/admin.py:1245
+#: cps/admin.py:1223 cps/admin.py:1229 cps/admin.py:1239 cps/admin.py:1249
 #: cps/templates/modal_dialogs.html:28 cps/templates/user_table.html:44
 #: cps/templates/user_table.html:61
 msgid "Allow"
 msgstr ""
 
-#: cps/admin.py:1278
+#: cps/admin.py:1282
 #, python-brace-format
 msgid "{} sync entries deleted"
 msgstr ""
 
-#: cps/admin.py:1319
+#: cps/admin.py:1323
 msgid "Tag not found"
 msgstr ""
 
-#: cps/admin.py:1337
+#: cps/admin.py:1341
 msgid "Invalid Action"
 msgstr ""
 
-#: cps/admin.py:1464
+#: cps/admin.py:1468
 msgid "client_secrets.json Is Not Configured For Web Application"
 msgstr ""
 
-#: cps/admin.py:1603
+#: cps/admin.py:1607
 msgid "Logfile Location is not Valid, Please Enter Correct Path"
 msgstr ""
 
-#: cps/admin.py:1609
+#: cps/admin.py:1613
 msgid "Access Logfile Location is not Valid, Please Enter Correct Path"
 msgstr ""
 
-#: cps/admin.py:1644
+#: cps/admin.py:1648
 msgid "Please Enter a LDAP Provider, Port, DN and User Object Identifier"
 msgstr ""
 
-#: cps/admin.py:1650
+#: cps/admin.py:1654
 msgid "Please Enter a LDAP Service Account and Password"
 msgstr ""
 
-#: cps/admin.py:1653
+#: cps/admin.py:1657
 msgid "Please Enter a LDAP Service Account"
 msgstr ""
 
-#: cps/admin.py:1658
+#: cps/admin.py:1662
 #, python-format
 msgid "LDAP Group Object Filter Needs to Have One \"%s\" Format Identifier"
 msgstr ""
 
-#: cps/admin.py:1660
+#: cps/admin.py:1664
 msgid "LDAP Group Object Filter Has Unmatched Parenthesis"
 msgstr ""
 
-#: cps/admin.py:1664
+#: cps/admin.py:1668
 #, python-format
 msgid "LDAP User Object Filter needs to Have One \"%s\" Format Identifier"
 msgstr ""
 
-#: cps/admin.py:1666
+#: cps/admin.py:1670
 msgid "LDAP User Object Filter Has Unmatched Parenthesis"
 msgstr ""
 
-#: cps/admin.py:1673
+#: cps/admin.py:1677
 #, python-format
 msgid "LDAP Member User Filter needs to Have One \"%s\" Format Identifier"
 msgstr ""
 
-#: cps/admin.py:1675
+#: cps/admin.py:1679
 msgid "LDAP Member User Filter Has Unmatched Parenthesis"
 msgstr ""
 
-#: cps/admin.py:1682
+#: cps/admin.py:1686
 msgid ""
 "LDAP CACertificate, Certificate or Key Location is not Valid, Please Enter "
 "Correct Path"
 msgstr ""
 
-#: cps/admin.py:1715 cps/templates/admin.html:57
+#: cps/admin.py:1719 cps/templates/admin.html:57
 msgid "Add New User"
 msgstr ""
 
-#: cps/admin.py:1730 cps/templates/admin.html:105
+#: cps/admin.py:1734 cps/templates/admin.html:105
 msgid "Edit Email Server Settings"
 msgstr "Muuta SMTP asetuksia"
 
-#: cps/admin.py:1749
+#: cps/admin.py:1753
 msgid "Success! Gmail Account Verified."
 msgstr ""
 
-#: cps/admin.py:1769 cps/admin.py:1772 cps/admin.py:2258 cps/admin.py:2488
-#: cps/admin.py:2603 cps/admin.py:2874 cps/editbooks.py:1091
-#: cps/editbooks.py:1857 cps/shelf.py:93 cps/shelf.py:167 cps/shelf.py:228
-#: cps/shelf.py:278 cps/shelf.py:318 cps/shelf.py:392 cps/shelf.py:514
-#: cps/tasks/convert.py:145 cps/web.py:2755
+#: cps/admin.py:1773 cps/admin.py:1776 cps/admin.py:2262 cps/admin.py:2492
+#: cps/admin.py:2608 cps/admin.py:2880 cps/editbooks.py:1099
+#: cps/editbooks.py:1865 cps/shelf.py:93 cps/shelf.py:167 cps/shelf.py:228
+#: cps/shelf.py:278 cps/shelf.py:318 cps/shelf.py:398 cps/shelf.py:523
+#: cps/tasks/convert.py:145 cps/web.py:2777
 #, python-format
 msgid "Oops! Database Error: %(error)s."
 msgstr ""
 
-#: cps/admin.py:1779
+#: cps/admin.py:1783
 #, python-format
 msgid ""
 "Test e-mail queued for sending to %(email)s, please check Tasks for result"
 msgstr ""
 
-#: cps/admin.py:1782
+#: cps/admin.py:1786
 #, python-format
 msgid "There was an error sending the Test e-mail: %(res)s"
 msgstr "Testisähköpostin lähetyksessä tapahtui virhe: %(res)s"
 
-#: cps/admin.py:1784
+#: cps/admin.py:1788
 msgid "Please configure your e-mail address first..."
 msgstr ""
 
-#: cps/admin.py:1786
+#: cps/admin.py:1790
 msgid "Email Server Settings updated"
 msgstr "Sähköpostipalvelimen tiedot päivitetty"
 
-#: cps/admin.py:1809 cps/templates/admin.html:201
+#: cps/admin.py:1813 cps/templates/admin.html:201
 msgid "Edit Scheduled Tasks Settings"
 msgstr ""
 
-#: cps/admin.py:1821
+#: cps/admin.py:1825
 msgid "Invalid start time for task specified"
 msgstr ""
 
-#: cps/admin.py:1826
+#: cps/admin.py:1830
 msgid "Invalid duration for task specified"
 msgstr ""
 
-#: cps/admin.py:1836
+#: cps/admin.py:1840
 msgid "Scheduled tasks settings updated"
 msgstr ""
 
-#: cps/admin.py:1846 cps/admin.py:1990 cps/admin.py:2870 cps/web.py:2186
+#: cps/admin.py:1850 cps/admin.py:1994 cps/admin.py:2876 cps/web.py:2207
 msgid "Oops! An unknown error occurred. Please try again later."
 msgstr "Tapahtui tuntematon virhe. Yritä myöhemmin uudelleen."
 
-#: cps/admin.py:1850
+#: cps/admin.py:1854
 msgid "Settings DB is not Writeable"
 msgstr ""
 
-#: cps/admin.py:1869 cps/opds.py:206 cps/web.py:2681 cps/web.py:2806
+#: cps/admin.py:1873 cps/opds.py:206 cps/web.py:2703 cps/web.py:2828
 #, fuzzy
 msgid "title"
 msgstr "Otsikko"
 
-#: cps/admin.py:1975 cps/admin.py:2862
+#: cps/admin.py:1979 cps/admin.py:2868
 #, python-format
 msgid "Edit User %(nick)s"
 msgstr "Muokkaa käyttäjää %(nick)s"
 
-#: cps/admin.py:1987
+#: cps/admin.py:1991
 #, fuzzy, python-format
 msgid "Success! Password for user %(user)s reset"
 msgstr "Käyttäjän %(user)s salasana palautettu"
 
-#: cps/admin.py:1993
+#: cps/admin.py:1997
 #, fuzzy
 msgid "Oops! Please configure the SMTP mail settings."
 msgstr "Ole hyvä ja aseta SMTP postiasetukset ensin..."
 
-#: cps/admin.py:2004
+#: cps/admin.py:2008
 msgid "Logfile viewer"
 msgstr "Lokitiedoston katselin"
 
-#: cps/admin.py:2070
+#: cps/admin.py:2074
 msgid "Requesting update package"
 msgstr "Haetaan päivitystiedostoa"
 
-#: cps/admin.py:2071
+#: cps/admin.py:2075
 msgid "Downloading update package"
 msgstr "Ladataan päivitystiedostoa"
 
-#: cps/admin.py:2072
+#: cps/admin.py:2076
 msgid "Unzipping update package"
 msgstr "Puretaan päivitystiedostoa"
 
-#: cps/admin.py:2073
+#: cps/admin.py:2077
 msgid "Replacing files"
 msgstr "Korvataan tiedostoja"
 
-#: cps/admin.py:2074
+#: cps/admin.py:2078
 msgid "Database connections are closed"
 msgstr "Tietokantayhteydet on katkaistu"
 
-#: cps/admin.py:2075
+#: cps/admin.py:2079
 msgid "Stopping server"
 msgstr "Sammutetaan palvelin"
 
-#: cps/admin.py:2076
+#: cps/admin.py:2080
 msgid "Update finished, please press okay and reload page"
 msgstr "Päivitys valmistui, ole hyvä ja paina OK ja lataa sivu uudelleen"
 
-#: cps/admin.py:2077 cps/admin.py:2078 cps/admin.py:2079 cps/admin.py:2080
-#: cps/admin.py:2081 cps/admin.py:2082
+#: cps/admin.py:2081 cps/admin.py:2082 cps/admin.py:2083 cps/admin.py:2084
+#: cps/admin.py:2085 cps/admin.py:2086
 msgid "Update failed:"
 msgstr "Päivitys epäonnistui:"
 
-#: cps/admin.py:2077 cps/updater.py:421 cps/updater.py:660 cps/updater.py:662
+#: cps/admin.py:2081 cps/updater.py:421 cps/updater.py:660 cps/updater.py:662
 msgid "HTTP Error"
 msgstr "HTTP virhe"
 
-#: cps/admin.py:2078 cps/updater.py:423 cps/updater.py:664
+#: cps/admin.py:2082 cps/updater.py:423 cps/updater.py:664
 msgid "Connection error"
 msgstr "Yhteysvirhe"
 
-#: cps/admin.py:2079 cps/updater.py:425 cps/updater.py:666
+#: cps/admin.py:2083 cps/updater.py:425 cps/updater.py:666
 msgid "Timeout while establishing connection"
 msgstr "Aikakatkaisu yhteyttä luotaessa"
 
-#: cps/admin.py:2080 cps/updater.py:427 cps/updater.py:668
+#: cps/admin.py:2084 cps/updater.py:427 cps/updater.py:668
 msgid "General error"
 msgstr "Yleinen virhe"
 
-#: cps/admin.py:2081
+#: cps/admin.py:2085
 msgid "Update file could not be saved in temp dir"
 msgstr ""
 
-#: cps/admin.py:2082
+#: cps/admin.py:2086
 msgid "Files could not be replaced during update"
 msgstr ""
 
-#: cps/admin.py:2106
+#: cps/admin.py:2110
 msgid "Failed to extract at least One LDAP User"
 msgstr ""
 
-#: cps/admin.py:2151
+#: cps/admin.py:2155
 msgid "Failed to Create at Least One LDAP User"
 msgstr ""
 
-#: cps/admin.py:2164
+#: cps/admin.py:2168
 #, python-format
 msgid "Error: %(ldaperror)s"
 msgstr ""
 
-#: cps/admin.py:2168
+#: cps/admin.py:2172
 msgid "Error: No user returned in response of LDAP server"
 msgstr ""
 
-#: cps/admin.py:2204
+#: cps/admin.py:2208
 msgid "At Least One LDAP User Not Found in Database"
 msgstr ""
 
-#: cps/admin.py:2206
+#: cps/admin.py:2210
 #, python-brace-format
 msgid "{} User Successfully Imported"
 msgstr ""
 
-#: cps/admin.py:2270
+#: cps/admin.py:2274
 msgid "Books path not valid"
 msgstr ""
 
-#: cps/admin.py:2277
+#: cps/admin.py:2281
 msgid "DB Location is not Valid, Please Enter Correct Path"
 msgstr ""
 
-#: cps/admin.py:2305
+#: cps/admin.py:2309
 msgid "DB is not Writeable"
 msgstr ""
 
-#: cps/admin.py:2318
+#: cps/admin.py:2322
 msgid "Keyfile Location is not Valid, Please Enter Correct Path"
 msgstr ""
 
-#: cps/admin.py:2322
+#: cps/admin.py:2326
 msgid "Certfile Location is not Valid, Please Enter Correct Path"
 msgstr ""
 
-#: cps/admin.py:2410
+#: cps/admin.py:2414
 msgid ""
 "Auto-create users cannot be enabled without enabling reverse proxy "
 "authentication"
 msgstr ""
 
-#: cps/admin.py:2413
+#: cps/admin.py:2417
 msgid "Auto-create users requires a valid reverse proxy header name"
 msgstr ""
 
-#: cps/admin.py:2432 cps/admin.py:2439
+#: cps/admin.py:2436 cps/admin.py:2443
 msgid ""
 "Invalid OAuth Redirect Host format. Please include the full URL with "
 "protocol (e.g., https://your-domain.com)"
 msgstr ""
 
-#: cps/admin.py:2436
+#: cps/admin.py:2440
 msgid ""
 "OAuth Redirect Host should not include a path. Use only the base URL (e.g., "
 "https://your-domain.com)"
 msgstr ""
 
-#: cps/admin.py:2471
+#: cps/admin.py:2475
 msgid "Password length has to be between 1 and 40"
 msgstr ""
 
-#: cps/admin.py:2531
+#: cps/admin.py:2535
 #, fuzzy
 msgid "Database Settings updated"
 msgstr "Sähköpostipalvelimen tiedot päivitetty"
 
-#: cps/admin.py:2539
+#: cps/admin.py:2543
 #, fuzzy
 msgid "Database Configuration"
 msgstr "Ominaisuuksien asetukset"
 
-#: cps/admin.py:2559 cps/web.py:2155
+#: cps/admin.py:2563 cps/web.py:2176
 msgid "Oops! Please complete all fields."
 msgstr "Ole hyvä ja täytä kaikki kentät!"
 
-#: cps/admin.py:2568
+#: cps/admin.py:2572
 msgid "E-mail is not from valid domain"
 msgstr "Sähköpostiosoite ei ole toimivasta domainista"
 
-#: cps/admin.py:2576
+#: cps/admin.py:2580
 msgid "Add new user"
 msgstr "Lisää uusi käyttäjä"
 
-#: cps/admin.py:2593
+#: cps/admin.py:2598
 #, python-format
 msgid "User '%(user)s' created"
 msgstr "Käyttäjä '%(user)s' lisätty"
 
-#: cps/admin.py:2599
+#: cps/admin.py:2604
 #, fuzzy
 msgid "Oops! An account already exists for this Email. or name."
 msgstr "Tälle sähköpostiosoitteelle tai tunnukselle löytyi jo tili."
 
-#: cps/admin.py:2629
+#: cps/admin.py:2634
 #, python-format
 msgid "User '%(nick)s' deleted"
 msgstr "Käyttäjä '%(nick)s' poistettu"
 
-#: cps/admin.py:2632
+#: cps/admin.py:2637
 msgid "Can't delete Guest User"
 msgstr ""
 
-#: cps/admin.py:2635
+#: cps/admin.py:2640
 msgid "No admin user remaining, can't delete user"
 msgstr "Pääkäyttäjiä ei jää jäljelle, käyttäjää ei voi poistaa"
 
-#: cps/admin.py:2825 cps/web.py:2490
+#: cps/admin.py:2831 cps/web.py:2511
 msgid "Email can't be empty and has to be a valid Email"
 msgstr ""
 
-#: cps/admin.py:2866
+#: cps/admin.py:2872
 #, python-format
 msgid "User '%(nick)s' updated"
 msgstr "Käyttäjä '%(nick)s' päivitetty"
 
-#: cps/admin.py:2931
+#: cps/admin.py:2937
 #, python-format
 msgid ""
 "Connection successful! OIDC discovery endpoint is accessible.%(endpoints)s"
 msgstr ""
 
-#: cps/admin.py:2936
+#: cps/admin.py:2942
 msgid ""
 "Connection failed: OIDC discovery endpoint not found (404). Check if the "
 "base URL is correct."
 msgstr ""
 
-#: cps/admin.py:2938 cps/admin.py:2995
+#: cps/admin.py:2944 cps/admin.py:3001
 #, python-format
 msgid "Connection failed: Server returned status code %(code)s"
 msgstr ""
 
-#: cps/admin.py:2940
+#: cps/admin.py:2946
 msgid ""
 "Connection failed: Could not connect to server. Check the URL and network "
 "connectivity."
 msgstr ""
 
-#: cps/admin.py:2942
+#: cps/admin.py:2948
 msgid ""
 "Connection failed: Request timed out. The server may be slow or unreachable."
 msgstr ""
 
-#: cps/admin.py:2944
+#: cps/admin.py:2950
 msgid ""
 "Connection failed: Server returned invalid JSON. This may not be an OIDC "
 "endpoint."
 msgstr ""
 
-#: cps/admin.py:2947
+#: cps/admin.py:2953
 #, fuzzy, python-format
 msgid "Connection failed: %(error)s"
 msgstr "Yhteysvirhe"
 
-#: cps/admin.py:2973
+#: cps/admin.py:2979
 #, python-format
 msgid ""
 "Metadata is missing required OIDC fields: %(fields)s. This may not be a "
 "valid OIDC metadata endpoint."
 msgstr ""
 
-#: cps/admin.py:2984
+#: cps/admin.py:2990
 #, python-format
 msgid "Metadata URL is valid! Found %(count)s OAuth endpoints."
 msgstr ""
 
-#: cps/admin.py:2986
+#: cps/admin.py:2992
 #, fuzzy
 msgid " User info endpoint is available."
 msgstr "Ei päivitystietoa saatavilla"
 
-#: cps/admin.py:2988
+#: cps/admin.py:2994
 msgid ""
 " Note: User info endpoint not found - this may cause authentication issues."
 msgstr ""
 
-#: cps/admin.py:2993
+#: cps/admin.py:2999
 msgid "Metadata URL not found (404). Please check the URL is correct."
 msgstr ""
 
-#: cps/admin.py:2997
+#: cps/admin.py:3003
 msgid ""
 "Connection failed: Could not connect to metadata URL. Check the URL and "
 "network connectivity."
 msgstr ""
 
-#: cps/admin.py:2999
+#: cps/admin.py:3005
 msgid "Connection failed: Request timed out."
 msgstr ""
 
-#: cps/admin.py:3001
+#: cps/admin.py:3007
 msgid "Connection failed: Invalid JSON in response."
 msgstr ""
 
-#: cps/admin.py:3004
+#: cps/admin.py:3010
 #, fuzzy
 msgid "An unknown error occurred."
 msgstr "Tapahtui tuntematon virhe. Yritä myöhemmin uudelleen."
 
-#: cps/admin.py:3016
+#: cps/admin.py:3022
 #, fuzzy
 msgid "Restore already in progress."
 msgstr "Yhteysvirhe"
 
-#: cps/admin.py:3020
+#: cps/admin.py:3026
 msgid "Restore failed: Calibre library path is not configured."
 msgstr ""
 
-#: cps/admin.py:3025
+#: cps/admin.py:3031
 #, python-format
 msgid "Restore failed: metadata.db not found at %(path)s"
 msgstr ""
 
-#: cps/admin.py:3030
+#: cps/admin.py:3036
 #, python-format
 msgid "Restore failed: app.db not found at %(path)s"
 msgstr ""
 
-#: cps/admin.py:3102 cps/admin.py:3142
+#: cps/admin.py:3108 cps/admin.py:3148
 #, fuzzy, python-format
 msgid "Restore failed: %(err)s"
 msgstr "Yhteysvirhe"
 
-#: cps/admin.py:3119
+#: cps/admin.py:3125
 msgid "Restore completed but app.db cleanup failed. See logs for details."
 msgstr ""
 
-#: cps/admin.py:3138
+#: cps/admin.py:3144
 #, python-format
 msgid ""
 "Restore complete. Backups and restore log saved to %(dir)s. All book-linked "
@@ -1130,12 +1136,12 @@ msgstr ""
 msgid "CWA Profile Picture Management (WIP)"
 msgstr ""
 
-#: cps/db.py:1306 cps/templates/config_edit.html:333
+#: cps/db.py:1320 cps/templates/config_edit.html:333
 #: cps/templates/config_view_edit.html:79
 #: cps/templates/config_view_edit.html:90 cps/templates/email_edit.html:41
 #: cps/web.py:696 cps/web.py:730 cps/web.py:775 cps/web.py:815 cps/web.py:844
-#: cps/web.py:1674 cps/web.py:1711 cps/web.py:1762 cps/web.py:1794
-#: cps/web.py:1833
+#: cps/web.py:1695 cps/web.py:1732 cps/web.py:1783 cps/web.py:1815
+#: cps/web.py:1854
 msgid "None"
 msgstr "Ei mitään"
 
@@ -1190,7 +1196,7 @@ msgid "Cannot upload format: Book no longer exists in library"
 msgstr ""
 
 #: cps/editbooks.py:164 cps/editbooks.py:191 cps/templates/book_edit.html:52
-#: cps/templates/layout.html:175
+#: cps/templates/layout.html:178
 msgid "Upload done, processing, please wait..."
 msgstr "Lataus tehty, prosessoidaan, ole hyvä ja odota..."
 
@@ -1212,111 +1218,111 @@ msgstr "Kirja lisätty muutosjonoon muotoon %(book_format)s"
 msgid "There was an error converting this book: %(res)s"
 msgstr "Kirjan muunnoksessa tapahtui virhe: %(res)s"
 
-#: cps/editbooks.py:379 cps/editbooks.py:1294 cps/editbooks.py:1803
+#: cps/editbooks.py:379 cps/editbooks.py:1302 cps/editbooks.py:1811
 #, fuzzy
 msgid "File type isn't allowed to be uploaded to this server"
 msgstr ""
 "Tiedostopääte '%(ext)s' ei ole sallittujen palvelimelle ladattavien listalla"
 
-#: cps/editbooks.py:384 cps/editbooks.py:1300 cps/editbooks.py:1814
+#: cps/editbooks.py:384 cps/editbooks.py:1308 cps/editbooks.py:1822
 #, python-format
 msgid "File extension '%(ext)s' is not allowed to be uploaded to this server"
 msgstr ""
 "Tiedostopääte '%(ext)s' ei ole sallittujen palvelimelle ladattavien listalla"
 
-#: cps/editbooks.py:388 cps/editbooks.py:1304 cps/editbooks.py:1819
+#: cps/editbooks.py:388 cps/editbooks.py:1312 cps/editbooks.py:1827
 msgid "File to be uploaded must have an extension"
 msgstr "Ladattavalla tiedostolla on oltava tiedostopääte"
 
-#: cps/editbooks.py:884 cps/editbooks.py:1480 cps/web.py:663 cps/web.py:2919
-#: cps/web.py:3011 cps/web.py:3106
+#: cps/editbooks.py:892 cps/editbooks.py:1488 cps/web.py:663 cps/web.py:2941
+#: cps/web.py:3033 cps/web.py:3128
 msgid ""
 "Oops! Selected book is unavailable. File does not exist or is not accessible"
 msgstr "Virhe eKirjan avaamisessa. Tiedostoa ei ole tai se ei ole saatavilla:"
 
-#: cps/editbooks.py:924 cps/editbooks.py:1887
+#: cps/editbooks.py:932 cps/editbooks.py:1895
 msgid "User has no rights to upload cover"
 msgstr ""
 
-#: cps/editbooks.py:932
+#: cps/editbooks.py:940
 msgid "Cover is locked. Unlock it on the cover-picker page first."
 msgstr ""
 
-#: cps/editbooks.py:955 cps/editbooks.py:1282
+#: cps/editbooks.py:963 cps/editbooks.py:1290
 msgid "Identifiers are not Case Sensitive, Overwriting Old Identifier"
 msgstr ""
 
-#: cps/editbooks.py:967 cps/editbooks.py:1256 cps/editbooks.py:1614
+#: cps/editbooks.py:975 cps/editbooks.py:1264 cps/editbooks.py:1622
 #, fuzzy, python-format
 msgid "'%(langname)s' is not a valid language"
 msgstr "%(langname)s ei ole kelvollinen kieli"
 
-#: cps/editbooks.py:1078
+#: cps/editbooks.py:1086
 msgid "Metadata successfully updated"
 msgstr "Metadata päivitetty onnistuneesti"
 
-#: cps/editbooks.py:1096
+#: cps/editbooks.py:1104
 #, python-brace-format
 msgid "Error editing book: {}"
 msgstr ""
 
-#: cps/editbooks.py:1151 cps/editbooks.py:1196 cps/editbooks.py:1905
+#: cps/editbooks.py:1159 cps/editbooks.py:1204 cps/editbooks.py:1913
 #: cps/updater.py:649 cps/uploader.py:97 cps/uploader.py:106
 msgid "Unknown"
 msgstr "Tuntematon"
 
-#: cps/editbooks.py:1200
+#: cps/editbooks.py:1208
 msgid ""
 "Uploaded book probably exists in the library, consider to change before "
 "upload new: "
 msgstr ""
 
-#: cps/editbooks.py:1312
+#: cps/editbooks.py:1320
 #, python-format
 msgid "File %(filename)s could not saved to temp dir"
 msgstr ""
 
-#: cps/editbooks.py:1332
+#: cps/editbooks.py:1340
 #, python-format
 msgid "Failed to Move Cover File %(file)s: %(error)s"
 msgstr ""
 
-#: cps/editbooks.py:1390 cps/editbooks.py:1392
+#: cps/editbooks.py:1398 cps/editbooks.py:1400
 msgid "Book Format Successfully Deleted"
 msgstr ""
 
-#: cps/editbooks.py:1399 cps/editbooks.py:1401
+#: cps/editbooks.py:1407 cps/editbooks.py:1409
 msgid "Book Successfully Deleted"
 msgstr ""
 
-#: cps/editbooks.py:1465
+#: cps/editbooks.py:1473
 msgid "You are missing permissions to delete books"
 msgstr ""
 
-#: cps/editbooks.py:1519
+#: cps/editbooks.py:1527
 msgid "edit metadata"
 msgstr "muokkaa metadataa"
 
-#: cps/editbooks.py:1573
+#: cps/editbooks.py:1581
 #, python-format
 msgid "Seriesindex: %(seriesindex)s is not a valid number, skipping"
 msgstr ""
 
-#: cps/editbooks.py:1808
+#: cps/editbooks.py:1816
 msgid "User has no rights to upload additional file formats"
 msgstr ""
 
-#: cps/editbooks.py:1832
+#: cps/editbooks.py:1840
 #, python-format
 msgid "Failed to create path %(path)s (Permission denied)."
 msgstr "Polun %(path)s luonti epäonnistui (Ei oikeutta)."
 
-#: cps/editbooks.py:1839
+#: cps/editbooks.py:1847
 #, python-format
 msgid "Failed to store file %(file)s."
 msgstr "Tiedoston %(file)s tallennus epäonnistui."
 
-#: cps/editbooks.py:1864
+#: cps/editbooks.py:1872
 #, python-format
 msgid "File format %(ext)s added to %(book)s"
 msgstr "Tiedostoformaatti %(ext)s lisätty %(book)s"
@@ -1607,31 +1613,31 @@ msgid ""
 "administrator."
 msgstr ""
 
-#: cps/oauth_bb.py:316 cps/oauth_bb.py:568
+#: cps/oauth_bb.py:316 cps/oauth_bb.py:569
 msgid "Failed to link OAuth account. Please try again."
 msgstr ""
 
-#: cps/oauth_bb.py:531
+#: cps/oauth_bb.py:532
 msgid ""
 "OAuth error: Provider returned invalid user information. Please try again."
 msgstr ""
 
-#: cps/oauth_bb.py:545
+#: cps/oauth_bb.py:546
 #, python-format
 msgid "This %(oauth)s account is already linked to a different user"
 msgstr ""
 
-#: cps/oauth_bb.py:552 cps/remotelogin.py:149
+#: cps/oauth_bb.py:553 cps/remotelogin.py:149
 #, python-format
 msgid "Success! You are now logged in as: %(nickname)s"
 msgstr "olet nyt kirjautunut tunnuksella: \"%(nickname)s\""
 
-#: cps/oauth_bb.py:562
+#: cps/oauth_bb.py:563
 #, python-format
 msgid "Link to %(oauth)s Succeeded"
 msgstr ""
 
-#: cps/oauth_bb.py:570
+#: cps/oauth_bb.py:571
 #, python-format
 msgid ""
 "Login failed: No user account is linked to your %(provider)s account. Please "
@@ -1639,86 +1645,86 @@ msgid ""
 "account."
 msgstr ""
 
-#: cps/oauth_bb.py:578
+#: cps/oauth_bb.py:579
 msgid "OAuth authentication failed. Please try again or contact administrator."
 msgstr ""
 
-#: cps/oauth_bb.py:582
+#: cps/oauth_bb.py:583
 msgid "OAuth system error. Please contact administrator."
 msgstr ""
 
-#: cps/oauth_bb.py:615
+#: cps/oauth_bb.py:616
 #, python-format
 msgid "Unlink to %(oauth)s Succeeded"
 msgstr ""
 
-#: cps/oauth_bb.py:620
+#: cps/oauth_bb.py:621
 #, python-format
 msgid "Unlink to %(oauth)s Failed"
 msgstr ""
 
-#: cps/oauth_bb.py:623
+#: cps/oauth_bb.py:624
 #, python-format
 msgid "Not Linked to %(oauth)s"
 msgstr ""
 
-#: cps/oauth_bb.py:828
+#: cps/oauth_bb.py:829
 msgid "Failed to log in with GitHub."
 msgstr "GitHubiin kirjautuminen epäonnistui."
 
-#: cps/oauth_bb.py:834
+#: cps/oauth_bb.py:835
 msgid "Failed to fetch user info from GitHub."
 msgstr "Käyttäjätietojen haku GitHubista epäonnistui"
 
-#: cps/oauth_bb.py:855
+#: cps/oauth_bb.py:856
 msgid "Failed to log in with Google."
 msgstr "Googleen kirjautuminen epäonnistui."
 
-#: cps/oauth_bb.py:864
+#: cps/oauth_bb.py:865
 msgid "Failed to fetch user info from Google."
 msgstr "Käyttäjätietojen haku Googlesta epäonnistui."
 
-#: cps/oauth_bb.py:889
+#: cps/oauth_bb.py:890
 #, fuzzy
 msgid "Failed to log in with Generic OAuth."
 msgstr "GitHubiin kirjautuminen epäonnistui."
 
-#: cps/oauth_bb.py:905
+#: cps/oauth_bb.py:906
 msgid "OAuth authentication failed: Token validation error. Please try again."
 msgstr ""
 
-#: cps/oauth_bb.py:909
+#: cps/oauth_bb.py:910
 msgid ""
 "OAuth authentication failed due to an unexpected error. Please contact "
 "administrator."
 msgstr ""
 
-#: cps/oauth_bb.py:917 cps/oauth_bb.py:935 cps/oauth_bb.py:953
+#: cps/oauth_bb.py:918 cps/oauth_bb.py:936 cps/oauth_bb.py:954
 msgid ""
 "OAuth error: Invalid redirect URI. If you're experiencing this error "
 "repeatedly, please configure the 'OAuth Redirect Host' setting in Admin > "
 "Basic Configuration > OAuth."
 msgstr ""
 
-#: cps/oauth_bb.py:989
+#: cps/oauth_bb.py:990
 msgid "GitHub Oauth error, please retry later."
 msgstr "GitHub Oauth virhe, yritä myöhemmin uudelleen."
 
-#: cps/oauth_bb.py:996
+#: cps/oauth_bb.py:997
 #, python-brace-format
 msgid "GitHub Oauth error: {}"
 msgstr ""
 
-#: cps/oauth_bb.py:1046
+#: cps/oauth_bb.py:1047
 msgid "Google Oauth error, please retry later."
 msgstr "Google Oauth virhe, yritä myöhemmin uudelleen."
 
-#: cps/oauth_bb.py:1053
+#: cps/oauth_bb.py:1054
 #, python-brace-format
 msgid "Google Oauth error: {}"
 msgstr ""
 
-#: cps/oauth_bb.py:1089 cps/oauth_bb.py:1097
+#: cps/oauth_bb.py:1090 cps/oauth_bb.py:1098
 #, python-brace-format
 msgid "OAuth error: {}"
 msgstr ""
@@ -1761,16 +1767,16 @@ msgstr "Viimeisimmät kirjat"
 msgid "Random Books"
 msgstr "Satunnaisia kirjoja"
 
-#: cps/opds.py:85 cps/render_template.py:69 cps/templates/user_table.html:160
-#: cps/templates/user_table.html:163
+#: cps/opds.py:85 cps/render_template.py:69 cps/templates/user_table.html:161
+#: cps/templates/user_table.html:164
 msgid "Show Random Books"
 msgstr "Näytä satunnausia kirjoja"
 
-#: cps/opds.py:90 cps/opds.py:91 cps/render_template.py:60 cps/web.py:902
+#: cps/opds.py:90 cps/opds.py:91 cps/render_template.py:60 cps/web.py:903
 msgid "Read Books"
 msgstr "Luetut kirjat"
 
-#: cps/opds.py:96 cps/opds.py:97 cps/render_template.py:64 cps/web.py:905
+#: cps/opds.py:96 cps/opds.py:97 cps/render_template.py:64 cps/web.py:906
 msgid "Unread Books"
 msgstr "Lukemattomat kirjat"
 
@@ -1785,7 +1791,7 @@ msgid "Books ordered by Author"
 msgstr "Kirjat kirjailijoittain"
 
 #: cps/opds.py:108 cps/render_template.py:80 cps/templates/book_table.html:111
-#: cps/web.py:1685
+#: cps/web.py:1706
 msgid "Publishers"
 msgstr "Julkaisijat"
 
@@ -1794,7 +1800,7 @@ msgid "Books ordered by publisher"
 msgstr "Kirjat julkaisijoittain"
 
 #: cps/opds.py:114 cps/render_template.py:70 cps/templates/book_table.html:106
-#: cps/web.py:1837
+#: cps/web.py:1858
 msgid "Categories"
 msgstr "Kategoriat"
 
@@ -1806,7 +1812,7 @@ msgstr "Kirjat kategorioittain"
 #: cps/templates/book_table.html:107 cps/templates/cwa_settings.html:362
 #: cps/templates/cwa_settings.html:364 cps/templates/cwa_settings.html:1103
 #: cps/templates/hardcover_review_matches.html:140
-#: cps/templates/search_form.html:70 cps/web.py:1717 cps/web.py:1729
+#: cps/templates/search_form.html:70 cps/web.py:1738 cps/web.py:1750
 msgid "Series"
 msgstr "Sarjat"
 
@@ -1816,7 +1822,7 @@ msgstr "Kirjat sarjoittain"
 
 #: cps/opds.py:126 cps/render_template.py:83 cps/templates/book_table.html:109
 #: cps/templates/detail.html:719 cps/templates/search_form.html:108
-#: cps/web.py:1809
+#: cps/web.py:1830
 msgid "Languages"
 msgstr "Kielet"
 
@@ -1825,7 +1831,7 @@ msgstr "Kielet"
 msgid "Books ordered by Languages"
 msgstr "Kirjat sarjoittain"
 
-#: cps/opds.py:132 cps/render_template.py:87 cps/web.py:1769
+#: cps/opds.py:132 cps/render_template.py:87 cps/web.py:1790
 msgid "Ratings"
 msgstr "Arvostelut"
 
@@ -1843,7 +1849,7 @@ msgstr "Tiedotomuodot"
 msgid "Books ordered by file formats"
 msgstr "Kirjat sarjoittain"
 
-#: cps/opds.py:144 cps/templates/layout.html:322
+#: cps/opds.py:144 cps/templates/layout.html:325
 #: cps/templates/search_form.html:88
 #, fuzzy
 msgid "Shelves"
@@ -1869,14 +1875,14 @@ msgstr "Kirjat sarjoittain"
 msgid "description"
 msgstr "Kuvaus"
 
-#: cps/opds.py:490
+#: cps/opds.py:620
 #, python-brace-format
 msgid "{} Stars"
 msgstr ""
 
-#: cps/remotelogin.py:76 cps/templates/layout.html:158
-#: cps/templates/layout.html:200 cps/templates/login.html:11
-#: cps/templates/login.html:39 cps/web.py:2264
+#: cps/remotelogin.py:76 cps/templates/layout.html:161
+#: cps/templates/layout.html:203 cps/templates/login.html:11
+#: cps/templates/login.html:39 cps/web.py:2285
 msgid "Login"
 msgstr "Kirjaudu sisään"
 
@@ -1909,11 +1915,11 @@ msgid "Downloaded Books"
 msgstr ""
 
 #: cps/render_template.py:49 cps/render_template.py:54
-#: cps/templates/user_table.html:168
+#: cps/templates/user_table.html:169
 msgid "Show Downloaded Books"
 msgstr ""
 
-#: cps/render_template.py:59 cps/templates/user_table.html:162
+#: cps/render_template.py:59 cps/templates/user_table.html:163
 msgid "Show Top Rated Books"
 msgstr "Näytä parhaiten arvioidut kirjat"
 
@@ -1930,55 +1936,55 @@ msgstr "Näyt lukemattomat"
 msgid "Discover"
 msgstr "Löydä"
 
-#: cps/render_template.py:72 cps/templates/user_table.html:159
+#: cps/render_template.py:72 cps/templates/user_table.html:160
 #, fuzzy
 msgid "Show Category Section"
 msgstr "Näytä kategoriavalinta"
 
-#: cps/render_template.py:75 cps/templates/user_table.html:158
+#: cps/render_template.py:75 cps/templates/user_table.html:159
 #, fuzzy
 msgid "Show Series Section"
 msgstr "Näytä sarjavalinta"
 
-#: cps/render_template.py:78 cps/templates/user_table.html:161
+#: cps/render_template.py:78 cps/templates/user_table.html:162
 #, fuzzy
 msgid "Show Author Section"
 msgstr "Näytä kirjailijavalinta"
 
-#: cps/render_template.py:82 cps/templates/user_table.html:164
+#: cps/render_template.py:82 cps/templates/user_table.html:165
 #, fuzzy
 msgid "Show Publisher Section"
 msgstr "Näytä julkaisijavalinta"
 
-#: cps/render_template.py:86 cps/templates/user_table.html:156
+#: cps/render_template.py:86 cps/templates/user_table.html:157
 #, fuzzy
 msgid "Show Language Section"
 msgstr "Näytä keilivalinta"
 
-#: cps/render_template.py:89 cps/templates/user_table.html:165
+#: cps/render_template.py:89 cps/templates/user_table.html:166
 #, fuzzy
 msgid "Show Ratings Section"
 msgstr "Näytä arvosteluvalinta"
 
-#: cps/render_template.py:92 cps/templates/user_table.html:166
+#: cps/render_template.py:92 cps/templates/user_table.html:167
 #, fuzzy
 msgid "Show File Formats Section"
 msgstr "Näytä tiedostomuotovalinta"
 
-#: cps/render_template.py:94 cps/web.py:928
+#: cps/render_template.py:94 cps/web.py:929
 msgid "Archived Books"
 msgstr ""
 
-#: cps/render_template.py:96 cps/templates/user_table.html:167
+#: cps/render_template.py:96 cps/templates/user_table.html:168
 #, fuzzy
 msgid "Show Archived Books"
 msgstr "Näytä viimeisimmät kirjat"
 
-#: cps/render_template.py:99 cps/web.py:1505
+#: cps/render_template.py:99 cps/web.py:1526
 msgid "Books List"
 msgstr ""
 
-#: cps/render_template.py:101 cps/templates/user_table.html:169
+#: cps/render_template.py:101 cps/templates/user_table.html:170
 msgid "Show Books List"
 msgstr ""
 
@@ -1999,8 +2005,8 @@ msgstr ""
 
 #: cps/search.py:53 cps/search.py:440 cps/templates/book_edit.html:292
 #: cps/templates/cwa_epub_fixer.html:25 cps/templates/feed.xml:34
-#: cps/templates/index.xml:12 cps/templates/layout.html:137
-#: cps/templates/layout.html:140 cps/templates/search_form.html:247
+#: cps/templates/index.xml:12 cps/templates/layout.html:140
+#: cps/templates/layout.html:143 cps/templates/search_form.html:247
 msgid "Search"
 msgstr "Hae"
 
@@ -2031,7 +2037,7 @@ msgstr ""
 msgid "Error on search for custom columns, please restart Calibre-Web"
 msgstr ""
 
-#: cps/search.py:384 cps/search.py:416 cps/templates/layout.html:148
+#: cps/search.py:384 cps/search.py:416 cps/templates/layout.html:151
 msgid "Advanced Search"
 msgstr "Edistynyt haku"
 
@@ -2116,44 +2122,44 @@ msgstr "Metadata päivitetty onnistuneesti"
 msgid "Change order of Shelf: '%(name)s'"
 msgstr "Muuta hyllyn: '%(name)s' järjestystä"
 
-#: cps/shelf.py:362
+#: cps/shelf.py:364
 msgid "Sorry you are not allowed to create a public shelf"
 msgstr ""
 
-#: cps/shelf.py:379
+#: cps/shelf.py:381
 #, python-format
 msgid "Shelf %(title)s created"
 msgstr "Hylly %(title)s luotu"
 
-#: cps/shelf.py:382
+#: cps/shelf.py:384
 #, python-format
 msgid "Shelf %(title)s changed"
 msgstr "Hylly %(title)s muutettu"
 
-#: cps/shelf.py:396
+#: cps/shelf.py:402
 msgid "There was an error"
 msgstr "Tapahtui virhe"
 
-#: cps/shelf.py:418
+#: cps/shelf.py:426
 #, python-format
 msgid "A public shelf with the name '%(title)s' already exists."
 msgstr ""
 
-#: cps/shelf.py:429
+#: cps/shelf.py:437
 #, python-format
 msgid "A private shelf with the name '%(title)s' already exists."
 msgstr ""
 
-#: cps/shelf.py:519
+#: cps/shelf.py:528
 #, python-format
 msgid "Shelf: '%(name)s'"
 msgstr "Hylly: '%(name)s'"
 
-#: cps/shelf.py:525
+#: cps/shelf.py:534
 msgid "Error opening shelf. Shelf does not exist or is not accessible"
 msgstr "Virhe hyllyn avauksessa. Hyllyä ei ole tai se ei ole saatavilla"
 
-#: cps/tasks_status.py:37 cps/templates/layout.html:186
+#: cps/tasks_status.py:37 cps/templates/layout.html:189
 #: cps/templates/tasks.html:7
 msgid "Tasks"
 msgstr "Tehtävät"
@@ -2276,311 +2282,311 @@ msgstr "Kategoria: %(name)s"
 msgid "Language: %(name)s"
 msgstr "Kieli: %(name)s"
 
-#: cps/web.py:952
+#: cps/web.py:953
 #, fuzzy
 msgid "Hidden Books"
 msgstr "Näytä ekirjat"
 
-#: cps/web.py:1015
+#: cps/web.py:1016
 msgid "Error loading magic shelf"
 msgstr ""
 
-#: cps/web.py:1040
+#: cps/web.py:1041
 #, python-format
 msgid "Magic Shelf&nbsp&nbsp&nbsp—&nbsp&nbsp&nbsp%(icon)s %(name)s"
 msgstr ""
 
-#: cps/web.py:1113
+#: cps/web.py:1114
 msgid "No rules provided"
 msgstr ""
 
-#: cps/web.py:1119
+#: cps/web.py:1120
 #, fuzzy
 msgid "Invalid rules format"
 msgstr "Tiedotomuodot"
 
-#: cps/web.py:1141
+#: cps/web.py:1142
 msgid "Error processing rules"
 msgstr ""
 
-#: cps/web.py:1145
+#: cps/web.py:1146
 msgid "Invalid request"
 msgstr ""
 
-#: cps/web.py:1189
+#: cps/web.py:1190
 msgid "Name and rules are required"
 msgstr ""
 
-#: cps/web.py:1192 cps/web.py:1289
+#: cps/web.py:1193 cps/web.py:1301
 msgid "Shelf name too long (max 100 characters)"
 msgstr ""
 
-#: cps/web.py:1214
+#: cps/web.py:1222
 msgid "Error creating shelf"
 msgstr ""
 
-#: cps/templates/layout.html:337 cps/web.py:1228
+#: cps/templates/layout.html:340 cps/web.py:1236
 #, fuzzy
 msgid "Create Magic Shelf"
 msgstr "luo hylly"
 
-#: cps/web.py:1282
+#: cps/web.py:1294
 msgid "Permission denied to change public status"
 msgstr ""
 
-#: cps/web.py:1286
+#: cps/web.py:1298
 msgid "Shelf name is required"
 msgstr ""
 
-#: cps/web.py:1320
+#: cps/web.py:1338
 msgid "Error updating shelf"
 msgstr ""
 
-#: cps/web.py:1335
+#: cps/web.py:1353
 #, fuzzy
 msgid "Edit Magic Shelf"
 msgstr "Muokkaa hyllyä"
 
-#: cps/web.py:1348
+#: cps/web.py:1368
 #, fuzzy
 msgid "Shelf not found"
 msgstr "Valtuutusta ei löytynyt"
 
-#: cps/web.py:1353
+#: cps/web.py:1373
 msgid "Permission denied"
 msgstr ""
 
-#: cps/web.py:1384
+#: cps/web.py:1404
 #, fuzzy
 msgid "Shelf duplicated successfully"
 msgstr "Metadata päivitetty onnistuneesti"
 
-#: cps/web.py:1390
+#: cps/web.py:1410
 msgid "Error duplicating shelf"
 msgstr ""
 
-#: cps/templates/magic_shelf_edit.html:448 cps/web.py:1417
+#: cps/templates/magic_shelf_edit.html:458 cps/web.py:1437
 msgid ""
 "System shelves cannot be deleted. You can hide them in your user profile "
 "settings."
 msgstr ""
 
-#: cps/web.py:1434
+#: cps/web.py:1455
 msgid "Error deleting shelf"
 msgstr ""
 
-#: cps/web.py:1450
+#: cps/web.py:1471
 msgid ""
 "You cannot hide your own shelves. Delete them instead if you don't want them."
 msgstr ""
 
-#: cps/web.py:1460
+#: cps/web.py:1481
 msgid "Shelf already hidden"
 msgstr ""
 
-#: cps/web.py:1474
+#: cps/web.py:1495
 #, fuzzy
 msgid "Error hiding shelf"
 msgstr "Muokkaa hyllyä"
 
-#: cps/web.py:1488
+#: cps/web.py:1509
 msgid "Shelf was not hidden"
 msgstr ""
 
-#: cps/web.py:1497
+#: cps/web.py:1518
 msgid "Error unhiding shelf"
 msgstr ""
 
-#: cps/templates/admin.html:18 cps/web.py:1644
+#: cps/templates/admin.html:18 cps/web.py:1665
 msgid "Downloads"
 msgstr "DLS"
 
-#: cps/web.py:1796
+#: cps/web.py:1817
 msgid "File formats list"
 msgstr "Tiedostomuotolistaus"
 
-#: cps/web.py:2038 cps/web.py:2076
+#: cps/web.py:2059 cps/web.py:2097
 #, fuzzy
 msgid "Please configure the SMTP mail settings first..."
 msgstr "Ole hyvä ja aseta SMTP postiasetukset ensin..."
 
-#: cps/web.py:2042
+#: cps/web.py:2063
 #, fuzzy
 msgid "Oops! Please update your profile with a valid eReader Email."
 msgstr "Ole hyvä ja aseta Kindle sähköpostiosoite ensin..."
 
-#: cps/web.py:2064
+#: cps/web.py:2085
 #, python-format
 msgid "Success! Book queued for sending to %(eReadermail)s"
 msgstr ""
 "Kirja lisätty onnistuneeksi lähetettäväksi osoitteeseen %(eReadermail)s"
 
-#: cps/web.py:2067 cps/web.py:2125
+#: cps/web.py:2088 cps/web.py:2146
 #, python-format
 msgid "Oops! There was an error sending book: %(res)s"
 msgstr "Kirjan: %(res)s lähettämisessa tapahtui virhe"
 
-#: cps/web.py:2084 cps/web.py:2094
+#: cps/web.py:2105 cps/web.py:2115
 msgid "No email addresses selected"
 msgstr ""
 
-#: cps/web.py:2101
+#: cps/web.py:2122
 msgid "Additional email addresses are disabled for your account."
 msgstr ""
 
-#: cps/web.py:2123
+#: cps/web.py:2144
 #, fuzzy
 msgid "Success! Book queued for sending to the selected address(es)!"
 msgstr ""
 "Kirja lisätty onnistuneeksi lähetettäväksi osoitteeseen %(eReadermail)s"
 
-#: cps/web.py:2142
+#: cps/web.py:2163
 msgid "Please wait one minute to register next user"
 msgstr ""
 
-#: cps/templates/layout.html:159 cps/templates/layout.html:201
-#: cps/templates/login.html:48 cps/templates/register.html:17 cps/web.py:2143
-#: cps/web.py:2147 cps/web.py:2152 cps/web.py:2156 cps/web.py:2162
-#: cps/web.py:2187 cps/web.py:2191 cps/web.py:2204 cps/web.py:2207
+#: cps/templates/layout.html:162 cps/templates/layout.html:204
+#: cps/templates/login.html:48 cps/templates/register.html:17 cps/web.py:2164
+#: cps/web.py:2168 cps/web.py:2173 cps/web.py:2177 cps/web.py:2183
+#: cps/web.py:2208 cps/web.py:2212 cps/web.py:2225 cps/web.py:2228
 msgid "Register"
 msgstr "Rekisteröi"
 
-#: cps/web.py:2146 cps/web.py:2311
+#: cps/web.py:2167 cps/web.py:2332
 msgid "Connection error to limiter backend, please contact your administrator"
 msgstr ""
 
-#: cps/web.py:2151 cps/web.py:2203
+#: cps/web.py:2172 cps/web.py:2224
 msgid ""
 "Oops! Email server is not configured, please contact your administrator."
 msgstr ""
 
-#: cps/web.py:2189
+#: cps/web.py:2210
 msgid "Oops! Your Email is not allowed."
 msgstr "Sähköpostiosoitteellasi ei ole sallittua rekisteröityä"
 
-#: cps/web.py:2192
+#: cps/web.py:2213
 msgid "Success! Confirmation Email has been sent."
 msgstr "Vahvistusviesti on lähetetty sähköpostiosoitteeseesi."
 
-#: cps/web.py:2240
+#: cps/web.py:2261
 #, fuzzy
 msgid ""
 "Authentication loop detected. If you're experiencing login issues, please "
 "contact your administrator."
 msgstr "Calibre-Web asetukset päivitetty"
 
-#: cps/web.py:2285
+#: cps/web.py:2306
 #, fuzzy
 msgid ""
 "OAuth authentication is not properly configured. Please contact "
 "administrator."
 msgstr "Calibre-Web asetukset päivitetty"
 
-#: cps/web.py:2290 cps/web.py:2317
+#: cps/web.py:2311 cps/web.py:2338
 #, fuzzy
 msgid "Cannot activate LDAP authentication"
 msgstr "LDAP autnetikoinnin aktivointi ei onnistu"
 
-#: cps/web.py:2299
+#: cps/web.py:2320
 msgid "Standard login is disabled."
 msgstr ""
 
-#: cps/web.py:2307
+#: cps/web.py:2328
 msgid "Please wait one minute before next login"
 msgstr ""
 
-#: cps/web.py:2325
+#: cps/web.py:2346
 msgid "Username cannot be empty"
 msgstr ""
 
-#: cps/web.py:2337
+#: cps/web.py:2358
 #, fuzzy, python-format
 msgid "you are now logged in as: '%(nickname)s'"
 msgstr "olet nyt kirjautunut tunnuksella: \"%(nickname)s\""
 
-#: cps/web.py:2356
+#: cps/web.py:2377
 #, fuzzy, python-format
 msgid ""
 "Welcome! Your account has been automatically created. You are now logged in "
 "as: '%(nickname)s'"
 msgstr "olet nyt kirjautunut tunnuksella: \"%(nickname)s\""
 
-#: cps/web.py:2361 cps/web.py:2364
+#: cps/web.py:2382 cps/web.py:2385
 #, fuzzy
 msgid ""
 "Authentication successful, but account creation failed. Please contact your "
 "administrator."
 msgstr "Calibre-Web asetukset päivitetty"
 
-#: cps/web.py:2368
+#: cps/web.py:2389
 msgid ""
 "Authentication successful, but no local account found. Please contact your "
 "administrator to create your account."
 msgstr ""
 
-#: cps/web.py:2376
+#: cps/web.py:2397
 #, python-format
 msgid ""
 "Fallback Login as: '%(nickname)s', LDAP Server not reachable, or user not "
 "known"
 msgstr ""
 
-#: cps/web.py:2382
+#: cps/web.py:2403
 #, python-format
 msgid "Could not login: %(message)s"
 msgstr ""
 
-#: cps/web.py:2405 cps/web.py:2406 cps/web.py:2449
+#: cps/web.py:2426 cps/web.py:2427 cps/web.py:2470
 #, fuzzy
 msgid "Wrong Username or Password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
-#: cps/web.py:2414
+#: cps/web.py:2435
 msgid "New Password was sent to your email address"
 msgstr ""
 
-#: cps/web.py:2418
+#: cps/web.py:2439
 #, fuzzy
 msgid "An unknown error occurred. Please try again later."
 msgstr "Tapahtui tuntematon virhe. Yritä myöhemmin uudelleen."
 
-#: cps/web.py:2420
+#: cps/web.py:2441
 #, fuzzy
 msgid "Please enter valid username to reset password"
 msgstr "Väärä käyttäjätunnus tai salasana"
 
-#: cps/web.py:2428
+#: cps/web.py:2449
 #, fuzzy, python-format
 msgid "You are now logged in as: '%(nickname)s'"
 msgstr "olet nyt kirjautunut tunnuksella: \"%(nickname)s\""
 
-#: cps/web.py:2744
+#: cps/web.py:2766
 #, fuzzy
 msgid "Success! Profile Updated"
 msgstr "Profiili päivitetty"
 
-#: cps/web.py:2750
+#: cps/web.py:2772
 #, fuzzy
 msgid "Oops! An account already exists for this Email."
 msgstr "Tälle sähköpostiosoitteelle läytyi jo käyttäjätunnus."
 
-#: cps/web.py:2874
+#: cps/web.py:2896
 msgid "App-password label must be 1-64 characters."
 msgstr ""
 
-#: cps/web.py:2887
+#: cps/web.py:2909
 #, python-format
 msgid ""
 "App password created for '%(label)s'. Copy it now — you won't see it again: "
 "%(token)s"
 msgstr ""
 
-#: cps/web.py:2905
+#: cps/web.py:2927
 #, python-format
 msgid "App password '%(label)s' revoked."
 msgstr ""
 
-#: cps/web.py:3024
+#: cps/web.py:3046
 msgid "Invalid book ID."
 msgstr ""
 
@@ -2747,7 +2753,7 @@ msgid "Clearing cover thumbnail cache"
 msgstr ""
 
 #: cps/tasks/upload.py:28 cps/templates/admin.html:22
-#: cps/templates/layout.html:178 cps/templates/user_table.html:146
+#: cps/templates/layout.html:181 cps/templates/user_table.html:146
 msgid "Upload"
 msgstr "Lähetä"
 
@@ -2789,8 +2795,8 @@ msgstr "Lisää hyllyyn"
 #: cps/templates/_book_organizer.html:104 cps/templates/detail.html:603
 #: cps/templates/detail.html:625 cps/templates/detail.html:778
 #: cps/templates/detail.html:1290 cps/templates/feed.xml:83
-#: cps/templates/feed.xml:85 cps/templates/layout.html:325
-#: cps/templates/layout.html:334 cps/templates/listenmp3.html:201
+#: cps/templates/feed.xml:85 cps/templates/layout.html:328
+#: cps/templates/layout.html:337 cps/templates/listenmp3.html:201
 #: cps/templates/listenmp3.html:218 cps/templates/search.html:23
 msgid "(Public)"
 msgstr ""
@@ -2940,7 +2946,7 @@ msgstr "Kindle"
 msgid "Send to eReader Subject"
 msgstr "Lähetä Kindleen"
 
-#: cps/templates/admin.html:19 cps/templates/layout.html:189
+#: cps/templates/admin.html:19 cps/templates/layout.html:192
 #: cps/templates/user_table.html:144
 msgid "Admin"
 msgstr "Ylläpito"
@@ -3235,12 +3241,12 @@ msgstr "Ok"
 #: cps/templates/cwa_convert_library.html:23
 #: cps/templates/cwa_epub_fixer.html:40 cps/templates/detail.html:951
 #: cps/templates/duplicates.html:540 cps/templates/duplicates.html:567
-#: cps/templates/layout.html:567 cps/templates/modal_dialogs.html:64
-#: cps/templates/modal_dialogs.html:99 cps/templates/modal_dialogs.html:117
-#: cps/templates/modal_dialogs.html:135 cps/templates/schedule_edit.html:46
-#: cps/templates/shelf_edit.html:27 cps/templates/tasks.html:94
-#: cps/templates/tasks.html:166 cps/templates/tasks.html:173
-#: cps/templates/user_edit.html:557
+#: cps/templates/layout.html:487 cps/templates/layout.html:642
+#: cps/templates/modal_dialogs.html:64 cps/templates/modal_dialogs.html:99
+#: cps/templates/modal_dialogs.html:117 cps/templates/modal_dialogs.html:135
+#: cps/templates/schedule_edit.html:46 cps/templates/shelf_edit.html:34
+#: cps/templates/tasks.html:94 cps/templates/tasks.html:166
+#: cps/templates/tasks.html:173 cps/templates/user_edit.html:569
 msgid "Cancel"
 msgstr ""
 
@@ -3301,15 +3307,15 @@ msgid "Convert book"
 msgstr "Muunna kirja"
 
 #: cps/templates/book_edit.html:52 cps/templates/book_edit.html:69
-#: cps/templates/layout.html:175 cps/templates/layout.html:294
+#: cps/templates/layout.html:178 cps/templates/layout.html:297
 msgid "Uploading..."
 msgstr "Ladataan..."
 
 #: cps/templates/book_edit.html:52 cps/templates/book_edit.html:332
 #: cps/templates/book_table.html:342 cps/templates/duplicates.html:587
-#: cps/templates/layout.html:175 cps/templates/layout.html:384
-#: cps/templates/layout.html:449 cps/templates/modal_dialogs.html:34
-#: cps/templates/user_edit.html:625
+#: cps/templates/layout.html:178 cps/templates/layout.html:387
+#: cps/templates/layout.html:524 cps/templates/modal_dialogs.html:34
+#: cps/templates/user_edit.html:637
 msgid "Close"
 msgstr "Sulje"
 
@@ -3322,7 +3328,7 @@ msgstr "Sulje"
 #: cps/templates/hardcover_review_matches.html:369
 #: cps/templates/hardcover_review_matches.html:400
 #: cps/templates/hardcover_review_matches.html:409
-#: cps/templates/layout.html:175
+#: cps/templates/layout.html:178
 msgid "Error"
 msgstr "Virhe"
 
@@ -3447,8 +3453,8 @@ msgstr "Hae metadata"
 #: cps/templates/book_edit.html:268 cps/templates/config_db.html:111
 #: cps/templates/config_edit.html:659 cps/templates/config_view_edit.html:220
 #: cps/templates/email_edit.html:65 cps/templates/schedule_edit.html:47
-#: cps/templates/shelf_edit.html:29 cps/templates/shelf_order.html:41
-#: cps/templates/user_edit.html:555
+#: cps/templates/shelf_edit.html:36 cps/templates/shelf_order.html:41
+#: cps/templates/user_edit.html:567
 msgid "Save"
 msgstr ""
 
@@ -3788,7 +3794,7 @@ msgstr "Google Drive Calibre -kansio"
 msgid "Metadata Watch Channel ID"
 msgstr "Metadata Katso kanava ID"
 
-#: cps/templates/config_db.html:100 cps/templates/user_edit.html:603
+#: cps/templates/config_db.html:100 cps/templates/user_edit.html:615
 msgid "Revoke"
 msgstr "Kumoa"
 
@@ -4564,36 +4570,36 @@ msgstr ""
 msgid "Permissions"
 msgstr "Versio"
 
-#: cps/templates/config_view_edit.html:114 cps/templates/user_edit.html:407
+#: cps/templates/config_view_edit.html:114 cps/templates/user_edit.html:419
 msgid "Admin User"
 msgstr "Pääkäyttäjä"
 
-#: cps/templates/config_view_edit.html:119 cps/templates/user_edit.html:413
+#: cps/templates/config_view_edit.html:119 cps/templates/user_edit.html:425
 msgid "Allow Downloads"
 msgstr "Salli kirjojen lataukset"
 
-#: cps/templates/config_view_edit.html:124 cps/templates/user_edit.html:418
+#: cps/templates/config_view_edit.html:124 cps/templates/user_edit.html:430
 msgid "Allow eBook Viewer"
 msgstr "Salli kirjojen luku"
 
-#: cps/templates/config_view_edit.html:130 cps/templates/user_edit.html:424
+#: cps/templates/config_view_edit.html:130 cps/templates/user_edit.html:436
 msgid "Allow Uploads"
 msgstr "Salli lisäykset"
 
-#: cps/templates/config_view_edit.html:136 cps/templates/user_edit.html:430
+#: cps/templates/config_view_edit.html:136 cps/templates/user_edit.html:442
 msgid "Allow Edit"
 msgstr "Salli muutokset"
 
-#: cps/templates/config_view_edit.html:141 cps/templates/user_edit.html:435
+#: cps/templates/config_view_edit.html:141 cps/templates/user_edit.html:447
 #, fuzzy
 msgid "Allow Delete Books"
 msgstr "Poista kirja"
 
-#: cps/templates/config_view_edit.html:146 cps/templates/user_edit.html:441
+#: cps/templates/config_view_edit.html:146 cps/templates/user_edit.html:453
 msgid "Allow Changing Password"
 msgstr "Salli sananan vaihto"
 
-#: cps/templates/config_view_edit.html:151 cps/templates/user_edit.html:446
+#: cps/templates/config_view_edit.html:151 cps/templates/user_edit.html:458
 msgid "Allow Editing Public Shelves"
 msgstr "Salli julkisten hyllyjen editointi"
 
@@ -4645,12 +4651,12 @@ msgstr "Oletusnäkymä uusille käyttäjille"
 msgid "Choose which sidebar sections are visible by default for new users."
 msgstr ""
 
-#: cps/templates/config_view_edit.html:205 cps/templates/user_edit.html:365
-#: cps/templates/user_table.html:155
+#: cps/templates/config_view_edit.html:205 cps/templates/user_edit.html:377
+#: cps/templates/user_table.html:156
 msgid "Show Random Books in Detail View"
 msgstr "Näytä satunnaisia kirjoja näkymässä"
 
-#: cps/templates/config_view_edit.html:211 cps/templates/user_edit.html:371
+#: cps/templates/config_view_edit.html:211 cps/templates/user_edit.html:383
 msgid "Add Allowed/Denied Tags"
 msgstr ""
 
@@ -5122,7 +5128,7 @@ msgstr "Löydä"
 
 #: cps/templates/cwa_settings.html:398 cps/templates/cwa_settings.html:419
 #: cps/templates/cwa_settings.html:526 cps/templates/cwa_settings.html:731
-#: cps/templates/user_edit.html:391 cps/templates/user_edit.html:482
+#: cps/templates/user_edit.html:403 cps/templates/user_edit.html:494
 msgid "Tip"
 msgstr ""
 
@@ -6139,7 +6145,7 @@ msgstr "Kirja poistetaan Calibren tietokannasta"
 msgid "This action cannot be undone!"
 msgstr ""
 
-#: cps/templates/duplicates.html:551
+#: cps/templates/duplicates.html:551 cps/templates/layout.html:439
 #, fuzzy
 msgid "Merge Books"
 msgstr "Lukemattomat kirjat"
@@ -6219,8 +6225,8 @@ msgstr ""
 msgid "Save and Send Test Email"
 msgstr "Tallenna asetukset ja testaa sähköpostia"
 
-#: cps/templates/email_edit.html:70 cps/templates/layout.html:116
-#: cps/templates/shelf_order.html:42 cps/templates/user_table.html:175
+#: cps/templates/email_edit.html:70 cps/templates/layout.html:119
+#: cps/templates/shelf_order.html:42 cps/templates/user_table.html:176
 msgid "Back"
 msgstr "Palaa"
 
@@ -6241,7 +6247,7 @@ msgstr "Syötä domainnimi"
 msgid "Denied Domains (Blacklist)"
 msgstr "Rekisteröinnissä sallitut domainit"
 
-#: cps/templates/feed.xml:22 cps/templates/layout.html:368
+#: cps/templates/feed.xml:22 cps/templates/layout.html:371
 msgid "Next"
 msgstr "Seuraava"
 
@@ -6485,166 +6491,198 @@ msgstr "Asetukset"
 msgid "Download is available after enabling KOReader Sync in CWA Settings."
 msgstr ""
 
-#: cps/templates/layout.html:116 cps/templates/login.html:51
+#: cps/templates/layout.html:119 cps/templates/login.html:51
 msgid "Home"
 msgstr "Koti"
 
-#: cps/templates/layout.html:123
+#: cps/templates/layout.html:126
 msgid "Toggle Navigation"
 msgstr "Vaihda navigointi"
 
-#: cps/templates/layout.html:138
+#: cps/templates/layout.html:141
 #, fuzzy
 msgid "Search Library"
 msgstr "Kirjastossa"
 
-#: cps/templates/layout.html:156 cps/templates/layout.html:193
+#: cps/templates/layout.html:159 cps/templates/layout.html:196
 #: cps/templates/user_edit.html:305 cps/templates/user_edit.html:307
 msgid "Account"
 msgstr "Tili"
 
-#: cps/templates/layout.html:162 cps/templates/layout.html:195
+#: cps/templates/layout.html:165 cps/templates/layout.html:198
 msgid "Logout"
 msgstr "Kirjaudu ulos"
 
-#: cps/templates/layout.html:170
+#: cps/templates/layout.html:173
 #, fuzzy
 msgid "Switch Theme"
 msgstr "oletusteema"
 
-#: cps/templates/layout.html:189 cps/templates/read.html:79
+#: cps/templates/layout.html:192 cps/templates/read.html:79
 #: cps/templates/readcbr.html:70 cps/templates/readcbr.html:96
 #, fuzzy
 msgid "Settings"
 msgstr "Asetukset"
 
-#: cps/templates/layout.html:191
+#: cps/templates/layout.html:194
 #, fuzzy
 msgid "Refresh Library"
 msgstr "Sarjat kirjastossa"
 
-#: cps/templates/layout.html:232
+#: cps/templates/layout.html:235
 msgid "See Changelog"
 msgstr ""
 
-#: cps/templates/layout.html:252
+#: cps/templates/layout.html:255
 msgid "Contribute here!"
 msgstr ""
 
-#: cps/templates/layout.html:295
+#: cps/templates/layout.html:298
 #, fuzzy
 msgid "Please do not refresh the page"
 msgstr "Päivitetään, älä päivitä sivua"
 
-#: cps/templates/layout.html:305
+#: cps/templates/layout.html:308
 msgid "Browse"
 msgstr "Selaa"
 
-#: cps/templates/layout.html:328
+#: cps/templates/layout.html:331
 #, fuzzy
 msgid "Create Shelf"
 msgstr "luo hylly"
 
-#: cps/templates/layout.html:332
+#: cps/templates/layout.html:335
 msgid "Magic Shelves ✨"
 msgstr ""
 
-#: cps/templates/layout.html:341 cps/templates/stats.html:3
+#: cps/templates/layout.html:344 cps/templates/stats.html:3
 msgid "About"
 msgstr "Tietoja"
 
-#: cps/templates/layout.html:353
+#: cps/templates/layout.html:356
 msgid "Previous"
 msgstr "Edellinen"
 
-#: cps/templates/layout.html:380
+#: cps/templates/layout.html:383
 msgid "Book Details"
 msgstr "Kirjan tiedot"
 
-#: cps/templates/layout.html:450
+#: cps/templates/layout.html:445
+#, fuzzy
+msgid "This cannot be undone."
+msgstr "Haluatko varmasti pysäyttää Calibre-Webin?"
+
+#: cps/templates/layout.html:451
+#, fuzzy
+msgid "Will be deleted"
+msgstr "Poista kirja"
+
+#: cps/templates/layout.html:455 cps/templates/layout.html:468
+#, fuzzy
+msgid "Formats:"
+msgstr "Lataa tiedostomuoto"
+
+#: cps/templates/layout.html:464
+msgid "Will be kept"
+msgstr ""
+
+#: cps/templates/layout.html:476
+msgid "Format conflicts — choose what to do:"
+msgstr ""
+
+#: cps/templates/layout.html:482
+#, fuzzy
+msgid "Result will have formats:"
+msgstr "Poista tiedostomuodot:"
+
+#: cps/templates/layout.html:491
+msgid "Merge &amp; Delete Source"
+msgstr ""
+
+#: cps/templates/layout.html:525
 #, fuzzy
 msgid "Duplicate Books Detected"
 msgstr "Poista kirja"
 
-#: cps/templates/layout.html:451
+#: cps/templates/layout.html:526
 msgid "You have unresolved duplicate books in your library"
 msgstr ""
 
-#: cps/templates/layout.html:456
+#: cps/templates/layout.html:531
 #, fuzzy
 msgid "Duplicate Groups Found"
 msgstr "Tulosket haulle:"
 
-#: cps/templates/layout.html:464
+#: cps/templates/layout.html:539
 msgid "Remind Me Later"
 msgstr ""
 
-#: cps/templates/layout.html:467
+#: cps/templates/layout.html:542
 msgid "View & Resolve Duplicates"
 msgstr ""
 
-#: cps/templates/layout.html:476
+#: cps/templates/layout.html:551
 #, fuzzy
 msgid "Scroll to top"
 msgstr "Skaalaa parhaaseen"
 
-#: cps/templates/layout.html:478
+#: cps/templates/layout.html:553
 msgid "Top"
 msgstr ""
 
-#: cps/templates/layout.html:568
+#: cps/templates/layout.html:643
 #, fuzzy
 msgid "Confirm"
 msgstr "Asetukset"
 
-#: cps/templates/layout.html:574
+#: cps/templates/layout.html:649
 #, fuzzy, python-brace-format
 msgid "Added {n} books to {shelf}"
 msgstr "Lisää hyllyyn"
 
-#: cps/templates/layout.html:575
+#: cps/templates/layout.html:650
 #, python-brace-format
 msgid "Added {ok} of {n} books to {shelf} (rest were already there)"
 msgstr ""
 
-#: cps/templates/layout.html:576
+#: cps/templates/layout.html:651
 #, python-brace-format
 msgid "All {n} book(s) were already on {shelf}."
 msgstr ""
 
-#: cps/templates/layout.html:577
+#: cps/templates/layout.html:652
 #, fuzzy, python-brace-format
 msgid "Marked {n} books as read"
 msgstr "Merkitse lukemattomaksi"
 
-#: cps/templates/layout.html:578
+#: cps/templates/layout.html:653
 #, fuzzy, python-brace-format
 msgid "Marked {n} books as unread"
 msgstr "Merkitse lukemattomaksi"
 
-#: cps/templates/layout.html:579
+#: cps/templates/layout.html:654
 #, fuzzy, python-brace-format
 msgid "Deleted {n} books"
 msgstr "Poista kirja"
 
-#: cps/templates/layout.html:580
+#: cps/templates/layout.html:655
 #, fuzzy
 msgid "Delete books?"
 msgstr "Poista kirja"
 
-#: cps/templates/layout.html:581
+#: cps/templates/layout.html:656
 #, python-brace-format
 msgid ""
 "This will permanently delete {n} book(s) from your library. This cannot be "
 "undone."
 msgstr ""
 
-#: cps/templates/layout.html:582
+#: cps/templates/layout.html:657
 #, fuzzy
 msgid "Select at least one book first."
 msgstr "luo hylly"
 
-#: cps/templates/layout.html:583
+#: cps/templates/layout.html:658
 #, fuzzy, python-brace-format
 msgid "Request failed: {err}"
 msgstr "Yhteysvirhe"
@@ -6723,12 +6761,12 @@ msgstr ""
 msgid "This is a pre-configured template shelf. You can edit it freely."
 msgstr ""
 
-#: cps/templates/magic_shelf_edit.html:399
+#: cps/templates/magic_shelf_edit.html:409
 #, fuzzy
 msgid "Share with Everyone (Public)"
 msgstr "pitäisikö hyllyn olla julkinen?"
 
-#: cps/templates/magic_shelf_edit.html:402
+#: cps/templates/magic_shelf_edit.html:412
 msgid ""
 "Other users can view this shelf. Users with \"Edit Public Shelves\" "
 "permission can edit/delete it."
@@ -7194,6 +7232,10 @@ msgstr "pitäisikö hyllyn olla julkinen?"
 msgid "Sync this shelf with Kobo device"
 msgstr ""
 
+#: cps/templates/shelf_edit.html:28
+msgid "Expose this shelf in my OPDS feed"
+msgstr ""
+
 #: cps/templates/shelf_order.html:5
 msgid "Drag to Rearrange Order"
 msgstr "Vedä ja pudota muuttaaksesi järjestystä"
@@ -7456,134 +7498,142 @@ msgstr ""
 msgid "Sync only books in selected shelves with Kobo"
 msgstr ""
 
-#: cps/templates/user_edit.html:346
+#: cps/templates/user_edit.html:344
+msgid "OPDS Shelf Exposure"
+msgstr ""
+
+#: cps/templates/user_edit.html:349
+msgid "Expose only books in selected shelves to OPDS"
+msgstr ""
+
+#: cps/templates/user_edit.html:358
 #, fuzzy
 msgid "Sidebar Display Settings"
 msgstr "OAuth asetukset"
 
-#: cps/templates/user_edit.html:347
+#: cps/templates/user_edit.html:359
 msgid "Choose which sections to display in your sidebar navigation."
 msgstr ""
 
-#: cps/templates/user_edit.html:372
+#: cps/templates/user_edit.html:384
 msgid "Add allowed/Denied Custom Column Values"
 msgstr ""
 
-#: cps/templates/user_edit.html:382
+#: cps/templates/user_edit.html:394
 msgid "OPDS Catalog Order"
 msgstr ""
 
-#: cps/templates/user_edit.html:383
+#: cps/templates/user_edit.html:395
 msgid ""
 "Reorder the OPDS root catalog by listing entry IDs in the order you want. "
 "Unknown IDs are ignored and missing entries are appended automatically."
 msgstr ""
 
-#: cps/templates/user_edit.html:391
+#: cps/templates/user_edit.html:403
 msgid ""
 "Drag to reorder OPDS root entries. Missing entries are appended "
 "automatically."
 msgstr ""
 
-#: cps/templates/user_edit.html:400
+#: cps/templates/user_edit.html:412
 msgid "User Permissions"
 msgstr ""
 
-#: cps/templates/user_edit.html:401
+#: cps/templates/user_edit.html:413
 msgid "Configure what actions this user is allowed to perform."
 msgstr ""
 
-#: cps/templates/user_edit.html:456
+#: cps/templates/user_edit.html:468
 msgid "Magic Shelves Order"
 msgstr ""
 
-#: cps/templates/user_edit.html:457
+#: cps/templates/user_edit.html:469
 msgid "Choose how your magic shelves are ordered in the sidebar."
 msgstr ""
 
-#: cps/templates/user_edit.html:461
+#: cps/templates/user_edit.html:473
 msgid "Order Mode"
 msgstr ""
 
-#: cps/templates/user_edit.html:463
+#: cps/templates/user_edit.html:475
 msgid "Manual (drag to reorder)"
 msgstr ""
 
-#: cps/templates/user_edit.html:464
+#: cps/templates/user_edit.html:476
 msgid "Name (A-Z)"
 msgstr ""
 
-#: cps/templates/user_edit.html:465
+#: cps/templates/user_edit.html:477
 msgid "Name (Z-A)"
 msgstr ""
 
-#: cps/templates/user_edit.html:466
+#: cps/templates/user_edit.html:478
 msgid "Book count (high to low)"
 msgstr ""
 
-#: cps/templates/user_edit.html:467
+#: cps/templates/user_edit.html:479
 msgid "Book count (low to high)"
 msgstr ""
 
-#: cps/templates/user_edit.html:468
+#: cps/templates/user_edit.html:480
 msgid "Created (newest first)"
 msgstr ""
 
-#: cps/templates/user_edit.html:469
+#: cps/templates/user_edit.html:481
 msgid "Created (oldest first)"
 msgstr ""
 
-#: cps/templates/user_edit.html:470
+#: cps/templates/user_edit.html:482
 #, fuzzy
 msgid "Recently modified"
 msgstr "Luetut kirjat"
 
-#: cps/templates/user_edit.html:471
+#: cps/templates/user_edit.html:483
 msgid "Least recently modified"
 msgstr ""
 
-#: cps/templates/user_edit.html:482
+#: cps/templates/user_edit.html:494
 msgid "Manual order is used only when the order mode is set to Manual."
 msgstr ""
 
-#: cps/templates/user_edit.html:488
+#: cps/templates/user_edit.html:500
 msgid "Magic Shelves Visibility"
 msgstr ""
 
-#: cps/templates/user_edit.html:489
+#: cps/templates/user_edit.html:501
 msgid ""
 "Uncheck shelves you want to hide from your sidebar. System shelves cannot be "
 "deleted, only hidden. Public shelves from other users can also be hidden."
 msgstr ""
 
-#: cps/templates/user_edit.html:493
+#: cps/templates/user_edit.html:505
 msgid "Default System Shelves:"
 msgstr ""
 
-#: cps/templates/user_edit.html:517
+#: cps/templates/user_edit.html:529
 #, fuzzy
 msgid "Public Shelves:"
 msgstr "Muokkaa hyllyä"
 
-#: cps/templates/user_edit.html:542
+#: cps/templates/user_edit.html:554
 #, python-format
 msgid "%(visible)s of %(total)s default shelves visible"
 msgstr ""
 
-#: cps/templates/user_edit.html:546
+#: cps/templates/user_edit.html:558
 #, python-format
 msgid "%(visible)s of %(total)s public shelves visible"
 msgstr ""
 
-#: cps/templates/user_edit.html:560 cps/templates/user_table.html:170
+#: cps/templates/user_edit.html:572 cps/templates/user_table.html:171
 msgid "Delete User"
 msgstr "Poista tämä käyttäjä"
 
-#: cps/templates/user_edit.html:572
+#: cps/templates/user_edit.html:584
 msgid "App passwords for OPDS / KOReader Sync"
 msgstr ""
 
-#: cps/templates/user_edit.html:573
+#: cps/templates/user_edit.html:585
 msgid ""
 "OPDS readers and KOReader can't sign in through your IdP — they only support "
 "HTTP Basic auth. Create an app password here, label it for the device "
@@ -7591,41 +7641,41 @@ msgid ""
 "app password at any time without affecting your active web session."
 msgstr ""
 
-#: cps/templates/user_edit.html:577
+#: cps/templates/user_edit.html:589
 msgid "e.g. Kobo Forma, KOReader iPad"
 msgstr ""
 
-#: cps/templates/user_edit.html:579
+#: cps/templates/user_edit.html:591
 #, fuzzy
 msgid "Create app password"
 msgstr "Salli sananan vaihto"
 
-#: cps/templates/user_edit.html:587
+#: cps/templates/user_edit.html:599
 msgid "Label"
 msgstr ""
 
-#: cps/templates/user_edit.html:588
+#: cps/templates/user_edit.html:600
 #, fuzzy
 msgid "Created"
 msgstr "Luo virheilmoitus"
 
-#: cps/templates/user_edit.html:589
+#: cps/templates/user_edit.html:601
 msgid "Last used"
 msgstr ""
 
-#: cps/templates/user_edit.html:598
+#: cps/templates/user_edit.html:610
 msgid "Never"
 msgstr ""
 
-#: cps/templates/user_edit.html:601
+#: cps/templates/user_edit.html:613
 msgid "Revoke this app password?"
 msgstr ""
 
-#: cps/templates/user_edit.html:621
+#: cps/templates/user_edit.html:633
 msgid "Generate Kobo Auth URL"
 msgstr ""
 
-#: cps/templates/user_edit.html:683
+#: cps/templates/user_edit.html:695
 msgid "Visible"
 msgstr ""
 
@@ -7734,7 +7784,11 @@ msgstr "Muokkaa hyllyä"
 msgid "Sync selected Shelves with Kobo"
 msgstr ""
 
-#: cps/templates/user_table.html:157
+#: cps/templates/user_table.html:155
+msgid "Expose selected Shelves to OPDS"
+msgstr ""
+
+#: cps/templates/user_table.html:158
 #, fuzzy
 msgid "Show Read/Unread Section"
 msgstr "Näytä sarjavalinta"
