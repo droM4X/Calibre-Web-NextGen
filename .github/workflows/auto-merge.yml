@@ -169,10 +169,15 @@ jobs:
               has_code=0
               has_changes_update=0
               while IFS= read -r f; do
+                  # Case patterns match positionally — the explicit
+                  # CHANGES-vs-upstream.md branch MUST precede *.md or
+                  # the wildcard wins and `has_changes_update` never
+                  # gets set, demoting every tier-2 PR that correctly
+                  # updates CHANGES-vs-upstream.md.
                   case "$f" in
+                      CHANGES-vs-upstream.md) has_changes_update=1 ;;
                       *.po|*.pot) ;;
                       *.md|README*) ;;
-                      CHANGES-vs-upstream.md) has_changes_update=1 ;;
                       *) has_code=1 ;;
                   esac
               done <<<"$files"
