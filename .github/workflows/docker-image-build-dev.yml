@@ -363,9 +363,17 @@ jobs:
             $(printf 'ghcr.io/${{ github.repository_owner }}/${{ env.LOWER_REPO_NAME }}@sha256:%s ' *)
 
       # --- 4. Increment Build Number (Last Step) ---
+      # Inherited from upstream CWA. Bumps repo variable CURRENT_DEV_BUILD_NUM
+      # so each dev image gets a unique VERSION=DEV_BUILD-dev-N string. Purely
+      # cosmetic — the :dev floating tag and :sha-* tags don't depend on it,
+      # and the image works regardless. Prefer GH_PAT (already configured for
+      # the translation workflow) over the missing DEV_BUILD_NUM_INCREMENTOR_TOKEN
+      # secret, and fail-soft: a hiccup in this purely-bookkeeping step must
+      # never mark an otherwise-successful build red.
       - name: Increment dev build number
         uses: action-pack/increment@v2
         id: increment
+        continue-on-error: true
         with:
           name: 'CURRENT_DEV_BUILD_NUM'
-          token: ${{ secrets.DEV_BUILD_NUM_INCREMENTOR_TOKEN }}
+          token: ${{ secrets.GH_PAT || secrets.DEV_BUILD_NUM_INCREMENTOR_TOKEN }}
