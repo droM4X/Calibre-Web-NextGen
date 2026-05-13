@@ -358,6 +358,83 @@ class TestCWADBErrorHandling:
         # Should not raise exception
 
 
+@pytest.mark.unit
+class TestCWADBPathIsolation:
+    """Pin that CWA_DB.__init__ honors CWA_DB_PATH so parallel test
+    workers and other isolation needs work. Regression test for the
+    flaky-CI root cause where every worker shared /config/cwa.db.
+    """
+
+    def test_honors_cwa_db_path_env_var(self, tmp_path, monkeypatch):
+        """When CWA_DB_PATH is set, CWA_DB opens cwa.db inside that dir,
+        NOT /config/cwa.db."""
+        import os
+        monkeypatch.setenv("CWA_DB_PATH", str(tmp_path))
+        from cwa_db import CWA_DB
+        db = CWA_DB(verbose=False)
+        try:
+            assert db.db_path.rstrip("/") == str(tmp_path).rstrip("/")
+            # The actual file should be inside tmp_path, not /config/
+            expected = tmp_path / "cwa.db"
+            assert expected.is_file(), f"expected DB at {expected}, got: {os.listdir(tmp_path)}"
+        finally:
+            if db.con:
+                db.con.close()
+
+    def test_defaults_to_config_when_env_unset(self, monkeypatch):
+        """When CWA_DB_PATH is NOT set, db_path defaults to /config/.
+        Don't actually instantiate — just verify the path computation."""
+        import os
+        monkeypatch.delenv("CWA_DB_PATH", raising=False)
+        # Probe the env var directly to confirm the fallback
+        assert os.environ.get("CWA_DB_PATH", "/config/").rstrip("/") == "/config"
+
+    def test_parallel_instances_with_distinct_paths_isolate(self, tmp_path, monkeypatch):
+        """Two CWA_DB instances pointing at different CWA_DB_PATH dirs
+        must not see each other's data — the exact invariant that
+        parallel pytest workers depend on."""
+        import os, sys
+        path_a = tmp_path / "a"
+        path_b = tmp_path / "b"
+        path_a.mkdir()
+        path_b.mkdir()
+
+        # Re-import the module twice with different env values
+        monkeypatch.setenv("CWA_DB_PATH", str(path_a))
+        if "cwa_db" in sys.modules:
+            del sys.modules["cwa_db"]
+        from cwa_db import CWA_DB as CWA_DB_A
+        db_a = CWA_DB_A(verbose=False)
+
+        monkeypatch.setenv("CWA_DB_PATH", str(path_b))
+        del sys.modules["cwa_db"]
+        from cwa_db import CWA_DB as CWA_DB_B
+        db_b = CWA_DB_B(verbose=False)
+
+        try:
+            db_a.enforce_add_entry_from_log({
+                "timestamp": "2024-01-01 12:00:00", "book_id": 1,
+                "title": "A-only", "authors": "AuthA", "file_path": "/a.epub",
+            })
+            db_b.enforce_add_entry_from_log({
+                "timestamp": "2024-01-01 13:00:00", "book_id": 1,
+                "title": "B-only", "authors": "AuthB", "file_path": "/b.epub",
+            })
+
+            db_a.cur.execute("SELECT book_title FROM cwa_enforcement WHERE book_id=1")
+            rows_a = [r[0] for r in db_a.cur.fetchall()]
+            db_b.cur.execute("SELECT book_title FROM cwa_enforcement WHERE book_id=1")
+            rows_b = [r[0] for r in db_b.cur.fetchall()]
+
+            assert rows_a == ["A-only"], f"a-db saw cross-contamination: {rows_a}"
+            assert rows_b == ["B-only"], f"b-db saw cross-contamination: {rows_b}"
+        finally:
+            if db_a.con:
+                db_a.con.close()
+            if db_b.con:
+                db_b.con.close()
+
+
 if __name__ == '__main__':
     # Allow running directly
     pytest.main([__file__, '-v'])

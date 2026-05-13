@@ -165,12 +165,22 @@ class TestChecksumGenerationScript:
         # Add a book so there would be work if enabled
         add_book_to_library(library_path, "Disabled Mode Book", ["EPUB"])
 
+        # 120s timeout is generous-by-design. The script spawns a Python
+        # subprocess that imports cps for the enabled-path checksum work;
+        # on cold CI runners with parallel pytest-xdist workers contending
+        # for CPU, that boot alone can take 30+s before the script does
+        # any actual work. We previously had timeout=30 here which
+        # intermittently failed in CI even though the script was making
+        # progress — false positive that wasted retry cycles. Boot is now
+        # lazy (see scripts/generate_book_checksums.py — the disabled
+        # path no longer imports cps at all), but keeping the generous
+        # timeout protects against future regressions.
         script_path = scripts_dir / "generate_book_checksums.py"
         result = subprocess.run(
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         assert result.returncode == 0
@@ -200,7 +210,7 @@ class TestChecksumGenerationScript:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         assert result.returncode == 0
@@ -244,7 +254,7 @@ class TestChecksumGenerationScript:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         _skip_if_koreader_disabled(result)
@@ -292,7 +302,7 @@ class TestChecksumGenerationScript:
              "--force"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         assert result.returncode == 0
@@ -347,7 +357,7 @@ class TestChecksumGenerationScript:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         # Script should complete (may skip the missing file)
@@ -399,7 +409,7 @@ class TestChecksumGenerationScript:
              "--books-path", str(books_dir)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         
         assert result.returncode == 0
@@ -434,7 +444,7 @@ class TestChecksumGenerationScript:
              "--books-path", "/nonexistent/path"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         
         # Should succeed by falling back to library_path
@@ -456,7 +466,7 @@ class TestChecksumGenerationScript:
              "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         
         # Should succeed using library_path for books
@@ -513,7 +523,7 @@ class TestChecksumGenerationScript:
              "--books-path", str(books_dir)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         
         assert result.returncode == 0
@@ -553,7 +563,7 @@ class TestChecksumGenerationScript:
              "--batch-size", "2"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         assert result.returncode == 0
@@ -605,7 +615,7 @@ class TestChecksumGenerationAccuracy:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
 
         assert result.returncode == 0
@@ -641,7 +651,7 @@ class TestChecksumGenerationAccuracy:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         _skip_if_koreader_disabled(first_run)
 
@@ -662,7 +672,7 @@ class TestChecksumGenerationAccuracy:
              "--force"],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         _skip_if_koreader_disabled(second_run)
 
@@ -697,7 +707,7 @@ class TestChecksumGenerationAccuracy:
             [sys.executable, str(script_path), "--library-path", str(library_path)],
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=120
         )
         _skip_if_koreader_disabled(result)
 

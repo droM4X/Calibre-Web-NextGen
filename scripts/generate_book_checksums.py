@@ -31,10 +31,52 @@ import sys
 from pathlib import Path
 from datetime import datetime, timezone
 
-# Import the centralized partial MD5 calculation function
+# cps imports are LAZY (moved inside generate_checksums()) so the
+# disabled-path early-exit doesn't pay the full cps/__init__.py boot
+# cost (~1.5s locally, 30+s under CI worker contention). Importing
+# cps.progress_syncing.* triggers cps/__init__.py which loads Flask,
+# SQLAlchemy, plugins, the logger, config_sql, ub, db, etc. — all
+# unnecessary work when KOReader sync is disabled and the script
+# will early-exit. See deflake context in
+# tests/unit/test_generate_checksums.py timeout comment.
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from cps.progress_syncing.checksums import calculate_koreader_partial_md5, CHECKSUM_VERSION
-from cps.progress_syncing.settings import is_koreader_sync_enabled
+
+
+def _check_koreader_sync_enabled_lightweight() -> bool:
+    """Read the koreader_sync_enabled setting from cwa.db without
+    importing any cps modules. Used by the script's early-exit path
+    so a disabled config doesn't pay the cps boot cost.
+
+    Mirrors the semantics of cps.progress_syncing.settings
+    .is_koreader_sync_enabled() — which calls CWA_DB().cwa_settings
+    and returns bool(settings.get('koreader_sync_enabled', 0)) —
+    but reads cwa.db directly via sqlite3 to avoid pulling in cps.
+
+    Honors the CWA_DB_PATH env var (same convention as scripts/cwa_db.py
+    after the T1 deflake fix), so test isolation works.
+
+    Falls back to False on any error — matches the production
+    is_koreader_sync_enabled() fail-closed behavior.
+    """
+    cwa_db_dir = os.environ.get("CWA_DB_PATH", "/config/")
+    if not cwa_db_dir.endswith("/"):
+        cwa_db_dir += "/"
+    cwa_db_path = cwa_db_dir + "cwa.db"
+    if not os.path.isfile(cwa_db_path):
+        return False
+    conn = None
+    try:
+        conn = sqlite3.connect(cwa_db_path, timeout=5)
+        cur = conn.cursor()
+        row = cur.execute(
+            "SELECT koreader_sync_enabled FROM cwa_settings LIMIT 1"
+        ).fetchone()
+        return bool(row and row[0])
+    except sqlite3.Error:
+        return False
+    finally:
+        if conn is not None:
+            conn.close()
 
 
 def _flush_batch(metadata_db: str, batch_rows):
@@ -68,9 +110,21 @@ def generate_checksums(library_path: str, books_path: str = None, force: bool = 
         force: If True, regenerate checksums even if they exist
         batch_size: Number of books to process before committing
     """
-    if not is_koreader_sync_enabled():
+    # Lightweight, no-cps-import check first. The disabled-path returns
+    # without ever touching cps/__init__.py, keeping subprocess startup
+    # well under a second.
+    if not _check_koreader_sync_enabled_lightweight():
         print("KOReader sync is disabled; skipping checksum generation.")
         return
+
+    # Now we know we're going to do real work — pay the heavier cps
+    # import. This triggers cps/__init__.py (Flask, SQLAlchemy, plugins,
+    # etc.), but the cost is amortized over actual checksum computation.
+    from cps.progress_syncing.checksums import (  # noqa: E402
+        calculate_koreader_partial_md5,
+        CHECKSUM_VERSION,
+    )
+
     metadata_db = os.path.join(library_path, 'metadata.db')
 
     if not os.path.exists(metadata_db):
