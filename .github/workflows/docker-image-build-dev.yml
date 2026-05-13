@@ -18,6 +18,16 @@ on:
         description: "Branch name to tag the dev image with (defaults to github.ref_name if empty)"
         required: false
         type: string
+
+# GITHUB_TOKEN is read-only on packages by default. Builds push to
+# ghcr.io/new-usemame/calibre-web-nextgen, so packages:write is
+# required. Without it the build silently failed at the GHCR push step
+# with "denied: installation not allowed to Write organization
+# package". Mirrors the release workflow minus id-token/attestations,
+# which the dev workflow explicitly disables (provenance: false).
+permissions:
+  contents: read
+  packages: write
 jobs:
   # --------------------------------------------------------------------------------
   # JOB 1: Build Intel (amd64) on GitHub Runners
