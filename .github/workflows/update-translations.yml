@@ -97,12 +97,25 @@ jobs:
           fi
 
       - name: Trigger dev build for main
+        # A workflow_dispatch HTTP API call returns 204 on success and 422 on
+        # bad inputs (e.g. undeclared `inputs.*`). curl without --fail returns 0
+        # on 422, which previously masked silent dispatch failures — the step
+        # went green while no dev build actually ran. Use --fail-with-body so
+        # any non-2xx surfaces here, and assert 204 explicitly.
         run: |
-          curl -L -X POST \
+          set -euo pipefail
+          http_code=$(curl -sS -L -X POST \
+            -o /tmp/dispatch.out -w "%{http_code}" \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             https://api.github.com/repos/${{ github.repository }}/actions/workflows/docker-image-build-dev.yml/dispatches \
-            -d "{\"ref\":\"main\",\"inputs\":{\"ref\":\"${DEV_BUILD_SHA}\",\"branch\":\"main\"}}"
+            -d "{\"ref\":\"main\",\"inputs\":{\"ref\":\"${DEV_BUILD_SHA}\",\"branch\":\"main\"}}")
+          echo "dispatch HTTP ${http_code}"
+          if [ "${http_code}" != "204" ]; then
+            echo "::error::dev-build dispatch failed (HTTP ${http_code})"
+            cat /tmp/dispatch.out
+            exit 1
+          fi
 
       - name: Clone wiki repo
         # The wiki is optional. Calibre-Web-NextGen is a standalone repo and the

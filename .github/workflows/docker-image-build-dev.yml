@@ -9,6 +9,15 @@ name: Build & Push - Dev - Split Strategy
 
 on:
   workflow_dispatch:  # auto-trigger disabled by intent; operator dispatches manually
+    inputs:
+      ref:
+        description: "Commit SHA or branch to build (defaults to github.ref if empty)"
+        required: false
+        type: string
+      branch:
+        description: "Branch name to tag the dev image with (defaults to github.ref_name if empty)"
+        required: false
+        type: string
 jobs:
   # --------------------------------------------------------------------------------
   # JOB 1: Build Intel (amd64) on GitHub Runners
