@@ -6,9 +6,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2020-09-27 22:18+0800\n"
 "Last-Translator: xlivevil <xlivevil@aliyun.com>\n"
 "Language-Team: zh_Hans_CN <LL@li.org>\n"
@@ -7177,35 +7177,35 @@ msgstr "拖拽以重新排序"
 msgid "Hidden Book"
 msgstr "隐藏书籍"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "书库统计"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "本书籍在此书库中"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "位作者在此书库中"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "种分类在此书库中"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "套丛书在此书库中"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 msgid "System Statistics"
 msgstr "系统统计"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 msgid "Program"
 msgstr "程序"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "已安装版本"
 

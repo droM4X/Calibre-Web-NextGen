@@ -5,9 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2017-04-30 00:47+0300\n"
 "Last-Translator: ABIS Team <biblio.if.abis@gmail.com>\n"
 "Language-Team: \n"
@@ -7219,35 +7219,35 @@ msgstr "Перетягніть для змінення порядку"
 msgid "Hidden Book"
 msgstr "Популярні книги"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "Статистика бібліотеки Calibre"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "Книг в цій бібліотеці"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "Авторів в цій бібліотеці"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "Категорій в цій бібліотеці"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "Серій в цій бібліотеці"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 msgid "System Statistics"
 msgstr "Статистика системи"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 msgid "Program"
 msgstr "Програма"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "Встановлена версія"
 

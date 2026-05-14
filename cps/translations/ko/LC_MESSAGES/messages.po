@@ -5,9 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2025-09-08 00:53+0900\n"
 "Last-Translator: limeade23 <admin@limeade.me>\n"
 "Language-Team: Korean <>\n"
@@ -7144,35 +7144,35 @@ msgstr "드래그하여 순서 변경"
 msgid "Hidden Book"
 msgstr "숨긴 책"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "서재 통계"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "이 서재의 책들"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "이 서재의 저자"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "이 서재의 카테고리"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "이 서재의 시리즈"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 msgid "System Statistics"
 msgstr "시스템 통계"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 msgid "Program"
 msgstr "프로그램"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "설치 버전"
 
@@ -7824,8 +7824,8 @@ msgstr "읽음/읽지 않음 표시"
 #~ msgstr ""
 #~ "이 경로들은 CWA 내부에서만 사용됩니다. 콜론 왼쪽 경로는 자유롭게 변경가능"
 #~ "하나,\n"
-#~ "        오른쪽 경로는 변경할 이유가 없습니다.<br><br>만약 "
-#~ "<code>metadata.db<code> 파일을 나머지 서재와 다른 위치에 두고 싶다면, \n"
+#~ "        오른쪽 경로는 변경할 이유가 없습니다.<br><br>만약 <code>metadata."
+#~ "db<code> 파일을 나머지 서재와 다른 위치에 두고 싶다면, \n"
 #~ "<b>아래의 ‘책 파일을 서재와 분리하기’ 옵션을 사용하고, 거기에 라이브러리"
 #~ "의 나머지 경로를 입력하십시오.</b>"
 

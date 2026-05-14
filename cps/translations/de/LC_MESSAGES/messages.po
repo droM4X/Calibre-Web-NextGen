@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2026-04-06 17:03+0000\n"
 "Last-Translator: Manuel Drescher\n"
 "Language-Team: German\n"
@@ -7405,35 +7405,35 @@ msgstr "Ziehen und ablegen um Reihenfolge zu ändern"
 msgid "Hidden Book"
 msgstr "Verstecktes Buch"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "Bibliotheksstatistiken"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "Bücher in dieser Bibliothek"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "Autoren in dieser Bibliothek"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "Kategorien in dieser Bibliothek"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "Serien in dieser Bibliothek"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 msgid "System Statistics"
 msgstr "Systemstatistiken"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 msgid "Program"
 msgstr "Programm"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "Installierte Version"
 
@@ -8082,9 +8082,9 @@ msgstr "Zeige Gelesen/Ungelesen-Abschnitt"
 #~ "        <a href=\"https://github.com/crocodilestick/Calibre-Web-Automated/"
 #~ "wiki/Configuration#database-configuration\">see here</a>!"
 #~ msgstr ""
-#~ "CWA ist so konfiguriert, dass es deine Calibre-Datenbank "
-#~ "(<code>metadata.db</code>-Datei) irgendwo in dem Pfad <code>/calibre-"
-#~ "library</code> sucht.\n"
+#~ "CWA ist so konfiguriert, dass es deine Calibre-Datenbank (<code>metadata."
+#~ "db</code>-Datei) irgendwo in dem Pfad <code>/calibre-library</code> "
+#~ "sucht.\n"
 #~ "        CWA durchsucht automatisch das Verzeichnis, das du auf <code>/"
 #~ "calibre-library</code> in der docker-compose-Datei verbunden hast, um "
 #~ "eine existierende Calibre-\n"

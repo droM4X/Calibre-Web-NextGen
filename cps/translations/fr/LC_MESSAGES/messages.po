@@ -23,9 +23,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2025-11-17 21:51+0100\n"
 "Last-Translator: Tex <tex@grosist.fr>\n"
 "Language-Team: \n"
@@ -5094,9 +5094,9 @@ msgid ""
 "\">kindle-epub-fix.netlify.app</a> tool made by <a href=\"https://github.com/"
 "innocenat\">innocenat</a>."
 msgstr ""
-"Cet outil a été adapté à partir de l'outil <a href=\"https://kindle-epub-"
-"fix.netlify.app/\">kindle-epub-fix.netlify.app</a> créé par <a "
-"href=\"https://github.com/innocenat\">innocenat</a>."
+"Cet outil a été adapté à partir de l'outil <a href=\"https://kindle-epub-fix."
+"netlify.app/\">kindle-epub-fix.netlify.app</a> créé par <a href=\"https://"
+"github.com/innocenat\">innocenat</a>."
 
 #: cps/templates/cwa_settings.html:181
 msgid "Enable KOReader Sync (NextGen Plugin)"
@@ -7516,35 +7516,35 @@ msgstr "Glisser-déposer pour modifier l’ordre"
 msgid "Hidden Book"
 msgstr "Livre caché"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "Statistiques de la librairie Calibre"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "Livres dans la bibiothèque"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "Auteurs dans la bibliothèque"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "Catégories dans la librairie"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "Séries dans la librairie"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 msgid "System Statistics"
 msgstr "Statistiques système"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 msgid "Program"
 msgstr "Programme"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "Version installée"
 

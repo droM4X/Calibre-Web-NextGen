@@ -7,9 +7,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2018-08-27 17:06+0700\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -7183,37 +7183,37 @@ msgstr "ទាញដើម្បីប្តូរលំដាប់"
 msgid "Hidden Book"
 msgstr "សៀវភៅដែលមានប្រជាប្រិយភាព"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "ស្ថិតិបណ្ណាល័យ Calibre"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "សៀវភៅនានាក្នុងបណ្ណាល័យនេះ"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "អ្នកនិពន្ធនានាក្នុងបណ្ណាល័យនេះ"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "ប្រភេទនានាក្នុងបណ្ណាល័យនេះ"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "ស៊េរីនានាក្នុងបណ្ណាល័យនេះ"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 #, fuzzy
 msgid "System Statistics"
 msgstr "ស្ថិតិ"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 #, fuzzy
 msgid "Program"
 msgstr "ដំណើរការ"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "លេខ version ដែលបានតម្លើង"
 

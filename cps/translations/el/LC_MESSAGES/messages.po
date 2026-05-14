@@ -5,9 +5,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Calibre-Web NextGen\n"
-"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
-"issues\n"
-"POT-Creation-Date: 2026-05-14 09:43-0400\n"
+"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
+"Automated\n"
+"POT-Creation-Date: 2026-05-14 13:59+0000\n"
 "PO-Revision-Date: 2025-09-03 14:59+0200\n"
 "Last-Translator: Depountis Georgios\n"
 "Language-Team: \n"
@@ -2141,8 +2141,8 @@ msgstr "Δημιούργησε ένα Ράφι"
 #, fuzzy
 msgid "Sorry you are not allowed to edit this shelf"
 msgstr ""
-"Συγγνώμη αλλά δεν σου επιτρέπεται η αφαίρεση ενός βιβλίου από αυτό το ράφι: %"
-"(sname)s"
+"Συγγνώμη αλλά δεν σου επιτρέπεται η αφαίρεση ενός βιβλίου από αυτό το ράφι: "
+"%(sname)s"
 
 #: cps/shelf.py:263
 msgid "Edit a shelf"
@@ -7308,37 +7308,37 @@ msgstr "Σύρε για Αναδιάταξη Σειράς"
 msgid "Hidden Book"
 msgstr "Κρυμμένο Βιβλίο"
 
-#: cps/templates/stats.html:7
+#: cps/templates/stats.html:8
 msgid "Library Statistics"
 msgstr "Στατιστικά Βιβλιοθήκης"
 
-#: cps/templates/stats.html:12
+#: cps/templates/stats.html:13
 msgid "Books in this Library"
 msgstr "Βιβλία σε αυτή τη Βιβλιοθήκη"
 
-#: cps/templates/stats.html:16
+#: cps/templates/stats.html:17
 msgid "Authors in this Library"
 msgstr "Συγγραφείς σε αυτή τη Βιβλιοθήκη"
 
-#: cps/templates/stats.html:20
+#: cps/templates/stats.html:21
 msgid "Categories in this Library"
 msgstr "Κατηγορίες σε αυτή τη Βιβλιοθήκη"
 
-#: cps/templates/stats.html:24
+#: cps/templates/stats.html:25
 msgid "Series in this Library"
 msgstr "Σειρές σε αυτή τη Βιβλιοθήκη"
 
-#: cps/templates/stats.html:29
+#: cps/templates/stats.html:30
 #, fuzzy
 msgid "System Statistics"
 msgstr "Στατιστικά"
 
-#: cps/templates/stats.html:33
+#: cps/templates/stats.html:34
 #, fuzzy
 msgid "Program"
 msgstr "Πρόοδος"
 
-#: cps/templates/stats.html:34
+#: cps/templates/stats.html:35
 msgid "Installed Version"
 msgstr "Εγκατεστημένη Έκδοση"
 
