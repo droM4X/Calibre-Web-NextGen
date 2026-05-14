@@ -264,6 +264,131 @@ def test_bulk_browse_query_count_under_threshold(fresh_metadata_db):
     )
 
 
+# ---------------------------------------------------------------------------
+# Fork issues #184 + #185 — intermittent OPDS relationship loss
+#
+# Source-pin: regardless of what was true historically, every Books
+# relationship now must be lazy='selectin'. `subquery` produced
+# intermittent empty .authors / .tags / .languages / .comments under the
+# fill_indexpage two-parent-queries shape; the regression is invisible
+# in mocked unit tests but visible on real OPDS traffic. See
+# notes/184-185-DESIGN.md.
+# ---------------------------------------------------------------------------
+
+REQUIRED_SELECTIN_RELATIONSHIPS = (
+    'authors', 'tags', 'comments', 'data', 'series',
+    'ratings', 'languages', 'publishers', 'identifiers',
+)
+
+
+@pytest.mark.parametrize("attr", REQUIRED_SELECTIN_RELATIONSHIPS)
+def test_books_relationships_use_selectin_loader(attr):
+    """Source-pin: each of the nine Books relationships must use
+    lazy='selectin'. Fork issues #184 + #185.
+
+    `lazy='subquery'` was the historical choice (PR #40) and looked fine
+    in mocked tests but produced intermittent empty relationship
+    collections under the fill_indexpage two-parent-queries shape — the
+    OPDS template then rendered books with missing <summary>, <author>,
+    <dcterms:language>, <category>. Re-introducing `subquery` will fail
+    this test; see notes/184-185-DESIGN.md for the live SQL trace and
+    repro."""
+    from cps import db as cps_db
+    strategy = cps_db.Books.__mapper__.attrs[attr].lazy
+    assert strategy == 'selectin', (
+        f"Books.{attr} loader is {strategy!r}, expected 'selectin'. "
+        f"Fork issues #184 + #185 — see notes/184-185-DESIGN.md."
+    )
+
+
+def test_opds_shaped_query_populates_relationships_consistently(fresh_metadata_db):
+    """Behavioural regression for #184/#185: run the fill_indexpage-shaped
+    parent query 50 times sequentially and assert that for every book in
+    every iteration, the relationship collections match the underlying DB
+    row counts. Under `lazy='subquery'` on SA 2.0 this test fails
+    intermittently with empty collections for some books in some
+    iterations; under `lazy='selectin'` it passes deterministically.
+
+    The query shape mirrors `cps/db.py:fill_indexpage` for the OPDS
+    feed_new path: multi-entity (Books + outerjoined archived_book +
+    book_read_link rows), joinedload(Books.data), order_by(timestamp
+    desc), offset/limit/all. Plus a sibling random() query in the same
+    session beforehand, mirroring the random-panel branch — that's the
+    shape under which the bug surfaces."""
+    from sqlalchemy import and_, true
+    from sqlalchemy.orm import joinedload
+
+    _seed_books(fresh_metadata_db, n_books=20)
+    engine, Session, cps_db = _make_engine_and_session(fresh_metadata_db)
+
+    sess = Session()
+
+    # Capture expected row counts for each book directly from the seed DB,
+    # so we have ground truth independent of the loader strategy.
+    import sqlite3
+    raw = sqlite3.connect(str(fresh_metadata_db))
+    raw_cur = raw.cursor()
+    raw_cur.execute("SELECT id FROM books")
+    book_ids = [r[0] for r in raw_cur.fetchall()]
+    expected = {}
+    for bid in book_ids:
+        expected[bid] = {
+            'authors': raw_cur.execute(
+                "SELECT count(*) FROM books_authors_link WHERE book = ?",
+                (bid,)).fetchone()[0],
+            'series': raw_cur.execute(
+                "SELECT count(*) FROM books_series_link WHERE book = ?",
+                (bid,)).fetchone()[0],
+            'languages': raw_cur.execute(
+                "SELECT count(*) FROM books_languages_link WHERE book = ?",
+                (bid,)).fetchone()[0],
+            'comments': raw_cur.execute(
+                "SELECT count(*) FROM comments WHERE book = ?",
+                (bid,)).fetchone()[0],
+        }
+    raw.close()
+
+    Books = cps_db.Books
+    failures = []
+
+    for iteration in range(50):
+        # Sibling random-panel query first, to exercise the
+        # two-parent-queries-per-request shape that surfaces the bug.
+        # We don't assert on its output — its purpose is to set up the
+        # session state under which the timestamp DESC parent query
+        # ran subsequently was producing empty relationships.
+        _ = sess.query(Books).order_by(Books.timestamp.desc()).limit(5).all()
+
+        # Main query: shape mirrors fill_indexpage with database=Books,
+        # join_archive_read=True, order=Books.timestamp.desc(),
+        # pagesize=20, offset=0.
+        main = (sess.query(Books)
+                .options(joinedload(Books.data))
+                .filter(true())
+                .order_by(Books.timestamp.desc())
+                .offset(0).limit(20)
+                .all())
+
+        for book in main:
+            for rel, expected_count in expected[book.id].items():
+                actual = len(getattr(book, rel))
+                if actual != expected_count:
+                    failures.append(
+                        f"iter={iteration} book_id={book.id} "
+                        f"{rel}: expected={expected_count} got={actual}"
+                    )
+
+    sess.close()
+
+    strategy = Books.__mapper__.attrs['authors'].lazy
+    assert not failures, (
+        f"strategy={strategy!r} produced {len(failures)} relationship "
+        f"count mismatches across 50 iterations × 20 books × 4 "
+        f"relationships. Fork issues #184 + #185 regression. "
+        f"First 5 failures: {failures[:5]}"
+    )
+
+
 def test_bulk_browse_wall_time_under_threshold(fresh_metadata_db):
     """Wall-time floor: rendering 50 books with relationship access must
     complete in well under one second on a tmpfs-backed sqlite."""

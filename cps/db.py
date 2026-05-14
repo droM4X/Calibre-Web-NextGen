@@ -409,15 +409,28 @@ class Books(Base):
     has_cover = Column(Integer, default=0)
     uuid = Column(String)
 
-    authors = relationship(Authors, secondary=books_authors_link, backref='books', lazy='subquery')
-    tags = relationship(Tags, secondary=books_tags_link, backref='books', order_by="Tags.name", lazy='subquery')
-    comments = relationship(Comments, backref='books', lazy='subquery')
-    data = relationship(Data, backref='books', lazy='subquery')
-    series = relationship(Series, secondary=books_series_link, backref='books', lazy='subquery')
-    ratings = relationship(Ratings, secondary=books_ratings_link, backref='books', lazy='subquery')
-    languages = relationship(Languages, secondary=books_languages_link, backref='books', lazy='subquery')
-    publishers = relationship(Publishers, secondary=books_publishers_link, backref='books', lazy='subquery')
-    identifiers = relationship(Identifiers, backref='books', lazy='subquery')
+    # Eager loading strategy: selectin, not subquery. Fork issues #184 + #185.
+    # `lazy='selectin'` (introduced upstream PR #1279, fork PR #40 / bc9386c)
+    # produced intermittent empty .authors / .tags / .languages / .comments on
+    # books returned through `fill_indexpage`-shaped queries — the post-load's
+    # inner subselect reproduces the parent FROM/WHERE/ORDER/LIMIT, so any
+    # query-compile-state leak across the captured `CalibreDB.session` could
+    # cause some books' relationships to be skipped (template renders missing
+    # <summary> / <author> / <dcterms:language> / <category>). `lazy='selectin'`
+    # is the modern SQLAlchemy 2.0 recommendation for collection eager loads:
+    # one extra `WHERE parent_id IN (...)` query per relationship, atomic, no
+    # dependence on parent SQL. Still eager, so PR #40's DetachedInstanceError
+    # case (upstream #1067 / #1130 / #1139) remains covered. See
+    # notes/184-185-DESIGN.md for the live SQL trace + verification.
+    authors = relationship(Authors, secondary=books_authors_link, backref='books', lazy='selectin')
+    tags = relationship(Tags, secondary=books_tags_link, backref='books', order_by="Tags.name", lazy='selectin')
+    comments = relationship(Comments, backref='books', lazy='selectin')
+    data = relationship(Data, backref='books', lazy='selectin')
+    series = relationship(Series, secondary=books_series_link, backref='books', lazy='selectin')
+    ratings = relationship(Ratings, secondary=books_ratings_link, backref='books', lazy='selectin')
+    languages = relationship(Languages, secondary=books_languages_link, backref='books', lazy='selectin')
+    publishers = relationship(Publishers, secondary=books_publishers_link, backref='books', lazy='selectin')
+    identifiers = relationship(Identifiers, backref='books', lazy='selectin')
 
     def __init__(self, title, sort, author_sort, timestamp, pubdate, series_index, last_modified, path, has_cover,
                  authors, tags, languages=None):
