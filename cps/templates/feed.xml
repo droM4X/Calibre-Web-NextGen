@@ -12,26 +12,35 @@
   <link rel="up"
         href="{{url_for('opds.feed_index')}}"
         type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
+{#-
+  Pagination links must preserve every inbound query arg except ``offset``
+  itself. Fork issue #160: previously ``request.path`` plus a bare
+  ``?offset=N`` was used, which dropped ``?lang=xx`` and any other query
+  args, so an OPDS client paging through results in Hungarian flipped
+  back to English on page 2. ``opds_paged_url`` is registered in
+  ``cps/opds.py`` and rebuilds the URL with the right offset and the
+  rest of the request args intact.
+-#}
 {% if pagination and pagination.has_prev %}
   <link rel="first"
-        href="{{request.script_root + request.path}}"
+        href="{{ opds_paged_url(None) }}"
         type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
 {% endif %}
 {% if pagination and pagination.has_next %}
   <link rel="next"
         title="{{_('Next')}}"
-        href="{{ request.script_root + request.path }}?offset={{ pagination.next_offset }}"
+        href="{{ opds_paged_url(pagination.next_offset) }}"
         type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
 {% endif %}
 {% if pagination and pagination.has_prev %}
   <link rel="previous"
-        href="{{request.script_root + request.path}}?offset={{ pagination.previous_offset }}"
+        href="{{ opds_paged_url(pagination.previous_offset) }}"
         type="application/atom+xml;profile=opds-catalog;type=feed;kind=navigation"/>
 {% endif %}
     <link rel="search"
       href="{{url_for('opds.feed_osd')}}"
       type="application/opensearchdescription+xml"/>
-  <link type="application/atom+xml" rel="search" title="{{_('Search')}}" href="{{url_for('opds.feed_normal_search')}}/{searchTerms}" />
+  <link type="application/atom+xml" rel="search" title="{{_('Search')}}" href="{{ opds_search_url_path() }}" />
   <title>{{instance}}</title>
   <author>
     <name>{{instance}}</name>
