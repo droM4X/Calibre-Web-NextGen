@@ -179,7 +179,7 @@ def _read_text(path: str, default: str = "") -> str:
 INSTALLED_VERSION = os.environ.get("CWA_INSTALLED_VERSION") or _read_text("/app/CWA_RELEASE", "v0.0.0")
 STABLE_VERSION = os.environ.get("CWA_STABLE_VERSION") or _read_text("/app/CWA_STABLE_RELEASE", "v0.0.0")
 
-USER_AGENT = f"Calibre-Web-Automated/{INSTALLED_VERSION}"
+USER_AGENT = f"Calibre-Web-NextGen/{INSTALLED_VERSION}"
 
 NIGHTLY_VERSION = dict()
 NIGHTLY_VERSION[0] = '0af52f205358b0147ee3430f9e6c8fe007c0ea77'

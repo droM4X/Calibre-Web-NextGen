@@ -63,7 +63,7 @@ except Exception:  # pragma: no cover - CLI/testing path
     config = _FallbackConfig()  # type: ignore
 
     class _FallbackConstants:
-        USER_AGENT = "Calibre-Web-Automated/HardcoverTest"
+        USER_AGENT = "Calibre-Web-NextGen/HardcoverTest"
 
     constants = _FallbackConstants()  # type: ignore
 

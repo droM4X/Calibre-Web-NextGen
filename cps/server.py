@@ -284,10 +284,10 @@ class WebServer(object):
         logger.get('asyncio').setLevel(logger.logging.CRITICAL)
 
         if not self.restart:
-            log.info("Performing shutdown of Calibre-Web Automated")
+            log.info("Performing shutdown of Calibre-Web NextGen")
             return True
 
-        log.info("Performing restart of Calibre-Web Automated")
+        log.info("Performing restart of Calibre-Web NextGen")
         args = self._get_args_for_reloading()
         os.execv(args[0].lstrip('"').rstrip('"'), args)
 

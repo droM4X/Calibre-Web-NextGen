@@ -1075,7 +1075,7 @@ def health_check():
     return jsonify({
         "status": "ok" if db_up else "degraded",
         "uptime": uptime,
-        "version": f"CWA/{constants.INSTALLED_VERSION}",
+        "version": f"Calibre-Web-NextGen/{constants.INSTALLED_VERSION}",
     }), 200 if db_up else 503
 
 # ################################### View Books list ##################################################################

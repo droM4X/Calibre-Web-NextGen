@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: Calibre-Web Automated\n"
-"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
-"Automated\n"
-"POT-Creation-Date: 2026-05-14 13:25+0000\n"
+"Project-Id-Version: Calibre-Web NextGen\n"
+"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
+"issues\n"
+"POT-Creation-Date: 2026-05-14 09:43-0400\n"
 "PO-Revision-Date: 2026-04-06 17:03+0000\n"
 "Last-Translator: Manuel Drescher\n"
 "Language-Team: German\n"
@@ -215,8 +215,8 @@ msgid "Invalid Restricted Column"
 msgstr "Ungültiger Spaltenname für Einschränkung"
 
 #: cps/admin.py:942 cps/admin.py:2508
-msgid "Calibre-Web Automated configuration updated"
-msgstr "Konfiguration von Calibre-Web Automated wurde aktualisiert"
+msgid "Calibre-Web NextGen configuration updated"
+msgstr ""
 
 #: cps/admin.py:954
 msgid "Do you really want to delete the Kobo Token?"
@@ -289,19 +289,15 @@ msgstr "Ort der Calibre Datenbank editieren?"
 
 #: cps/admin.py:979
 msgid ""
-"Calibre-Web Automated will search for updated Covers and update Cover "
+"Calibre-Web NextGen will search for updated Covers and update Cover "
 "Thumbnails, this may take a while?"
 msgstr ""
-"Calibre-Web Automated wird nach neuen Covern suchen und Cover-"
-"Miniaturansichten aktualisieren, dies kann eine Weile dauern?"
 
 #: cps/admin.py:982
 msgid ""
-"Are you sure you want delete Calibre-Web Automated's sync database to force "
-"a full sync with your Kobo Reader?"
+"Are you sure you want delete Calibre-Web NextGen's sync database to force a "
+"full sync with your Kobo Reader?"
 msgstr ""
-"Möchten Sie die Synchronisationsdatenbank von Calibre-Web Automated wirklich "
-"löschen, um eine komplette Synchronisation zu erzwingen?"
 
 #: cps/admin.py:1221 cps/admin.py:1227 cps/admin.py:1237 cps/admin.py:1247
 #: cps/templates/modal_dialogs.html:29 cps/templates/user_table.html:41
@@ -983,8 +979,8 @@ msgstr ""
 "gespeichert."
 
 #: cps/cwa_functions.py:913
-msgid "Calibre-Web Automated User Settings"
-msgstr "Calibre-Web Automated Benutzereinstellungen"
+msgid "Calibre-Web NextGen User Settings"
+msgstr ""
 
 #: cps/cwa_functions.py:959 cps/cwa_functions.py:961 cps/cwa_functions.py:965
 #: cps/cwa_functions.py:967 cps/cwa_functions.py:970 cps/cwa_functions.py:972
@@ -1047,37 +1043,32 @@ msgid "Unknown User"
 msgstr "Unbekannter Benutzer"
 
 #: cps/cwa_functions.py:1185
-msgid "Calibre-Web Automated Stats & Activity"
-msgstr "Calibre-Web Automated Statistiken & Aktivitäten"
+msgid "Calibre-Web NextGen Stats & Activity"
+msgstr ""
 
 #: cps/cwa_functions.py:1569
-msgid "Calibre-Web Automated - Full Enforcement History"
-msgstr "Calibre-Web Automated - Vollständige Durchsetzungsgeschichte"
+msgid "Calibre-Web NextGen - Full Enforcement History"
+msgstr ""
 
 #: cps/cwa_functions.py:1578
-msgid "Calibre-Web Automated - Full Enforcement History (w/ Paths)"
+msgid "Calibre-Web NextGen - Full Enforcement History (w/ Paths)"
 msgstr ""
-"Calibre-Web Automated - Vollständige Durchsetzungsgeschichte (mit Pfaden)"
 
 #: cps/cwa_functions.py:1587
-msgid "Calibre-Web Automated - Full Import History"
-msgstr "Calibre-Web Automated - Vollständiger Importverlauf"
+msgid "Calibre-Web NextGen - Full Import History"
+msgstr ""
 
 #: cps/cwa_functions.py:1596
-msgid "Calibre-Web Automated - Full Conversion History"
-msgstr "Calibre-Web Automated - Vollständige Konvertierungsgeschichte"
+msgid "Calibre-Web NextGen - Full Conversion History"
+msgstr ""
 
 #: cps/cwa_functions.py:1605
-msgid "Calibre-Web Automated - Full EPUB Fixer History (w/out Paths & Fixes)"
+msgid "Calibre-Web NextGen - Full EPUB Fixer History (w/out Paths & Fixes)"
 msgstr ""
-"Calibre-Web Automated - Vollständige EPUB-Fixer-Historie (ohne Pfade und "
-"Korrekturen)"
 
 #: cps/cwa_functions.py:1614
-msgid "Calibre-Web Automated - Full EPUB Fixer History (w/ Paths & Fixes)"
+msgid "Calibre-Web NextGen - Full EPUB Fixer History (w/ Paths & Fixes)"
 msgstr ""
-"Calibre-Web Automated - Vollständige EPUB-Fixer-Historie (mit Pfaden und "
-"Korrekturen)"
 
 #: cps/cwa_functions.py:1632
 msgid "✅ All Monitoring Services are running as intended! 👍"
@@ -1107,12 +1098,12 @@ msgid "An Error has occurred"
 msgstr "Ein Fehler ist aufgetreten"
 
 #: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
-msgid "Calibre-Web Automated - Convert Library"
-msgstr "Calibre-Web Automated - Bibliothek konvertieren"
+msgid "Calibre-Web NextGen - Convert Library"
+msgstr ""
 
 #: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
-msgid "Calibre-Web Automated - EPUB Fixer Service"
-msgstr "Calibre-Web Automated - EPUB-Fixer-Dienst"
+msgid "Calibre-Web NextGen - EPUB Fixer Service"
+msgstr ""
 
 #: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
@@ -1180,8 +1171,8 @@ msgid "Profile picture updated successfully."
 msgstr "Profilbild erfolgreich aktualisiert."
 
 #: cps/cwa_functions.py:2234
-msgid "CWA Profile Picture Management (WIP)"
-msgstr "CWA-Profilbildverwaltung (Laufende Arbeiten)"
+msgid "Calibre-Web NextGen Profile Picture Management (WIP)"
+msgstr ""
 
 #: cps/db.py:1333 cps/templates/config_edit.html:333
 #: cps/templates/config_view_edit.html:79
@@ -1416,20 +1407,20 @@ msgid "Send to eReader"
 msgstr "An E-Reader senden"
 
 #: cps/helper.py:104 cps/helper.py:124 cps/helper.py:237
-msgid "This Email has been sent via Calibre-Web Automated."
-msgstr "Diese E-Mail wurde von Calibre-Web Automated gesendet."
+msgid "This Email has been sent via Calibre-Web NextGen."
+msgstr ""
 
 #: cps/helper.py:122
-msgid "Calibre-Web Automated Test Email"
-msgstr "Calibre-Web Automated Test-E-Mail"
+msgid "Calibre-Web NextGen Test Email"
+msgstr ""
 
 #: cps/helper.py:123
 msgid "Test Email"
 msgstr "E-Mail testen"
 
 #: cps/helper.py:140
-msgid "Get Started with Calibre-Web Automated"
-msgstr "Loslegen mit Calibre-Web Automated"
+msgid "Get Started with Calibre-Web NextGen"
+msgstr ""
 
 #: cps/helper.py:145
 #, python-format
@@ -1587,11 +1578,9 @@ msgstr "Fehler beim Ausführen von UnRar"
 #: cps/helper.py:1439
 #, python-format
 msgid ""
-"Unsupported architecture detected: %(arch)s. CWA is optimized for x86_64 and "
-"aarch64."
+"Unsupported architecture detected: %(arch)s. Calibre-Web NextGen is "
+"optimized for x86_64 and aarch64."
 msgstr ""
-"Nicht unterstützte Architektur erkannt: %(arch)s. CWA ist für x86_64 und "
-"aarch64 optimiert."
 
 #: cps/helper.py:1448
 msgid "Could not find the specified directory"
@@ -1625,11 +1614,9 @@ msgstr "Alle Bücher für Metadaten-Backup einreihen"
 
 #: cps/kobo_auth.py:88
 msgid ""
-"Please access Calibre-Web Automated from non localhost to get valid "
+"Please access Calibre-Web NextGen from non localhost to get valid "
 "api_endpoint for kobo device"
 msgstr ""
-"Bitte greifen Sie auf Calibre-Web Automated von einem anderen Host als "
-"\"localhost\" zu, um einen gültigen API-Endpunkt für Kobo-Geräte zu erhalten"
 
 #: cps/kobo_auth.py:144
 msgid "Kobo Setup"
@@ -3142,8 +3129,8 @@ msgid "Reverse Proxy Header Name"
 msgstr "Reverse Proxy Header Name"
 
 #: cps/templates/admin.html:164
-msgid "CWA Settings"
-msgstr "CWA Einstellungen"
+msgid "NextGen Settings"
+msgstr ""
 
 #: cps/templates/admin.html:165
 msgid "Edit Basic Configuration"
@@ -3192,36 +3179,36 @@ msgid "Refresh Thumbnail Cache"
 msgstr "Cover-Miniaturansichten aktualisieren"
 
 #: cps/templates/admin.html:208
-msgid "CWA Admin Functions&nbsp;&nbsp;⚡"
-msgstr "CWA-Verwaltungsfunktionen&nbsp;&nbsp;⚡"
+msgid "NextGen Admin Functions&nbsp;&nbsp;⚡"
+msgstr ""
 
 #: cps/templates/admin.html:209
-msgid "Show CWA Stats"
-msgstr "Zeige CWA-Statistiken"
+msgid "Show NextGen Stats"
+msgstr ""
 
 #: cps/templates/admin.html:210
-msgid "Check CWA Status"
-msgstr "CWA-Status prüfen"
+msgid "Check NextGen Status"
+msgstr ""
 
 #: cps/templates/admin.html:211
 msgid "Setup KOReader Sync"
 msgstr "KOReader Sync einrichten"
 
 #: cps/templates/admin.html:214
-msgid "CWA Library Conversion Service"
-msgstr "CWA Bibliotheksumwandlungsdienst"
+msgid "NextGen Library Conversion Service"
+msgstr ""
 
 #: cps/templates/admin.html:215
-msgid "CWA EPUB Fixer Service"
-msgstr "CWA EPUB-Fixer-Dienst"
+msgid "NextGen EPUB Fixer Service"
+msgstr ""
 
 #: cps/templates/admin.html:218
-msgid "CWA GitHub"
-msgstr "CWA GitHub"
+msgid "NextGen GitHub"
+msgstr ""
 
 #: cps/templates/admin.html:219
-msgid "CWA Discord Server"
-msgstr "CWA Discord Server"
+msgid "NextGen Discord Server"
+msgstr ""
 
 #: cps/templates/admin.html:222
 msgid "Run Hardcover Auto-Fetch"
@@ -3769,10 +3756,11 @@ msgstr "Speicherort der Calibre-Datenbank (metadata.db-Datei)"
 
 #: cps/templates/config_db.html:48
 msgid ""
-"CWA is configured so that your Calibre Database (<code>metadata.db</code> "
-"file) should always be somewhere in <code>/calibre-library</code>.\n"
-"        CWA automatically searches whatever directory you've bound to <code>/"
-"calibre-library</code> in your docker-compose file for existing Calibre\n"
+"NextGen is configured so that your Calibre Database (<code>metadata.db</"
+"code> file) should always be somewhere in <code>/calibre-library</code>.\n"
+"        NextGen automatically searches whatever directory you've bound to "
+"<code>/calibre-library</code> in your docker-compose file for existing "
+"Calibre\n"
 "        Libraries/metadata.db files on start up. If it finds just one "
 "existing library, it mounts it automatically, if it find multiple, by "
 "default\n"
@@ -3781,45 +3769,23 @@ msgid ""
 "        <a href=\"https://github.com/crocodilestick/Calibre-Web-Automated/"
 "wiki/Configuration#database-configuration\">see here</a>!"
 msgstr ""
-"CWA ist so konfiguriert, dass es deine Calibre-Datenbank (<code>metadata.db</"
-"code>-Datei) irgendwo in dem Pfad <code>/calibre-library</code> sucht.\n"
-"        CWA durchsucht automatisch das Verzeichnis, das du auf <code>/"
-"calibre-library</code> in der docker-compose-Datei verbunden hast, um eine "
-"existierende Calibre-\n"
-"        Datenbank metadata.db-Datei beim Start zu finden. Wenn es nur eine "
-"Datenbank findet, wird sie automtisch genutzt; werden mehrere gefunden, wird "
-"standardmäßig\n"
-"        die größte Datei automatisch gewählt und wenn gar keine gefunden "
-"wird, wird automatisch eine neue erstellt und genutzt. Für mehr Details\n"
-"        <a href=\"https://github.com/crocodilestick/Calibre-Web-Automated/"
-"wiki/Configuration#database-configuration\">schaue hier</a>!"
 
 #: cps/templates/config_db.html:54
 msgid ""
-"Therefore, when configuring your docker-compose file for CWA, <b>DO NOT "
+"Therefore, when configuring your docker-compose file for NextGen, <b>DO NOT "
 "CHANGE THE PATHS IN THE VOLUMES SECTION ON THE RIGHT SIDE OF THE COLONS!</b>"
 msgstr ""
-"Deshalb, wenn du die docker-compose-Datei für CWA konfigurierst, <b>ändere "
-"nicht die Dateipfade in dem Abschnitt für Volumes auf der rechten Seite des "
-"Doppelpunkts!</b>"
 
 #: cps/templates/config_db.html:55
 msgid ""
-"These paths are internal to CWA only, you can change what they're bind to to "
-"your heart's content on the left-hand side but there's no reason to\n"
+"These paths are internal to NextGen only, you can change what they're bind "
+"to to your heart's content on the left-hand side but there's no reason to\n"
 "        change the paths on the right-hand side.<br><br>If you would like "
 "your <code>metadata.db</code> file in a different location to the rest of "
 "your\n"
 "        library, use the <b>Separate Book Files from Library Option below "
 "and there, enter the path to the rest of the library</b>"
 msgstr ""
-"Diese Dateifpade sind intern nur für CWA, du kannst sie ändern wie du "
-"möchtest, aber es gibt keinen Grund, die\n"
-"        die Pfade auf der rechten Seite zu ändern.<br><br>Wenn du deine "
-"<code>metadata.db</code>-Datei an einem anderen Ort als deine\n"
-"        Bibliothek speichern möchtest, nutze die <b>Separiere Bücherdateien "
-"von der Bibliothek Option unten und dort trägst du den Pfad zu dem Rest "
-"deiner Bibliothek ein</b>"
 
 #: cps/templates/config_db.html:59
 msgid ""
@@ -4986,64 +4952,45 @@ msgid "Enable/Disable Calibre-Web NextGen Services"
 msgstr "Aktiviere/Deaktiviere Calibre-Web Automated Services"
 
 #: cps/templates/cwa_settings.html:143
-msgid "Enable CWA Auto-Convert"
-msgstr "Aktiviere CWA Auto-Konvertierung"
+msgid "Enable NextGen Auto-Convert"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:145
 msgid ""
 "On by default, when active all ingested books will automatically be "
 "converted to the target format specified below (epub by default) \n"
-"        <em>EXCEPT</em> those you have specifically told CWA to ignore below."
+"        <em>EXCEPT</em> those you have specifically told NextGen to ignore "
+"below."
 msgstr ""
-"Standardmäßig aktiviert, wenn alle ingestierten Bücher automatisch in das "
-"unten spezifizierte Zielformat konvertiert werden (Standard ist epub)\n"
-"        <em>außer</em> denen, die du CWA unten angegeben hast, dass sie "
-"ignoriert werden sollen."
 
 #: cps/templates/cwa_settings.html:154
-msgid "Enable CWA Automatic Cover & Metadata Enforcement Service"
-msgstr "Aktiviere CWA automatischen Cover & Metadaten Service"
+msgid "Enable NextGen Automatic Cover & Metadata Enforcement Service"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:156
 msgid ""
 "On by default, when active, whenever the Metadata and/or Cover Image is "
-"edited in the Web UI, the CWA Metadata Enforcement service \n"
+"edited in the Web UI, the NextGen Metadata Enforcement service \n"
 "        will then apply those changes the ebook files themselves. Normally "
 "in Stock CW or when this setting is disabled, the changes made \n"
 "        are only applied to what you see in the Web UI, not the ebook files "
 "themselves. This feature currently only supports files in EPUB \n"
 "        or AZW3 format."
 msgstr ""
-"Standardmäßig aktiviert, wenn der CWA Metadatenerzwingungsdienst aktiv ist, "
-"werden immer bei Änderungen der Metadaten und/oder Cover über der Web UI\n"
-"        diese Änderungen in die eBook-Datei selbst geschrieben. "
-"Normalerweise, im Standard-CW oder wenn diese Einstellung deaktiviert ist, "
-"werden gemachte Änderungen \n"
-"        nur angewandt auf das, was du in der Web UI siehst, aber nicht in "
-"der eBook-Datei selbst. Dieses Feature wird im Moment nur für Dateien vom "
-"Format EPUB \n"
-"        oder AZW3 unterstützt."
 
 #: cps/templates/cwa_settings.html:167
-msgid "Enable CWA Kindle EPUB Fixer"
-msgstr "Aktiviere CWA Kindle EPUB Fixer"
+msgid "Enable NextGen Kindle EPUB Fixer"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:169
 msgid ""
 "When active, the encoding among other attributes of all EPUB files processed "
-"by CWA will be checked and fixed to ensure maximum \n"
+"by NextGen will be checked and fixed to ensure maximum \n"
 "        compatibility with Amazon's Send-to-Kindle Service. This feature is "
 "particularly useful for users who frequently send EPUB files to their Kindle "
 "devices and have experienced issues with \n"
 "        file rejections or formatting problems."
 msgstr ""
-"Wenn aktiv, werden die Kodierung sowie weitere Attribute aller von CWA "
-"verarbeiteten EPUB-Dateien geprüft und korrigiert, um eine maximale \n"
-"        Kompatibilität mit Amazons „Send-to-Kindle“-Dienst zu gewährleisten. "
-"Diese Funktion ist besonders nützlich für Benutzer, die häufig EPUB-Dateien "
-"an ihre Kindle-Geräte senden und dabei \n"
-"        Ablehnungen der Dateien oder Formatierungsprobleme festgestellt "
-"haben."
 
 #: cps/templates/cwa_settings.html:174
 msgid ""
@@ -5056,20 +5003,15 @@ msgstr ""
 "github.com/innocenat\">innocenat</a> erstellt wurde."
 
 #: cps/templates/cwa_settings.html:181
-#, fuzzy
-msgid "Enable KOReader Sync (CWA Plugin)"
-msgstr "KOReader Sync-Plugin"
+msgid "Enable KOReader Sync (NextGen Plugin)"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:183
 msgid ""
-"When enabled, CWA exposes the /kosync endpoints and stores KOReader-"
+"When enabled, NextGen exposes the /kosync endpoints and stores KOReader-"
 "compatible checksums in metadata.db for progress syncing. Requires the "
 "KOReader plugin on your device."
 msgstr ""
-"Wenn diese Funktion aktiviert ist, stellt CWA die /kosync-Endpunkte bereit "
-"und speichert KOReader-kompatible Prüfsummen in metadata.db für die "
-"Fortschrittssynchronisierung. Das KOReader-Plugin muss auf Ihrem Gerät "
-"installiert sein."
 
 #: cps/templates/cwa_settings.html:185
 msgid ""
@@ -5219,16 +5161,11 @@ msgstr "Automatisches Abrufen von Metadaten für neue Bücher aktivieren"
 
 #: cps/templates/cwa_settings.html:304
 msgid ""
-"When active, CWA will automatically attempt to fetch and apply metadata "
+"When active, NextGen will automatically attempt to fetch and apply metadata "
 "(title, author, description, cover, etc.) for newly ingested books using the "
 "configured metadata provider hierarchy. This helps improve the quality of "
 "book information, especially for books with poor or missing metadata."
 msgstr ""
-"Wenn aktiviert, versucht CWA automatisch, Metadaten (Titel, Autor, "
-"Beschreibung, Cover usw.) für neu hinzugefügte Bücher abzurufen und "
-"anzuwenden, wobei die konfigurierte Hierarchie der Metadaten-Anbieter "
-"genutzt wird. Dies verbessert die Qualität der Buchinformationen, "
-"insbesondere bei Büchern mit mangelhaften oder fehlenden Metadaten."
 
 #: cps/templates/cwa_settings.html:312
 msgid "Enable Smart Metadata Application"
@@ -5530,29 +5467,23 @@ msgstr ""
 #: cps/templates/cwa_settings.html:731
 msgid ""
 "You can manually trigger the Hardcover auto-fetch task from the Admin panel "
-"at any time. Check the CWA Stats page to see progress and review queued "
+"at any time. Check the NextGen Stats page to see progress and review queued "
 "matches that need manual approval."
 msgstr ""
-"Sie können den automatischen Abruf der Hardcover-IDs jederzeit manuell über "
-"den Administrationsbereich auslösen. Auf der CWA-Statistikseite können Sie "
-"den Fortschritt einsehen und Treffer in der Warteschlange überprüfen, die "
-"eine manuelle Freigabe erfordern."
 
 #: cps/templates/cwa_settings.html:738
 msgid "Web UI Settings"
 msgstr "Web UI-Einstellungen"
 
 #: cps/templates/cwa_settings.html:745
-msgid "Enable CWA Update Notifications"
-msgstr "Aktiviere CWA Aktualisierungsbenachrichtigungen"
+msgid "Enable NextGen Update Notifications"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:747
 msgid ""
 "When active, you will receive notifications in the Web UI when a new version "
-"of CWA is released"
+"of NextGen is released"
 msgstr ""
-"Wenn aktiv, erscheint in der Web-Benutzeroberfläche eine Benachrichtigung, "
-"sobald eine neue Version von CWA veröffentlicht wird."
 
 #: cps/templates/cwa_settings.html:755
 msgid "Enable Contribute Translations Notifications"
@@ -5599,8 +5530,8 @@ msgid "Automatic Backup Settings"
 msgstr "Einstellungen für automatische Backups"
 
 #: cps/templates/cwa_settings.html:789
-msgid "Enable CWA Import Auto-Backup"
-msgstr "Aktiviere CWA Import Auto-Backup"
+msgid "Enable NextGen Import Auto-Backup"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:791
 msgid ""
@@ -5611,8 +5542,8 @@ msgstr ""
 "config/processed_books/imported</i> gespeichert"
 
 #: cps/templates/cwa_settings.html:799
-msgid "Enable CWA Conversion Auto-Backup"
-msgstr "Aktiviere CWA Konvertierer Auto-Backup"
+msgid "Enable NextGen Conversion Auto-Backup"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:801
 msgid ""
@@ -5623,20 +5554,18 @@ msgstr ""
 "konvertiert wurden, gespeichert unter /config/processed_books/converted"
 
 #: cps/templates/cwa_settings.html:809
-msgid "Enable CWA EPUB Fixer Auto-Backup"
-msgstr "Aktiviere CWA EPUB Fixer Auto-Backup"
+msgid "Enable NextGen EPUB Fixer Auto-Backup"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:811
 msgid ""
-"When active, the originals of EPUBs processed by the CWA Kindle EPUB Fixer "
-"service will be stored in /config/processed_books/fixed_originals"
+"When active, the originals of EPUBs processed by the NextGen Kindle EPUB "
+"Fixer service will be stored in /config/processed_books/fixed_originals"
 msgstr ""
-"Wenn es aktiviert ist, werden die Orignale der vom Kinde EPUB Fixer-Dienst "
-"verarbeiteten EPUBs gespeichert unter /config/processed_books/fixed_originals"
 
 #: cps/templates/cwa_settings.html:821
-msgid "Enable CWA Auto-Zip Backups"
-msgstr "Aktiviere CWA Auto-Zip Backups"
+msgid "Enable NextGen Auto-Zip Backups"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:823
 msgid ""
@@ -5652,8 +5581,8 @@ msgstr ""
 "die Festplattennutzung zu minimieren."
 
 #: cps/templates/cwa_settings.html:828
-msgid "CWA Auto-Conversion Target Format - EPUB by Default"
-msgstr "CWA Auto-Konvertierungszieldateiformat - Standard ist EPUB"
+msgid "NextGen Auto-Conversion Target Format - EPUB by Default"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:831
 msgid ""
@@ -5671,47 +5600,36 @@ msgstr "Wähle ein Zielformat:"
 
 #: cps/templates/cwa_settings.html:845
 msgid ""
-"Note: CWA's Metadata Enforcement service can currently only support file in "
-"either EPUB and AZW3 format. Files in other formats will simply be ignored "
-"by the service"
+"Note: NextGen's Metadata Enforcement service can currently only support file "
+"in either EPUB and AZW3 format. Files in other formats will simply be "
+"ignored by the service"
 msgstr ""
-"Hinweis: Der Metadatenerzwingungsdienst von CWA unterstützt derzeit nur "
-"Dateien im EPUB- oder AZW3-Format. Dateien in anderen Formaten werden vom "
-"Dienst einfach ignoriert."
 
 #: cps/templates/cwa_settings.html:851
-msgid "CWA Auto-Convert - Ignored Formats"
-msgstr "CWA Auto-Konvertierung - Ignorierte Dateiformate"
+msgid "NextGen Auto-Convert - Ignored Formats"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:853
 msgid ""
-"The formats selected here will be ignored by CWA's Auto-Conversion feature "
-"when it's active, meaning they will be imported as is."
+"The formats selected here will be ignored by NextGen's Auto-Conversion "
+"feature when it's active, meaning they will be imported as is."
 msgstr ""
-"Die hier ausgewählten Formate werden von CWAs Autokonvertierungsdienstes "
-"ignoriert, wenn dieser aktiv ist, was bedeutet, dass sie importiert werden "
-"wie sie sind."
 
 #: cps/templates/cwa_settings.html:878
-msgid "CWA Auto-Convert - Retained Formats"
-msgstr "CWA Auto-Konvertierung - Beibehaltene Formate"
+msgid "NextGen Auto-Convert - Retained Formats"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:880
 msgid ""
 "The formats selected here will always be added to the library, even after "
 "they have been converted to the target format. However, if the format is in "
-"the \"CWA Auto-Ingest - Ignored Formats\" list, it will not be imported. "
+"the \"NextGen Auto-Ingest - Ignored Formats\" list, it will not be imported. "
 "Note that the target format is always retained."
 msgstr ""
-"Die hier ausgewählten Formate werden immer zur Bibliothek hinzugefügt, "
-"selbst nachdem sie in das Zielformat konvertiert wurden. Wenn ein Format "
-"jedoch in der Liste „CWA Auto-Ingest - Ignorierte Formate“ enthalten ist, "
-"wird es nicht importiert. Beachten Sie, dass das Zielformat immer "
-"beibehalten wird."
 
 #: cps/templates/cwa_settings.html:907
-msgid "CWA Auto-Ingest Automerge"
-msgstr "CWA Auto-Ingestierung automatisches Zusammenführen"
+msgid "NextGen Auto-Ingest Automerge"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:910
 msgid "Calibre can detect Duplicate Book Titles on Import and depending on the"
@@ -5744,22 +5662,19 @@ msgid "Creates a duplicate record, keeping both copies"
 msgstr "Erstellt einen doppelten Eintrag, wobei beide Kopien behalten werden"
 
 #: cps/templates/cwa_settings.html:943
-msgid "CWA Auto-Ingest - Ignored Formats"
-msgstr "CWA Auto-Ingestierung - Ignorierte Dateiformate"
+msgid "NextGen Auto-Ingest - Ignored Formats"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:945
 msgid ""
-"The formats selected here will be ignored by CWA's Auto-Ingest feature, "
-"meaning files in these formats won't be added to the library by CWA during "
-"the ingest process"
+"The formats selected here will be ignored by NextGen's Auto-Ingest feature, "
+"meaning files in these formats won't be added to the library by NextGen "
+"during the ingest process"
 msgstr ""
-"Die hier gewählten Formate werden von CWAs Auto-Ingestierungs-Feature "
-"ignoriert, was bedeutet, dass Dateien in diesen Formaten nicht zur "
-"Bibliothek von CWA hinzugefügt werden"
 
 #: cps/templates/cwa_settings.html:970
-msgid "CWA Duplicate Detection System"
-msgstr "CWA Duplikaterkennungssystem"
+msgid "NextGen Duplicate Detection System"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:973
 msgid ""
@@ -5775,8 +5690,8 @@ msgid "Enable Duplicate Detection"
 msgstr "Duplikaterkennung aktivieren"
 
 #: cps/templates/cwa_settings.html:982
-msgid "When enabled, CWA will scan for duplicate books after each import"
-msgstr "Wenn aktiviert, scannt CWA nach jedem Import nach Dubletten."
+msgid "When enabled, NextGen will scan for duplicate books after each import"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:990
 msgid "Duplicate Detection Method"
@@ -5865,8 +5780,8 @@ msgid "Next scheduled scan:"
 msgstr "Nächster geplanter Scan:"
 
 #: cps/templates/cwa_settings.html:1076
-msgid "CWA Duplicate Detection Criteria"
-msgstr "CWA-Duplikaterkennungskriterien"
+msgid "NextGen Duplicate Detection Criteria"
+msgstr ""
 
 #: cps/templates/cwa_settings.html:1079
 msgid ""
@@ -6273,8 +6188,8 @@ msgid "Failed to update shelves"
 msgstr "Aktualisierung der Tags fehlgeschlagen"
 
 #: cps/templates/duplicates.html:365
-msgid "CWA Duplicates Manager"
-msgstr "CWA Duplikatmanager"
+msgid "NextGen Duplicates Manager"
+msgstr ""
 
 #: cps/templates/duplicates.html:367
 msgid ""
@@ -6753,20 +6668,17 @@ msgstr "Standard-Login ist deaktiviert."
 
 #: cps/templates/kosync_plugin.html:113
 msgid ""
-"Enable it in CWA Settings to activate the /kosync endpoints and checksum "
+"Enable it in NextGen Settings to activate the /kosync endpoints and checksum "
 "generation."
 msgstr ""
-"Einschalten um den /kosync Endpunkt zu aktivieren mit Prüfsummen Generierung"
 
 #: cps/templates/kosync_plugin.html:115
-#, fuzzy
-msgid "Open CWA Settings"
-msgstr "CWA Einstellungen"
+msgid "Open NextGen Settings"
+msgstr ""
 
 #: cps/templates/kosync_plugin.html:139
-msgid "Download is available after enabling KOReader Sync in CWA Settings."
+msgid "Download is available after enabling KOReader Sync in NextGen Settings."
 msgstr ""
-"Download möglich wenn in den CWA Einstellungen KOReader Sync aktiviert ist."
 
 #: cps/templates/layout.html:119 cps/templates/login.html:51
 msgid "Home"
@@ -8049,6 +7961,370 @@ msgstr "Ausgewählte Regale mit Kobo synchronisieren"
 #: cps/templates/user_table.html:158
 msgid "Show Read/Unread Section"
 msgstr "Zeige Gelesen/Ungelesen-Abschnitt"
+
+#~ msgid "Calibre-Web Automated configuration updated"
+#~ msgstr "Konfiguration von Calibre-Web Automated wurde aktualisiert"
+
+#~ msgid ""
+#~ "Calibre-Web Automated will search for updated Covers and update Cover "
+#~ "Thumbnails, this may take a while?"
+#~ msgstr ""
+#~ "Calibre-Web Automated wird nach neuen Covern suchen und Cover-"
+#~ "Miniaturansichten aktualisieren, dies kann eine Weile dauern?"
+
+#~ msgid ""
+#~ "Are you sure you want delete Calibre-Web Automated's sync database to "
+#~ "force a full sync with your Kobo Reader?"
+#~ msgstr ""
+#~ "Möchten Sie die Synchronisationsdatenbank von Calibre-Web Automated "
+#~ "wirklich löschen, um eine komplette Synchronisation zu erzwingen?"
+
+#~ msgid "Calibre-Web Automated User Settings"
+#~ msgstr "Calibre-Web Automated Benutzereinstellungen"
+
+#~ msgid "Calibre-Web Automated Stats & Activity"
+#~ msgstr "Calibre-Web Automated Statistiken & Aktivitäten"
+
+#~ msgid "Calibre-Web Automated - Full Enforcement History"
+#~ msgstr "Calibre-Web Automated - Vollständige Durchsetzungsgeschichte"
+
+#~ msgid "Calibre-Web Automated - Full Enforcement History (w/ Paths)"
+#~ msgstr ""
+#~ "Calibre-Web Automated - Vollständige Durchsetzungsgeschichte (mit Pfaden)"
+
+#~ msgid "Calibre-Web Automated - Full Import History"
+#~ msgstr "Calibre-Web Automated - Vollständiger Importverlauf"
+
+#~ msgid "Calibre-Web Automated - Full Conversion History"
+#~ msgstr "Calibre-Web Automated - Vollständige Konvertierungsgeschichte"
+
+#~ msgid ""
+#~ "Calibre-Web Automated - Full EPUB Fixer History (w/out Paths & Fixes)"
+#~ msgstr ""
+#~ "Calibre-Web Automated - Vollständige EPUB-Fixer-Historie (ohne Pfade und "
+#~ "Korrekturen)"
+
+#~ msgid "Calibre-Web Automated - Full EPUB Fixer History (w/ Paths & Fixes)"
+#~ msgstr ""
+#~ "Calibre-Web Automated - Vollständige EPUB-Fixer-Historie (mit Pfaden und "
+#~ "Korrekturen)"
+
+#~ msgid "Calibre-Web Automated - Convert Library"
+#~ msgstr "Calibre-Web Automated - Bibliothek konvertieren"
+
+#~ msgid "Calibre-Web Automated - EPUB Fixer Service"
+#~ msgstr "Calibre-Web Automated - EPUB-Fixer-Dienst"
+
+#~ msgid "CWA Profile Picture Management (WIP)"
+#~ msgstr "CWA-Profilbildverwaltung (Laufende Arbeiten)"
+
+#~ msgid "This Email has been sent via Calibre-Web Automated."
+#~ msgstr "Diese E-Mail wurde von Calibre-Web Automated gesendet."
+
+#~ msgid "Calibre-Web Automated Test Email"
+#~ msgstr "Calibre-Web Automated Test-E-Mail"
+
+#~ msgid "Get Started with Calibre-Web Automated"
+#~ msgstr "Loslegen mit Calibre-Web Automated"
+
+#, python-format
+#~ msgid ""
+#~ "Unsupported architecture detected: %(arch)s. CWA is optimized for x86_64 "
+#~ "and aarch64."
+#~ msgstr ""
+#~ "Nicht unterstützte Architektur erkannt: %(arch)s. CWA ist für x86_64 und "
+#~ "aarch64 optimiert."
+
+#~ msgid ""
+#~ "Please access Calibre-Web Automated from non localhost to get valid "
+#~ "api_endpoint for kobo device"
+#~ msgstr ""
+#~ "Bitte greifen Sie auf Calibre-Web Automated von einem anderen Host als "
+#~ "\"localhost\" zu, um einen gültigen API-Endpunkt für Kobo-Geräte zu "
+#~ "erhalten"
+
+#~ msgid "CWA Settings"
+#~ msgstr "CWA Einstellungen"
+
+#~ msgid "CWA Admin Functions&nbsp;&nbsp;⚡"
+#~ msgstr "CWA-Verwaltungsfunktionen&nbsp;&nbsp;⚡"
+
+#~ msgid "Show CWA Stats"
+#~ msgstr "Zeige CWA-Statistiken"
+
+#~ msgid "Check CWA Status"
+#~ msgstr "CWA-Status prüfen"
+
+#~ msgid "CWA Library Conversion Service"
+#~ msgstr "CWA Bibliotheksumwandlungsdienst"
+
+#~ msgid "CWA EPUB Fixer Service"
+#~ msgstr "CWA EPUB-Fixer-Dienst"
+
+#~ msgid "CWA GitHub"
+#~ msgstr "CWA GitHub"
+
+#~ msgid "CWA Discord Server"
+#~ msgstr "CWA Discord Server"
+
+#~ msgid ""
+#~ "CWA is configured so that your Calibre Database (<code>metadata.db</code> "
+#~ "file) should always be somewhere in <code>/calibre-library</code>.\n"
+#~ "        CWA automatically searches whatever directory you've bound to "
+#~ "<code>/calibre-library</code> in your docker-compose file for existing "
+#~ "Calibre\n"
+#~ "        Libraries/metadata.db files on start up. If it finds just one "
+#~ "existing library, it mounts it automatically, if it find multiple, by "
+#~ "default\n"
+#~ "        it will mount the largest one automatically and if it doesn't "
+#~ "find any, it will automatically create and mount a new one. For more "
+#~ "details,\n"
+#~ "        <a href=\"https://github.com/crocodilestick/Calibre-Web-Automated/"
+#~ "wiki/Configuration#database-configuration\">see here</a>!"
+#~ msgstr ""
+#~ "CWA ist so konfiguriert, dass es deine Calibre-Datenbank "
+#~ "(<code>metadata.db</code>-Datei) irgendwo in dem Pfad <code>/calibre-"
+#~ "library</code> sucht.\n"
+#~ "        CWA durchsucht automatisch das Verzeichnis, das du auf <code>/"
+#~ "calibre-library</code> in der docker-compose-Datei verbunden hast, um "
+#~ "eine existierende Calibre-\n"
+#~ "        Datenbank metadata.db-Datei beim Start zu finden. Wenn es nur "
+#~ "eine Datenbank findet, wird sie automtisch genutzt; werden mehrere "
+#~ "gefunden, wird standardmäßig\n"
+#~ "        die größte Datei automatisch gewählt und wenn gar keine gefunden "
+#~ "wird, wird automatisch eine neue erstellt und genutzt. Für mehr Details\n"
+#~ "        <a href=\"https://github.com/crocodilestick/Calibre-Web-Automated/"
+#~ "wiki/Configuration#database-configuration\">schaue hier</a>!"
+
+#~ msgid ""
+#~ "Therefore, when configuring your docker-compose file for CWA, <b>DO NOT "
+#~ "CHANGE THE PATHS IN THE VOLUMES SECTION ON THE RIGHT SIDE OF THE COLONS!</"
+#~ "b>"
+#~ msgstr ""
+#~ "Deshalb, wenn du die docker-compose-Datei für CWA konfigurierst, "
+#~ "<b>ändere nicht die Dateipfade in dem Abschnitt für Volumes auf der "
+#~ "rechten Seite des Doppelpunkts!</b>"
+
+#~ msgid ""
+#~ "These paths are internal to CWA only, you can change what they're bind to "
+#~ "to your heart's content on the left-hand side but there's no reason to\n"
+#~ "        change the paths on the right-hand side.<br><br>If you would like "
+#~ "your <code>metadata.db</code> file in a different location to the rest of "
+#~ "your\n"
+#~ "        library, use the <b>Separate Book Files from Library Option below "
+#~ "and there, enter the path to the rest of the library</b>"
+#~ msgstr ""
+#~ "Diese Dateifpade sind intern nur für CWA, du kannst sie ändern wie du "
+#~ "möchtest, aber es gibt keinen Grund, die\n"
+#~ "        die Pfade auf der rechten Seite zu ändern.<br><br>Wenn du deine "
+#~ "<code>metadata.db</code>-Datei an einem anderen Ort als deine\n"
+#~ "        Bibliothek speichern möchtest, nutze die <b>Separiere "
+#~ "Bücherdateien von der Bibliothek Option unten und dort trägst du den Pfad "
+#~ "zu dem Rest deiner Bibliothek ein</b>"
+
+#~ msgid "Enable CWA Auto-Convert"
+#~ msgstr "Aktiviere CWA Auto-Konvertierung"
+
+#~ msgid ""
+#~ "On by default, when active all ingested books will automatically be "
+#~ "converted to the target format specified below (epub by default) \n"
+#~ "        <em>EXCEPT</em> those you have specifically told CWA to ignore "
+#~ "below."
+#~ msgstr ""
+#~ "Standardmäßig aktiviert, wenn alle ingestierten Bücher automatisch in das "
+#~ "unten spezifizierte Zielformat konvertiert werden (Standard ist epub)\n"
+#~ "        <em>außer</em> denen, die du CWA unten angegeben hast, dass sie "
+#~ "ignoriert werden sollen."
+
+#~ msgid "Enable CWA Automatic Cover & Metadata Enforcement Service"
+#~ msgstr "Aktiviere CWA automatischen Cover & Metadaten Service"
+
+#~ msgid ""
+#~ "On by default, when active, whenever the Metadata and/or Cover Image is "
+#~ "edited in the Web UI, the CWA Metadata Enforcement service \n"
+#~ "        will then apply those changes the ebook files themselves. "
+#~ "Normally in Stock CW or when this setting is disabled, the changes made \n"
+#~ "        are only applied to what you see in the Web UI, not the ebook "
+#~ "files themselves. This feature currently only supports files in EPUB \n"
+#~ "        or AZW3 format."
+#~ msgstr ""
+#~ "Standardmäßig aktiviert, wenn der CWA Metadatenerzwingungsdienst aktiv "
+#~ "ist, werden immer bei Änderungen der Metadaten und/oder Cover über der "
+#~ "Web UI\n"
+#~ "        diese Änderungen in die eBook-Datei selbst geschrieben. "
+#~ "Normalerweise, im Standard-CW oder wenn diese Einstellung deaktiviert "
+#~ "ist, werden gemachte Änderungen \n"
+#~ "        nur angewandt auf das, was du in der Web UI siehst, aber nicht in "
+#~ "der eBook-Datei selbst. Dieses Feature wird im Moment nur für Dateien vom "
+#~ "Format EPUB \n"
+#~ "        oder AZW3 unterstützt."
+
+#~ msgid "Enable CWA Kindle EPUB Fixer"
+#~ msgstr "Aktiviere CWA Kindle EPUB Fixer"
+
+#~ msgid ""
+#~ "When active, the encoding among other attributes of all EPUB files "
+#~ "processed by CWA will be checked and fixed to ensure maximum \n"
+#~ "        compatibility with Amazon's Send-to-Kindle Service. This feature "
+#~ "is particularly useful for users who frequently send EPUB files to their "
+#~ "Kindle devices and have experienced issues with \n"
+#~ "        file rejections or formatting problems."
+#~ msgstr ""
+#~ "Wenn aktiv, werden die Kodierung sowie weitere Attribute aller von CWA "
+#~ "verarbeiteten EPUB-Dateien geprüft und korrigiert, um eine maximale \n"
+#~ "        Kompatibilität mit Amazons „Send-to-Kindle“-Dienst zu "
+#~ "gewährleisten. Diese Funktion ist besonders nützlich für Benutzer, die "
+#~ "häufig EPUB-Dateien an ihre Kindle-Geräte senden und dabei \n"
+#~ "        Ablehnungen der Dateien oder Formatierungsprobleme festgestellt "
+#~ "haben."
+
+#, fuzzy
+#~ msgid "Enable KOReader Sync (CWA Plugin)"
+#~ msgstr "KOReader Sync-Plugin"
+
+#~ msgid ""
+#~ "When enabled, CWA exposes the /kosync endpoints and stores KOReader-"
+#~ "compatible checksums in metadata.db for progress syncing. Requires the "
+#~ "KOReader plugin on your device."
+#~ msgstr ""
+#~ "Wenn diese Funktion aktiviert ist, stellt CWA die /kosync-Endpunkte "
+#~ "bereit und speichert KOReader-kompatible Prüfsummen in metadata.db für "
+#~ "die Fortschrittssynchronisierung. Das KOReader-Plugin muss auf Ihrem "
+#~ "Gerät installiert sein."
+
+#~ msgid ""
+#~ "When active, CWA will automatically attempt to fetch and apply metadata "
+#~ "(title, author, description, cover, etc.) for newly ingested books using "
+#~ "the configured metadata provider hierarchy. This helps improve the "
+#~ "quality of book information, especially for books with poor or missing "
+#~ "metadata."
+#~ msgstr ""
+#~ "Wenn aktiviert, versucht CWA automatisch, Metadaten (Titel, Autor, "
+#~ "Beschreibung, Cover usw.) für neu hinzugefügte Bücher abzurufen und "
+#~ "anzuwenden, wobei die konfigurierte Hierarchie der Metadaten-Anbieter "
+#~ "genutzt wird. Dies verbessert die Qualität der Buchinformationen, "
+#~ "insbesondere bei Büchern mit mangelhaften oder fehlenden Metadaten."
+
+#~ msgid ""
+#~ "You can manually trigger the Hardcover auto-fetch task from the Admin "
+#~ "panel at any time. Check the CWA Stats page to see progress and review "
+#~ "queued matches that need manual approval."
+#~ msgstr ""
+#~ "Sie können den automatischen Abruf der Hardcover-IDs jederzeit manuell "
+#~ "über den Administrationsbereich auslösen. Auf der CWA-Statistikseite "
+#~ "können Sie den Fortschritt einsehen und Treffer in der Warteschlange "
+#~ "überprüfen, die eine manuelle Freigabe erfordern."
+
+#~ msgid "Enable CWA Update Notifications"
+#~ msgstr "Aktiviere CWA Aktualisierungsbenachrichtigungen"
+
+#~ msgid ""
+#~ "When active, you will receive notifications in the Web UI when a new "
+#~ "version of CWA is released"
+#~ msgstr ""
+#~ "Wenn aktiv, erscheint in der Web-Benutzeroberfläche eine "
+#~ "Benachrichtigung, sobald eine neue Version von CWA veröffentlicht wird."
+
+#~ msgid "Enable CWA Import Auto-Backup"
+#~ msgstr "Aktiviere CWA Import Auto-Backup"
+
+#~ msgid "Enable CWA Conversion Auto-Backup"
+#~ msgstr "Aktiviere CWA Konvertierer Auto-Backup"
+
+#~ msgid "Enable CWA EPUB Fixer Auto-Backup"
+#~ msgstr "Aktiviere CWA EPUB Fixer Auto-Backup"
+
+#~ msgid ""
+#~ "When active, the originals of EPUBs processed by the CWA Kindle EPUB "
+#~ "Fixer service will be stored in /config/processed_books/fixed_originals"
+#~ msgstr ""
+#~ "Wenn es aktiviert ist, werden die Orignale der vom Kinde EPUB Fixer-"
+#~ "Dienst verarbeiteten EPUBs gespeichert unter /config/processed_books/"
+#~ "fixed_originals"
+
+#~ msgid "Enable CWA Auto-Zip Backups"
+#~ msgstr "Aktiviere CWA Auto-Zip Backups"
+
+#~ msgid "CWA Auto-Conversion Target Format - EPUB by Default"
+#~ msgstr "CWA Auto-Konvertierungszieldateiformat - Standard ist EPUB"
+
+#~ msgid ""
+#~ "Note: CWA's Metadata Enforcement service can currently only support file "
+#~ "in either EPUB and AZW3 format. Files in other formats will simply be "
+#~ "ignored by the service"
+#~ msgstr ""
+#~ "Hinweis: Der Metadatenerzwingungsdienst von CWA unterstützt derzeit nur "
+#~ "Dateien im EPUB- oder AZW3-Format. Dateien in anderen Formaten werden vom "
+#~ "Dienst einfach ignoriert."
+
+#~ msgid "CWA Auto-Convert - Ignored Formats"
+#~ msgstr "CWA Auto-Konvertierung - Ignorierte Dateiformate"
+
+#~ msgid ""
+#~ "The formats selected here will be ignored by CWA's Auto-Conversion "
+#~ "feature when it's active, meaning they will be imported as is."
+#~ msgstr ""
+#~ "Die hier ausgewählten Formate werden von CWAs Autokonvertierungsdienstes "
+#~ "ignoriert, wenn dieser aktiv ist, was bedeutet, dass sie importiert "
+#~ "werden wie sie sind."
+
+#~ msgid "CWA Auto-Convert - Retained Formats"
+#~ msgstr "CWA Auto-Konvertierung - Beibehaltene Formate"
+
+#~ msgid ""
+#~ "The formats selected here will always be added to the library, even after "
+#~ "they have been converted to the target format. However, if the format is "
+#~ "in the \"CWA Auto-Ingest - Ignored Formats\" list, it will not be "
+#~ "imported. Note that the target format is always retained."
+#~ msgstr ""
+#~ "Die hier ausgewählten Formate werden immer zur Bibliothek hinzugefügt, "
+#~ "selbst nachdem sie in das Zielformat konvertiert wurden. Wenn ein Format "
+#~ "jedoch in der Liste „CWA Auto-Ingest - Ignorierte Formate“ enthalten ist, "
+#~ "wird es nicht importiert. Beachten Sie, dass das Zielformat immer "
+#~ "beibehalten wird."
+
+#~ msgid "CWA Auto-Ingest Automerge"
+#~ msgstr "CWA Auto-Ingestierung automatisches Zusammenführen"
+
+#~ msgid "CWA Auto-Ingest - Ignored Formats"
+#~ msgstr "CWA Auto-Ingestierung - Ignorierte Dateiformate"
+
+#~ msgid ""
+#~ "The formats selected here will be ignored by CWA's Auto-Ingest feature, "
+#~ "meaning files in these formats won't be added to the library by CWA "
+#~ "during the ingest process"
+#~ msgstr ""
+#~ "Die hier gewählten Formate werden von CWAs Auto-Ingestierungs-Feature "
+#~ "ignoriert, was bedeutet, dass Dateien in diesen Formaten nicht zur "
+#~ "Bibliothek von CWA hinzugefügt werden"
+
+#~ msgid "CWA Duplicate Detection System"
+#~ msgstr "CWA Duplikaterkennungssystem"
+
+#~ msgid "When enabled, CWA will scan for duplicate books after each import"
+#~ msgstr "Wenn aktiviert, scannt CWA nach jedem Import nach Dubletten."
+
+#~ msgid "CWA Duplicate Detection Criteria"
+#~ msgstr "CWA-Duplikaterkennungskriterien"
+
+#~ msgid "CWA Duplicates Manager"
+#~ msgstr "CWA Duplikatmanager"
+
+#~ msgid ""
+#~ "Enable it in CWA Settings to activate the /kosync endpoints and checksum "
+#~ "generation."
+#~ msgstr ""
+#~ "Einschalten um den /kosync Endpunkt zu aktivieren mit Prüfsummen "
+#~ "Generierung"
+
+#, fuzzy
+#~ msgid "Open CWA Settings"
+#~ msgstr "CWA Einstellungen"
+
+#~ msgid "Download is available after enabling KOReader Sync in CWA Settings."
+#~ msgstr ""
+#~ "Download möglich wenn in den CWA Einstellungen KOReader Sync aktiviert "
+#~ "ist."
 
 #~ msgid "Sort according to book date, newest first"
 #~ msgstr "Sortiere nach Buchdatum, neueste zuerst"

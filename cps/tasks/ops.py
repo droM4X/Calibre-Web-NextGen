@@ -27,7 +27,7 @@ class TaskConvertLibraryRun(CalibreTask):
     def __init__(self):
         super(TaskConvertLibraryRun, self).__init__(N_(u"Convert Library – full run"))
         self.log_path = "/config/convert-library.log"
-        self._finished_marker = "CWA Convert Library Service - Run Ended: "
+        self._finished_marker = "NextGen Convert Library Service - Run Ended: "
 
     def run(self, worker_thread):
         # trigger run via internal route
@@ -94,7 +94,7 @@ class TaskEpubFixerRun(CalibreTask):
     def __init__(self):
         super(TaskEpubFixerRun, self).__init__(N_(u"EPUB Fixer – full run"))
         self.log_path = "/config/epub-fixer.log"
-        self._finished_marker = "CWA Kindle EPUB Fixer Service - Run Ended: "
+        self._finished_marker = "NextGen Kindle EPUB Fixer Service - Run Ended: "
 
     def run(self, worker_thread):
         # trigger run via internal route

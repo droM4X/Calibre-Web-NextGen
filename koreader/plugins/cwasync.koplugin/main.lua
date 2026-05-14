@@ -26,8 +26,8 @@ end
 
 local CWASync = WidgetContainer:extend{
     name = "cwasync",
-    title = _("Login to CWA Server"),
-    version = "4.0.54",  -- Plugin version mirrors CWNG release tag
+    title = _("Login to NextGen Server"),
+    version = "4.0.60",  -- Plugin version mirrors CWNG release tag
 
     push_timestamp = nil,
     pull_timestamp = nil,
@@ -157,7 +157,7 @@ local function ensureServerConfigured(server)
         return true
     end
     UIManager:show(InfoMessage:new{
-        text = _("Please set the CWA Server address first."),
+        text = _("Please set the NextGen Server address first."),
         timeout = 3,
     })
     return false
@@ -212,15 +212,15 @@ end
 
 function CWASync:addToMainMenu(menu_items)
     menu_items.cwa_progress_sync = {
-        text = _("CWA Progress Sync"),
+        text = _("NextGen Progress Sync"),
         sub_item_table = {
             {
-                text = _("Set CWA Server"),
+                text = _("Set NextGen Server"),
                 keep_menu_open = true,
                 tap_input_func = function()
                     return {
                         -- @translators Server address defined by user for progress sync.
-                        title = _("CWA Server Address"),
+                        title = _("NextGen Server Address"),
                         input = self.settings.server or "https://",
                         callback = function(input)
                             self:setServer(input)
@@ -400,7 +400,7 @@ If set to 0, updating progress based on page turns will be disabled.]]),
                 keep_menu_open = true,
                 callback = function()
                     UIManager:show(InfoMessage:new{
-                        text = T(_("CWA Progress Sync Plugin\nVersion: %1\n\nThis plugin syncs your reading progress to Calibre-Web Automated."), self.version),
+                        text = T(_("NextGen Progress Sync Plugin\nVersion: %1\n\nThis plugin syncs your reading progress to Calibre-Web NextGen."), self.version),
                     })
                 end,
             },
@@ -513,7 +513,7 @@ function CWASync:doLogin(username, password, menu)
             menu:updateItems()
         end
         UIManager:show(InfoMessage:new{
-            text = _("Logged in to CWA server."),
+            text = _("Logged in to NextGen server."),
         })
     else
         UIManager:show(InfoMessage:new{

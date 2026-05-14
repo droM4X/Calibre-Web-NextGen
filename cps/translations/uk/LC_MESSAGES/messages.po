@@ -4,10 +4,10 @@
 # ABIS Team <biblio.if.abis@gmail.com>, 2018.
 msgid ""
 msgstr ""
-"Project-Id-Version:  Calibre-Web Automated\n"
-"Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
-"Automated\n"
-"POT-Creation-Date: 2026-05-14 13:25+0000\n"
+"Project-Id-Version: Calibre-Web NextGen\n"
+"Report-Msgid-Bugs-To: https://github.com/new-usemame/Calibre-Web-NextGen/"
+"issues\n"
+"POT-Creation-Date: 2026-05-14 09:43-0400\n"
 "PO-Revision-Date: 2017-04-30 00:47+0300\n"
 "Last-Translator: ABIS Team <biblio.if.abis@gmail.com>\n"
 "Language-Team: \n"
@@ -214,9 +214,8 @@ msgid "Invalid Restricted Column"
 msgstr ""
 
 #: cps/admin.py:942 cps/admin.py:2508
-#, fuzzy
-msgid "Calibre-Web Automated configuration updated"
-msgstr "Папка Calibre DB"
+msgid "Calibre-Web NextGen configuration updated"
+msgstr ""
 
 #: cps/admin.py:954
 msgid "Do you really want to delete the Kobo Token?"
@@ -281,14 +280,14 @@ msgstr "Ви справді хочете видалити книжкову по�
 
 #: cps/admin.py:979
 msgid ""
-"Calibre-Web Automated will search for updated Covers and update Cover "
+"Calibre-Web NextGen will search for updated Covers and update Cover "
 "Thumbnails, this may take a while?"
 msgstr ""
 
 #: cps/admin.py:982
 msgid ""
-"Are you sure you want delete Calibre-Web Automated's sync database to force "
-"a full sync with your Kobo Reader?"
+"Are you sure you want delete Calibre-Web NextGen's sync database to force a "
+"full sync with your Kobo Reader?"
 msgstr ""
 
 #: cps/admin.py:1221 cps/admin.py:1227 cps/admin.py:1237 cps/admin.py:1247
@@ -936,7 +935,7 @@ msgid "Invalid cron expression for duplicate scans. Changes were not saved."
 msgstr ""
 
 #: cps/cwa_functions.py:913
-msgid "Calibre-Web Automated User Settings"
+msgid "Calibre-Web NextGen User Settings"
 msgstr ""
 
 #: cps/cwa_functions.py:959 cps/cwa_functions.py:961 cps/cwa_functions.py:965
@@ -1006,32 +1005,31 @@ msgid "Unknown User"
 msgstr "Невідомий"
 
 #: cps/cwa_functions.py:1185
-#, fuzzy
-msgid "Calibre-Web Automated Stats & Activity"
-msgstr "Зберегти налаштування і відправити тестове повідомлення"
+msgid "Calibre-Web NextGen Stats & Activity"
+msgstr ""
 
 #: cps/cwa_functions.py:1569
-msgid "Calibre-Web Automated - Full Enforcement History"
+msgid "Calibre-Web NextGen - Full Enforcement History"
 msgstr ""
 
 #: cps/cwa_functions.py:1578
-msgid "Calibre-Web Automated - Full Enforcement History (w/ Paths)"
+msgid "Calibre-Web NextGen - Full Enforcement History (w/ Paths)"
 msgstr ""
 
 #: cps/cwa_functions.py:1587
-msgid "Calibre-Web Automated - Full Import History"
+msgid "Calibre-Web NextGen - Full Import History"
 msgstr ""
 
 #: cps/cwa_functions.py:1596
-msgid "Calibre-Web Automated - Full Conversion History"
+msgid "Calibre-Web NextGen - Full Conversion History"
 msgstr ""
 
 #: cps/cwa_functions.py:1605
-msgid "Calibre-Web Automated - Full EPUB Fixer History (w/out Paths & Fixes)"
+msgid "Calibre-Web NextGen - Full EPUB Fixer History (w/out Paths & Fixes)"
 msgstr ""
 
 #: cps/cwa_functions.py:1614
-msgid "Calibre-Web Automated - Full EPUB Fixer History (w/ Paths & Fixes)"
+msgid "Calibre-Web NextGen - Full EPUB Fixer History (w/ Paths & Fixes)"
 msgstr ""
 
 #: cps/cwa_functions.py:1632
@@ -1058,13 +1056,12 @@ msgid "An Error has occurred"
 msgstr ""
 
 #: cps/cwa_functions.py:1817 cps/cwa_functions.py:1845
-msgid "Calibre-Web Automated - Convert Library"
+msgid "Calibre-Web NextGen - Convert Library"
 msgstr ""
 
 #: cps/cwa_functions.py:1971 cps/cwa_functions.py:1997
-#, fuzzy
-msgid "Calibre-Web Automated - EPUB Fixer Service"
-msgstr "Зберегти налаштування і відправити тестове повідомлення"
+msgid "Calibre-Web NextGen - EPUB Fixer Service"
+msgstr ""
 
 #: cps/cwa_functions.py:2055
 msgid "Single-book EPUB Fixer is not supported with Google Drive libraries."
@@ -1135,7 +1132,7 @@ msgid "Profile picture updated successfully."
 msgstr "{} користувачі видалені успішно"
 
 #: cps/cwa_functions.py:2234
-msgid "CWA Profile Picture Management (WIP)"
+msgid "Calibre-Web NextGen Profile Picture Management (WIP)"
 msgstr ""
 
 #: cps/db.py:1333 cps/templates/config_edit.html:333
@@ -1363,13 +1360,12 @@ msgid "Send to eReader"
 msgstr "Відправити на Kindle"
 
 #: cps/helper.py:104 cps/helper.py:124 cps/helper.py:237
-msgid "This Email has been sent via Calibre-Web Automated."
+msgid "This Email has been sent via Calibre-Web NextGen."
 msgstr ""
 
 #: cps/helper.py:122
-#, fuzzy
-msgid "Calibre-Web Automated Test Email"
-msgstr "Зберегти налаштування і відправити тестове повідомлення"
+msgid "Calibre-Web NextGen Test Email"
+msgstr ""
 
 #: cps/helper.py:123
 #, fuzzy
@@ -1377,7 +1373,7 @@ msgid "Test Email"
 msgstr "Kindle"
 
 #: cps/helper.py:140
-msgid "Get Started with Calibre-Web Automated"
+msgid "Get Started with Calibre-Web NextGen"
 msgstr ""
 
 #: cps/helper.py:145
@@ -1524,8 +1520,8 @@ msgstr ""
 #: cps/helper.py:1439
 #, python-format
 msgid ""
-"Unsupported architecture detected: %(arch)s. CWA is optimized for x86_64 and "
-"aarch64."
+"Unsupported architecture detected: %(arch)s. Calibre-Web NextGen is "
+"optimized for x86_64 and aarch64."
 msgstr ""
 
 #: cps/helper.py:1448
@@ -1560,7 +1556,7 @@ msgstr ""
 
 #: cps/kobo_auth.py:88
 msgid ""
-"Please access Calibre-Web Automated from non localhost to get valid "
+"Please access Calibre-Web NextGen from non localhost to get valid "
 "api_endpoint for kobo device"
 msgstr ""
 
@@ -3052,9 +3048,8 @@ msgid "Reverse Proxy Header Name"
 msgstr ""
 
 #: cps/templates/admin.html:164
-#, fuzzy
-msgid "CWA Settings"
-msgstr "Налаштування"
+msgid "NextGen Settings"
+msgstr ""
 
 #: cps/templates/admin.html:165
 #, fuzzy
@@ -3109,16 +3104,15 @@ msgid "Refresh Thumbnail Cache"
 msgstr ""
 
 #: cps/templates/admin.html:208
-msgid "CWA Admin Functions&nbsp;&nbsp;⚡"
+msgid "NextGen Admin Functions&nbsp;&nbsp;⚡"
 msgstr ""
 
 #: cps/templates/admin.html:209
-#, fuzzy
-msgid "Show CWA Stats"
-msgstr "Налаштування"
+msgid "Show NextGen Stats"
+msgstr ""
 
 #: cps/templates/admin.html:210
-msgid "Check CWA Status"
+msgid "Check NextGen Status"
 msgstr ""
 
 #: cps/templates/admin.html:211
@@ -3126,22 +3120,20 @@ msgid "Setup KOReader Sync"
 msgstr ""
 
 #: cps/templates/admin.html:214
-msgid "CWA Library Conversion Service"
+msgid "NextGen Library Conversion Service"
 msgstr ""
 
 #: cps/templates/admin.html:215
-#, fuzzy
-msgid "CWA EPUB Fixer Service"
-msgstr "Огляд"
+msgid "NextGen EPUB Fixer Service"
+msgstr ""
 
 #: cps/templates/admin.html:218
-msgid "CWA GitHub"
+msgid "NextGen GitHub"
 msgstr ""
 
 #: cps/templates/admin.html:219
-#, fuzzy
-msgid "CWA Discord Server"
-msgstr "Огляд"
+msgid "NextGen Discord Server"
+msgstr ""
 
 #: cps/templates/admin.html:222
 msgid "Run Hardcover Auto-Fetch"
@@ -3708,10 +3700,11 @@ msgstr "Розташування БД Calibre"
 
 #: cps/templates/config_db.html:48
 msgid ""
-"CWA is configured so that your Calibre Database (<code>metadata.db</code> "
-"file) should always be somewhere in <code>/calibre-library</code>.\n"
-"        CWA automatically searches whatever directory you've bound to <code>/"
-"calibre-library</code> in your docker-compose file for existing Calibre\n"
+"NextGen is configured so that your Calibre Database (<code>metadata.db</"
+"code> file) should always be somewhere in <code>/calibre-library</code>.\n"
+"        NextGen automatically searches whatever directory you've bound to "
+"<code>/calibre-library</code> in your docker-compose file for existing "
+"Calibre\n"
 "        Libraries/metadata.db files on start up. If it finds just one "
 "existing library, it mounts it automatically, if it find multiple, by "
 "default\n"
@@ -3723,14 +3716,14 @@ msgstr ""
 
 #: cps/templates/config_db.html:54
 msgid ""
-"Therefore, when configuring your docker-compose file for CWA, <b>DO NOT "
+"Therefore, when configuring your docker-compose file for NextGen, <b>DO NOT "
 "CHANGE THE PATHS IN THE VOLUMES SECTION ON THE RIGHT SIDE OF THE COLONS!</b>"
 msgstr ""
 
 #: cps/templates/config_db.html:55
 msgid ""
-"These paths are internal to CWA only, you can change what they're bind to to "
-"your heart's content on the left-hand side but there's no reason to\n"
+"These paths are internal to NextGen only, you can change what they're bind "
+"to to your heart's content on the left-hand side but there's no reason to\n"
 "        change the paths on the right-hand side.<br><br>If you would like "
 "your <code>metadata.db</code> file in a different location to the rest of "
 "your\n"
@@ -4865,24 +4858,25 @@ msgid "Enable/Disable Calibre-Web NextGen Services"
 msgstr "Зберегти налаштування і відправити тестове повідомлення"
 
 #: cps/templates/cwa_settings.html:143
-msgid "Enable CWA Auto-Convert"
+msgid "Enable NextGen Auto-Convert"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:145
 msgid ""
 "On by default, when active all ingested books will automatically be "
 "converted to the target format specified below (epub by default) \n"
-"        <em>EXCEPT</em> those you have specifically told CWA to ignore below."
+"        <em>EXCEPT</em> those you have specifically told NextGen to ignore "
+"below."
 msgstr ""
 
 #: cps/templates/cwa_settings.html:154
-msgid "Enable CWA Automatic Cover & Metadata Enforcement Service"
+msgid "Enable NextGen Automatic Cover & Metadata Enforcement Service"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:156
 msgid ""
 "On by default, when active, whenever the Metadata and/or Cover Image is "
-"edited in the Web UI, the CWA Metadata Enforcement service \n"
+"edited in the Web UI, the NextGen Metadata Enforcement service \n"
 "        will then apply those changes the ebook files themselves. Normally "
 "in Stock CW or when this setting is disabled, the changes made \n"
 "        are only applied to what you see in the Web UI, not the ebook files "
@@ -4891,13 +4885,13 @@ msgid ""
 msgstr ""
 
 #: cps/templates/cwa_settings.html:167
-msgid "Enable CWA Kindle EPUB Fixer"
+msgid "Enable NextGen Kindle EPUB Fixer"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:169
 msgid ""
 "When active, the encoding among other attributes of all EPUB files processed "
-"by CWA will be checked and fixed to ensure maximum \n"
+"by NextGen will be checked and fixed to ensure maximum \n"
 "        compatibility with Amazon's Send-to-Kindle Service. This feature is "
 "particularly useful for users who frequently send EPUB files to their Kindle "
 "devices and have experienced issues with \n"
@@ -4912,12 +4906,12 @@ msgid ""
 msgstr ""
 
 #: cps/templates/cwa_settings.html:181
-msgid "Enable KOReader Sync (CWA Plugin)"
+msgid "Enable KOReader Sync (NextGen Plugin)"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:183
 msgid ""
-"When enabled, CWA exposes the /kosync endpoints and stores KOReader-"
+"When enabled, NextGen exposes the /kosync endpoints and stores KOReader-"
 "compatible checksums in metadata.db for progress syncing. Requires the "
 "KOReader plugin on your device."
 msgstr ""
@@ -5061,7 +5055,7 @@ msgstr ""
 
 #: cps/templates/cwa_settings.html:304
 msgid ""
-"When active, CWA will automatically attempt to fetch and apply metadata "
+"When active, NextGen will automatically attempt to fetch and apply metadata "
 "(title, author, description, cover, etc.) for newly ingested books using the "
 "configured metadata provider hierarchy. This helps improve the quality of "
 "book information, especially for books with poor or missing metadata."
@@ -5313,7 +5307,7 @@ msgstr ""
 #: cps/templates/cwa_settings.html:731
 msgid ""
 "You can manually trigger the Hardcover auto-fetch task from the Admin panel "
-"at any time. Check the CWA Stats page to see progress and review queued "
+"at any time. Check the NextGen Stats page to see progress and review queued "
 "matches that need manual approval."
 msgstr ""
 
@@ -5323,13 +5317,13 @@ msgid "Web UI Settings"
 msgstr "Налаштування"
 
 #: cps/templates/cwa_settings.html:745
-msgid "Enable CWA Update Notifications"
+msgid "Enable NextGen Update Notifications"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:747
 msgid ""
 "When active, you will receive notifications in the Web UI when a new version "
-"of CWA is released"
+"of NextGen is released"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:755
@@ -5369,7 +5363,7 @@ msgid "Automatic Backup Settings"
 msgstr "Налаштування OAuth"
 
 #: cps/templates/cwa_settings.html:789
-msgid "Enable CWA Import Auto-Backup"
+msgid "Enable NextGen Import Auto-Backup"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:791
@@ -5379,7 +5373,7 @@ msgid ""
 msgstr ""
 
 #: cps/templates/cwa_settings.html:799
-msgid "Enable CWA Conversion Auto-Backup"
+msgid "Enable NextGen Conversion Auto-Backup"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:801
@@ -5389,17 +5383,17 @@ msgid ""
 msgstr ""
 
 #: cps/templates/cwa_settings.html:809
-msgid "Enable CWA EPUB Fixer Auto-Backup"
+msgid "Enable NextGen EPUB Fixer Auto-Backup"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:811
 msgid ""
-"When active, the originals of EPUBs processed by the CWA Kindle EPUB Fixer "
-"service will be stored in /config/processed_books/fixed_originals"
+"When active, the originals of EPUBs processed by the NextGen Kindle EPUB "
+"Fixer service will be stored in /config/processed_books/fixed_originals"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:821
-msgid "Enable CWA Auto-Zip Backups"
+msgid "Enable NextGen Auto-Zip Backups"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:823
@@ -5411,7 +5405,7 @@ msgid ""
 msgstr ""
 
 #: cps/templates/cwa_settings.html:828
-msgid "CWA Auto-Conversion Target Format - EPUB by Default"
+msgid "NextGen Auto-Conversion Target Format - EPUB by Default"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:831
@@ -5428,35 +5422,35 @@ msgstr "Конвертувати книгу"
 
 #: cps/templates/cwa_settings.html:845
 msgid ""
-"Note: CWA's Metadata Enforcement service can currently only support file in "
-"either EPUB and AZW3 format. Files in other formats will simply be ignored "
-"by the service"
+"Note: NextGen's Metadata Enforcement service can currently only support file "
+"in either EPUB and AZW3 format. Files in other formats will simply be "
+"ignored by the service"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:851
-msgid "CWA Auto-Convert - Ignored Formats"
+msgid "NextGen Auto-Convert - Ignored Formats"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:853
 msgid ""
-"The formats selected here will be ignored by CWA's Auto-Conversion feature "
-"when it's active, meaning they will be imported as is."
+"The formats selected here will be ignored by NextGen's Auto-Conversion "
+"feature when it's active, meaning they will be imported as is."
 msgstr ""
 
 #: cps/templates/cwa_settings.html:878
-msgid "CWA Auto-Convert - Retained Formats"
+msgid "NextGen Auto-Convert - Retained Formats"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:880
 msgid ""
 "The formats selected here will always be added to the library, even after "
 "they have been converted to the target format. However, if the format is in "
-"the \"CWA Auto-Ingest - Ignored Formats\" list, it will not be imported. "
+"the \"NextGen Auto-Ingest - Ignored Formats\" list, it will not be imported. "
 "Note that the target format is always retained."
 msgstr ""
 
 #: cps/templates/cwa_settings.html:907
-msgid "CWA Auto-Ingest Automerge"
+msgid "NextGen Auto-Ingest Automerge"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:910
@@ -5486,18 +5480,18 @@ msgid "Creates a duplicate record, keeping both copies"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:943
-msgid "CWA Auto-Ingest - Ignored Formats"
+msgid "NextGen Auto-Ingest - Ignored Formats"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:945
 msgid ""
-"The formats selected here will be ignored by CWA's Auto-Ingest feature, "
-"meaning files in these formats won't be added to the library by CWA during "
-"the ingest process"
+"The formats selected here will be ignored by NextGen's Auto-Ingest feature, "
+"meaning files in these formats won't be added to the library by NextGen "
+"during the ingest process"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:970
-msgid "CWA Duplicate Detection System"
+msgid "NextGen Duplicate Detection System"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:973
@@ -5512,7 +5506,7 @@ msgid "Enable Duplicate Detection"
 msgstr "Дозволити публічну реєстрацію"
 
 #: cps/templates/cwa_settings.html:982
-msgid "When enabled, CWA will scan for duplicate books after each import"
+msgid "When enabled, NextGen will scan for duplicate books after each import"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:990
@@ -5593,7 +5587,7 @@ msgid "Next scheduled scan:"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:1076
-msgid "CWA Duplicate Detection Criteria"
+msgid "NextGen Duplicate Detection Criteria"
 msgstr ""
 
 #: cps/templates/cwa_settings.html:1079
@@ -5988,7 +5982,7 @@ msgid "Failed to update shelves"
 msgstr ""
 
 #: cps/templates/duplicates.html:365
-msgid "CWA Duplicates Manager"
+msgid "NextGen Duplicates Manager"
 msgstr ""
 
 #: cps/templates/duplicates.html:367
@@ -6456,17 +6450,16 @@ msgstr ""
 
 #: cps/templates/kosync_plugin.html:113
 msgid ""
-"Enable it in CWA Settings to activate the /kosync endpoints and checksum "
+"Enable it in NextGen Settings to activate the /kosync endpoints and checksum "
 "generation."
 msgstr ""
 
 #: cps/templates/kosync_plugin.html:115
-#, fuzzy
-msgid "Open CWA Settings"
-msgstr "Налаштування"
+msgid "Open NextGen Settings"
+msgstr ""
 
 #: cps/templates/kosync_plugin.html:139
-msgid "Download is available after enabling KOReader Sync in CWA Settings."
+msgid "Download is available after enabling KOReader Sync in NextGen Settings."
 msgstr ""
 
 #: cps/templates/layout.html:119 cps/templates/login.html:51
@@ -7774,6 +7767,42 @@ msgstr ""
 #, fuzzy
 msgid "Show Read/Unread Section"
 msgstr "Показувати вибір серії"
+
+#, fuzzy
+#~ msgid "Calibre-Web Automated configuration updated"
+#~ msgstr "Папка Calibre DB"
+
+#, fuzzy
+#~ msgid "Calibre-Web Automated Stats & Activity"
+#~ msgstr "Зберегти налаштування і відправити тестове повідомлення"
+
+#, fuzzy
+#~ msgid "Calibre-Web Automated - EPUB Fixer Service"
+#~ msgstr "Зберегти налаштування і відправити тестове повідомлення"
+
+#, fuzzy
+#~ msgid "Calibre-Web Automated Test Email"
+#~ msgstr "Зберегти налаштування і відправити тестове повідомлення"
+
+#, fuzzy
+#~ msgid "CWA Settings"
+#~ msgstr "Налаштування"
+
+#, fuzzy
+#~ msgid "Show CWA Stats"
+#~ msgstr "Налаштування"
+
+#, fuzzy
+#~ msgid "CWA EPUB Fixer Service"
+#~ msgstr "Огляд"
+
+#, fuzzy
+#~ msgid "CWA Discord Server"
+#~ msgstr "Огляд"
+
+#, fuzzy
+#~ msgid "Open CWA Settings"
+#~ msgstr "Налаштування"
 
 #~ msgid "Standard Theme"
 #~ msgstr "Стандартна тема"

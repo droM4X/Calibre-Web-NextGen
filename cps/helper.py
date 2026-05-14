@@ -101,7 +101,7 @@ def convert_book_format(book_id, calibre_path, old_book_format, new_book_format,
         if not subject or not subject.strip():
             subject = _('Send to eReader')
         settings['subject'] = subject
-        settings['body'] = _('This Email has been sent via Calibre-Web Automated.')
+        settings['body'] = _('This Email has been sent via Calibre-Web NextGen.')
     else:
         settings = dict()
     link = '<a href="{}">{}</a>'.format(url_for('web.show_book', book_id=book.id), escape(book.title))  # prevent xss
@@ -119,9 +119,9 @@ def convert_book_format(book_id, calibre_path, old_book_format, new_book_format,
 def send_test_mail(ereader_mail, user_name):
     for email in ereader_mail.split(','):
         email = strip_whitespaces(email)
-        WorkerThread.add(user_name, TaskEmail(_('Calibre-Web Automated Test Email'), None, None,
+        WorkerThread.add(user_name, TaskEmail(_('Calibre-Web NextGen Test Email'), None, None,
                          config.get_mail_settings(), email, N_("Test Email"),
-                                              _('This Email has been sent via Calibre-Web Automated.')))
+                                              _('This Email has been sent via Calibre-Web NextGen.')))
     return
 
 
@@ -129,15 +129,15 @@ def send_test_mail(ereader_mail, user_name):
 def send_registration_mail(e_mail, user_name, default_password, resend=False):
     txt = "Hi %s!\r\n" % user_name
     if not resend:
-        txt += "Your account at Calibre-Web Automated has been created.\r\n"
+        txt += "Your account at Calibre-Web NextGen has been created.\r\n"
     txt += "Please log in using the following information:\r\n"
     txt += "Username: %s\r\n" % user_name
     txt += "Password: %s\r\n" % default_password
     txt += "Don't forget to change your password after your first login.\r\n"
     txt += "Regards,\r\n\r\n"
-    txt += "Calibre-Web Automated"
+    txt += "Calibre-Web NextGen"
     WorkerThread.add(None, TaskEmail(
-        subject=_('Get Started with Calibre-Web Automated'),
+        subject=_('Get Started with Calibre-Web NextGen'),
         filepath=None,
         attachment=None,
         settings=config.get_mail_settings(),
@@ -234,7 +234,7 @@ def send_mail(book_id, book_format, convert, ereader_mail, calibrepath, user_id,
                 email = strip_whitespaces(email)
                 WorkerThread.add(user_id, TaskEmail(subject, book.path, converted_file_name,
                                                     config.get_mail_settings(), email,
-                                                    email_text, _('This Email has been sent via Calibre-Web Automated.'), book.id))
+                                                    email_text, _('This Email has been sent via Calibre-Web NextGen.'), book.id))
             return None
     return _("The requested file could not be read. Maybe wrong permissions?")
 
@@ -1436,7 +1436,7 @@ def check_unrar(unrar_location):
 def check_architecture():
     arch = platform.machine()
     if arch not in ['x86_64', 'aarch64']:
-        return _("Unsupported architecture detected: %(arch)s. CWA is optimized for x86_64 and aarch64.", arch=arch)
+        return _("Unsupported architecture detected: %(arch)s. Calibre-Web NextGen is optimized for x86_64 and aarch64.", arch=arch)
     return None
 
 

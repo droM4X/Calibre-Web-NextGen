@@ -6,7 +6,7 @@
 # See CONTRIBUTORS for full list of authors.
 
 """
-OAuth Integration for Calibre-Web Automated
+OAuth Integration for Calibre-Web NextGen
 
 This module handles OAuth/OIDC authentication for GitHub, Google, and generic OIDC providers.
 

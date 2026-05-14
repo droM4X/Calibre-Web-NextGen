@@ -111,7 +111,7 @@ def print_and_log(string, log=True) -> None:
 
 def exit_if_cancelled() -> None:
     if os.path.exists(KILL_TRIGGER_PATH):
-        print_and_log(f"CWA EPUB FIXER PROCESS TERMINATED BY USER AT {datetime.now()}")
+        print_and_log(f"NextGen EPUB FIXER PROCESS TERMINATED BY USER AT {datetime.now()}")
         try:
             os.remove(KILL_TRIGGER_PATH)
         except FileNotFoundError:
@@ -127,7 +127,7 @@ try:
     lock.close()
 except FileExistsError:
     print_and_log("[cwa-kindle-epub-fixer] CANCELLING... kindle-epub-fixer was initiated but is already running")
-    logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}")
+    logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}")
     sys.exit(2)
 
 # Defining function to delete the lock on script exit
@@ -1165,30 +1165,30 @@ def main():
     parser.add_argument('--all', '-a', required=False, default=False, action='store_true', help='Will attempt to fix any issues in every EPUB in th user\'s library')
 
     args = parser.parse_args()
-    # logger.info(f"CWA Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
+    # logger.info(f"NextGen Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
 
     ### CATCH INCOMPATIBLE COMBINATIONS OF ARGUMENTS
     if not args.input_file and not args.all:
         print("[cwa-kindle-epub-fixer] ERROR - No file provided")
-        # logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+        # logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
         sys.exit(4)
     elif args.all and args.input_file:
         print("[cwa-kindle-epub-fixer] ERROR - Can't give all and a filepath at the same time")
-        # logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+        # logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
         sys.exit(5)
 
     ### INPUT_FILE PROVIDED
     elif args.input_file and not args.all:
-        logger.info(f"CWA Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
+        logger.info(f"NextGen Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
         exit_if_cancelled()
         # Validate input file
         if not Path(args.input_file).exists():
             print(f"[cwa-kindle-epub-fixer] ERROR - Given file {args.input_file} does not exist")
-            logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+            logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
             sys.exit(3)
         if not args.input_file.lower().endswith('.epub'):
             print("[cwa-kindle-epub-fixer] ERROR - The input file must be an EPUB file with a .epub extension.")
-            logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+            logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
             sys.exit(1)
         # Determine output path
         if args.output:
@@ -1205,14 +1205,14 @@ def main():
             EPUBFixer(manually_triggered=True).process(args.input_file, output_path, args.language)
         except Exception as e:
             print(f"[cwa-kindle-epub-fixer] ERROR - Error processing {args.input_file}: {e}")
-            logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+            logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
             sys.exit(6)
-        logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+        logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
         sys.exit(0)
 
     ### ALL PASSED AS ARGUMENT
     elif args.all and not args.input_file:
-        logger.info(f"CWA Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
+        logger.info(f"NextGen Kindle EPUB Fixer Service - Run Started: {datetime.now()}\n")
         print_and_log("[cwa-kindle-epub-fixer] Processing all epubs in library...")
         exit_if_cancelled()
         epubs_to_process = get_all_epubs_in_library()
@@ -1239,7 +1239,7 @@ def main():
                 print_and_log(f"\n[cwa-kindle-epub-fixer] All {len(epubs_to_process)} EPUBs in Library successfully processed! Exiting now...")
         else:
             print_and_log("[cwa-kindle-epub-fixer] No EPUBs found to process. Exiting now...")
-        logger.info(f"\nCWA Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
+        logger.info(f"\nNextGen Kindle EPUB Fixer Service - Run Ended: {datetime.now()}\n")
         sys.exit(0)
 
 
