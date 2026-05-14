@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version:  Calibre-Web Automated\n"
 "Report-Msgid-Bugs-To: https://github.com/crocodilestick/Calibre-Web-"
 "Automated\n"
-"POT-Creation-Date: 2026-05-14 10:59+0000\n"
+"POT-Creation-Date: 2026-05-14 13:25+0000\n"
 "PO-Revision-Date: 2020-04-29 01:20+0400\n"
 "Last-Translator: ZIZA\n"
 "Language-Team: \n"
@@ -132,7 +132,7 @@ msgstr "Основные настройки"
 msgid "UI Configuration"
 msgstr "Настройка интерфейса"
 
-#: cps/admin.py:645 cps/admin.py:1332 cps/db.py:1026 cps/search.py:153
+#: cps/admin.py:645 cps/admin.py:1332 cps/db.py:1039 cps/search.py:153
 #: cps/web.py:553 cps/web.py:883
 #, python-format
 msgid "Custom Column No.%(column)d does not exist in calibre database"
@@ -143,7 +143,7 @@ msgstr "Пользовательский столбец №%(column)d отсут
 msgid "Edit Users"
 msgstr "Редактирование пользователей"
 
-#: cps/admin.py:707 cps/opds.py:1035 cps/templates/grid.html:14
+#: cps/admin.py:707 cps/opds.py:1094 cps/templates/grid.html:14
 #: cps/templates/list.html:19
 msgid "All"
 msgstr "Все"
@@ -474,7 +474,7 @@ msgstr "Неизвестная ошибка. Пожалуйста, попроб�
 msgid "Settings DB is not Writeable"
 msgstr "База данных настроек недоступна для записи"
 
-#: cps/admin.py:1873 cps/opds.py:275 cps/web.py:2703 cps/web.py:2828
+#: cps/admin.py:1873 cps/opds.py:309 cps/web.py:2703 cps/web.py:2828
 #, fuzzy
 msgid "title"
 msgstr "Название"
@@ -1197,7 +1197,7 @@ msgstr "Изображение профиля успешно обновлено.
 msgid "CWA Profile Picture Management (WIP)"
 msgstr "Управление изображениями профиля CWA (в разработке)"
 
-#: cps/db.py:1320 cps/templates/config_edit.html:333
+#: cps/db.py:1333 cps/templates/config_edit.html:333
 #: cps/templates/config_view_edit.html:79
 #: cps/templates/config_view_edit.html:90 cps/templates/email_edit.html:41
 #: cps/web.py:696 cps/web.py:730 cps/web.py:775 cps/web.py:815 cps/web.py:844
@@ -1832,85 +1832,85 @@ msgstr "Ошибка Google Oauth: {}"
 msgid "OAuth error: {}"
 msgstr "Ошибка GitHub Oauth: {}"
 
-#: cps/opds.py:129
+#: cps/opds.py:163
 msgid "Alphabetical Books"
 msgstr "Книги по алфавиту"
 
-#: cps/opds.py:130
+#: cps/opds.py:164
 msgid "Books sorted alphabetically"
 msgstr "Книги, отсортированные по алфавиту"
 
-#: cps/opds.py:135 cps/render_template.py:43
+#: cps/opds.py:169 cps/render_template.py:43
 msgid "Hot Books"
 msgstr "Популярные книги"
 
-#: cps/opds.py:136
+#: cps/opds.py:170
 msgid "Popular publications from this catalog based on Downloads."
 msgstr "Популярные публикации из этого каталога на основе загрузок."
 
-#: cps/opds.py:141 cps/render_template.py:57 cps/web.py:538
+#: cps/opds.py:175 cps/render_template.py:57 cps/web.py:538
 msgid "Top Rated Books"
 msgstr "Книги с наивысшим рейтингом"
 
-#: cps/opds.py:142
+#: cps/opds.py:176
 msgid "Popular publications from this catalog based on Rating."
 msgstr "Популярные публикации из этого каталога на основе рейтинга."
 
-#: cps/opds.py:147
+#: cps/opds.py:181
 #, fuzzy
 msgid "Recently added Books"
 msgstr "Загруженные книги"
 
-#: cps/opds.py:148
+#: cps/opds.py:182
 msgid "The latest Books"
 msgstr "Последние книги"
 
-#: cps/opds.py:153
+#: cps/opds.py:187
 msgid "Random Books"
 msgstr "Случайные книги"
 
-#: cps/opds.py:154 cps/render_template.py:69 cps/templates/user_table.html:161
+#: cps/opds.py:188 cps/render_template.py:69 cps/templates/user_table.html:161
 #: cps/templates/user_table.html:164
 msgid "Show Random Books"
 msgstr "Показать случайные книги"
 
-#: cps/opds.py:159 cps/opds.py:160 cps/render_template.py:60 cps/web.py:903
+#: cps/opds.py:193 cps/opds.py:194 cps/render_template.py:60 cps/web.py:903
 msgid "Read Books"
 msgstr "Прочитанные книги"
 
-#: cps/opds.py:165 cps/opds.py:166 cps/render_template.py:64 cps/web.py:906
+#: cps/opds.py:199 cps/opds.py:200 cps/render_template.py:64 cps/web.py:906
 msgid "Unread Books"
 msgstr "Непрочитанные книги"
 
-#: cps/opds.py:171 cps/render_template.py:76 cps/templates/book_table.html:105
+#: cps/opds.py:205 cps/render_template.py:76 cps/templates/book_table.html:105
 #: cps/templates/cwa_settings.html:334 cps/templates/cwa_settings.html:336
 #: cps/templates/hardcover_review_matches.html:134
 msgid "Authors"
 msgstr "Авторы"
 
-#: cps/opds.py:172
+#: cps/opds.py:206
 msgid "Books ordered by Author"
 msgstr "Книги, упорядоченные по автору"
 
-#: cps/opds.py:177 cps/render_template.py:80 cps/templates/book_table.html:111
+#: cps/opds.py:211 cps/render_template.py:80 cps/templates/book_table.html:111
 #: cps/web.py:1706
 msgid "Publishers"
 msgstr "Издатели"
 
-#: cps/opds.py:178
+#: cps/opds.py:212
 msgid "Books ordered by publisher"
 msgstr "Книги, упорядоченные по издателю"
 
-#: cps/opds.py:183 cps/render_template.py:70 cps/templates/book_table.html:106
+#: cps/opds.py:217 cps/render_template.py:70 cps/templates/book_table.html:106
 #: cps/web.py:1858
 msgid "Categories"
 msgstr "Категории"
 
-#: cps/opds.py:184
+#: cps/opds.py:218
 msgid "Books ordered by category"
 msgstr "Книги, упорядоченные по категории"
 
-#: cps/opds.py:189 cps/render_template.py:73 cps/templates/book_edit.html:98
+#: cps/opds.py:223 cps/render_template.py:73 cps/templates/book_edit.html:98
 #: cps/templates/book_table.html:107 cps/templates/cwa_settings.html:362
 #: cps/templates/cwa_settings.html:364 cps/templates/cwa_settings.html:1103
 #: cps/templates/hardcover_review_matches.html:140
@@ -1918,61 +1918,61 @@ msgstr "Книги, упорядоченные по категории"
 msgid "Series"
 msgstr "Серии"
 
-#: cps/opds.py:190
+#: cps/opds.py:224
 msgid "Books ordered by series"
 msgstr "Книги, упорядоченные по серии"
 
-#: cps/opds.py:195 cps/render_template.py:83 cps/templates/book_table.html:109
+#: cps/opds.py:229 cps/render_template.py:83 cps/templates/book_table.html:109
 #: cps/templates/detail.html:719 cps/templates/search_form.html:108
 #: cps/web.py:1830
 msgid "Languages"
 msgstr "Языки"
 
-#: cps/opds.py:196
+#: cps/opds.py:230
 msgid "Books ordered by Languages"
 msgstr "Книги, упорядоченные по языкам"
 
-#: cps/opds.py:201 cps/render_template.py:87 cps/web.py:1790
+#: cps/opds.py:235 cps/render_template.py:87 cps/web.py:1790
 msgid "Ratings"
 msgstr "Рейтинги"
 
-#: cps/opds.py:202
+#: cps/opds.py:236
 msgid "Books ordered by Rating"
 msgstr "Книги, упорядоченные по рейтингу"
 
-#: cps/opds.py:207 cps/render_template.py:90
+#: cps/opds.py:241 cps/render_template.py:90
 msgid "File formats"
 msgstr "Форматы файлов"
 
-#: cps/opds.py:208
+#: cps/opds.py:242
 msgid "Books ordered by file formats"
 msgstr "Книги, упорядоченные по форматам файлов"
 
-#: cps/opds.py:213 cps/templates/layout.html:325
+#: cps/opds.py:247 cps/templates/layout.html:325
 #: cps/templates/search_form.html:88
 msgid "Shelves"
 msgstr "Полки"
 
-#: cps/opds.py:214
+#: cps/opds.py:248
 msgid "Books organized in shelves"
 msgstr "Книги, организованные на полках"
 
-#: cps/opds.py:219
+#: cps/opds.py:253
 #, fuzzy
 msgid "Magic Shelves"
 msgstr "Синхронизировать выбранные полки с Kobo"
 
-#: cps/opds.py:220
+#: cps/opds.py:254
 #, fuzzy
 msgid "Books organized in magic shelves"
 msgstr "Книги, организованные на полках"
 
-#: cps/opds.py:276
+#: cps/opds.py:310
 #, fuzzy
 msgid "description"
 msgstr "Описание"
 
-#: cps/opds.py:713
+#: cps/opds.py:747
 #, python-brace-format
 msgid "{} Stars"
 msgstr "{} звезд"
@@ -2913,8 +2913,8 @@ msgstr "Добавить на полку"
 
 #: cps/templates/_book_organizer.html:104 cps/templates/detail.html:603
 #: cps/templates/detail.html:625 cps/templates/detail.html:778
-#: cps/templates/detail.html:1290 cps/templates/feed.xml:92
-#: cps/templates/feed.xml:94 cps/templates/layout.html:328
+#: cps/templates/detail.html:1290 cps/templates/feed.xml:94
+#: cps/templates/feed.xml:96 cps/templates/layout.html:328
 #: cps/templates/layout.html:337 cps/templates/listenmp3.html:201
 #: cps/templates/listenmp3.html:218 cps/templates/search.html:23
 msgid "(Public)"
@@ -6505,7 +6505,7 @@ msgstr "Запрещенные домены (черный список)"
 msgid "Next"
 msgstr "Следующая"
 
-#: cps/templates/feed.xml:92
+#: cps/templates/feed.xml:94
 msgid "(Magic)"
 msgstr ""
 
