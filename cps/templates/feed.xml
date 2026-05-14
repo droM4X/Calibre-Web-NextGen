@@ -44,7 +44,7 @@
   <title>{{instance}}</title>
   <author>
     <name>{{instance}}</name>
-    <uri>https://github.com/crocodilestick/calibre-web-automated</uri>
+    <uri>https://github.com/new-usemame/Calibre-Web-NextGen</uri>
   </author>
 
   {% if entries and entries[0] %}
@@ -63,7 +63,9 @@
         <name>{{entry.Books.publishers[0].name}}</name>
       </publisher>
     {% endif %}
+    {%- if _is_real_pubdate(entry.Books.pubdate) %}
     <published>{{entry.Books.pubdate.strftime("%Y-%m-%dT%H:%M:%S+00:00")}}</published>
+    {%- endif %}
     {% for lang in entry.Books.languages %}
       <dcterms:language>{{lang.lang_code}}</dcterms:language>
     {% endfor %}

@@ -13,7 +13,7 @@
   <title>{{instance}}</title>
   <author>
     <name>{{instance}}</name>
-    <uri>https://github.com/crocodilestick/calibre-web-automated</uri>
+    <uri>https://github.com/new-usemame/Calibre-Web-NextGen</uri>
   </author>
   {% for entry in entries %}
   <entry>

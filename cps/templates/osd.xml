@@ -4,7 +4,7 @@
    <ShortName>{{instance}}</ShortName>
    <Description>{{_('Calibre-Web NextGen eBook Catalog')}}</Description>
    <Developer>CrocodileStick</Developer>
-   <Contact>https://github.com/crocodilestick/calibre-web-automated</Contact>
+   <Contact>https://github.com/new-usemame/Calibre-Web-NextGen</Contact>
    {#- Fork issue #160: the search templates are rendered as
        OpenSearch URL templates with literal ``{searchTerms}`` markers.
        url_for produces ``/opds/search`` (potentially with ``?lang=xx``

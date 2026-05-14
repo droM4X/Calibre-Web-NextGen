@@ -91,11 +91,45 @@ def _opds_search_url_path():
     return built.replace(placeholder, '{searchTerms}')
 
 
+def _format_opds_rating(value):
+    """Render a rating value (rating/2 from the Calibre ratings table) as
+    the shortest readable decimal — fork issue #180.
+
+    Calibre stores ``ratings.rating`` as an INTEGER 0..10 (half-star
+    granularity). ``cps/opds.py:feed_ratingindex`` divides by 2 in SQL
+    so the displayable value is 0..5 in 0.5 steps. SQLAlchemy on some
+    configurations returns the divided column as a ``Decimal`` with
+    trailing zeros (``Decimal('3.0000000000')``) rather than a clean
+    float — bare ``"{}".format(value)`` then renders the noise as
+    ``"3.0000000000 Stars"``. Coerce to ``float`` and use ``g``
+    formatting so whole stars render as ``"3"`` and half stars as
+    ``"3.5"``."""
+    return "{:g}".format(float(value))
+
+
+def _is_real_pubdate(pubdate):
+    """Return True if the pubdate looks like a real publication date
+    rather than Calibre's ``DEFAULT_PUBDATE`` sentinel (or NULL) —
+    fork issue #181.
+
+    Calibre's metadata.db stores ``datetime(101, 1, 1, 0, 0, 0)`` when
+    no pubdate is set. The OPDS template previously emitted that as
+    ``<published>0101-01-01T00:00:00+00:00</published>``, which OPDS
+    clients (Readest in particular) display as "Invalid Date." OPDS
+    spec marks ``<published>`` as optional; omitting it for the
+    sentinel is the right behavior. Real historical pubdates (Don
+    Quixote 1605, etc.) are well past year 101 and still emit."""
+    if pubdate is None:
+        return False
+    return pubdate != db.Books.DEFAULT_PUBDATE
+
+
 @opds.context_processor
 def _opds_template_helpers():
     return {
         'opds_paged_url': _opds_paged_url,
         'opds_search_url_path': _opds_search_url_path,
+        '_is_real_pubdate': _is_real_pubdate,
     }
 
 OPDS_ROOT_ORDER_DEFAULT = [
@@ -710,7 +744,7 @@ def feed_ratingindex():
                             len(entries))
     element = list()
     for entry in entries:
-        element.append(FeedObject(entry[0].id, _("{} Stars").format(entry.name)))
+        element.append(FeedObject(entry[0].id, _("{} Stars").format(_format_opds_rating(entry.name))))
     return render_xml_template('feed.xml', listelements=element, folder='opds.feed_ratings', pagination=pagination)
 
 
@@ -1000,6 +1034,31 @@ def feed_search(term):
     else:
         return render_xml_template('feed.xml', searchterm="")
 
+
+
+# Fork issue #183 / @droM4X: ``/opds/<anything-not-a-real-route>`` used
+# to fall through to the stock-Calibre-Web ``@web.route('/<data>/<sort_param>/')``
+# pair, which renders the full HTML books grid — OPDS clients hitting a
+# forged URL got an HTML web page instead of a proper 404. The
+# blueprint-scoped catch-all below grabs any unmatched ``/opds/*`` path
+# and returns 404 with an Atom-shaped body, so the web catch-all never
+# sees it. The ``<path:_unknown>`` converter matches multi-segment
+# forged paths (``/opds/a/b/c``) as well — bare ``<_unknown>`` would
+# miss those. Flask's URL map prefers literal-prefix routes over
+# converter routes, so every defined OPDS endpoint above still wins
+# this catch-all for its specific path.
+@opds.route("/opds/<path:_unknown>")
+def _opds_feed_not_found(_unknown):
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<feed xmlns="http://www.w3.org/2005/Atom">\n'
+        '  <id>opds-not-found</id>\n'
+        '  <title>Not Found</title>\n'
+        '</feed>\n'
+    )
+    response = make_response(body, 404)
+    response.headers["Content-Type"] = "application/atom+xml; charset=utf-8"
+    return response
 
 
 def render_xml_template(*args, **kwargs):

@@ -44,10 +44,17 @@ ALLOWED_UPSTREAM_REFS = {
 
 
 def _list_templates():
+    """Walk every template the app renders. ``*.xml`` is in scope —
+    fork issue #182 / @droM4X showed that an OPDS feed's
+    ``<author><uri>`` and OpenSearchDescription's ``<Contact>`` still
+    pointed at upstream. ``.xml`` joined the rotation in v4.0.58 so
+    a future cherry-pick can't reintroduce it. Add to the suffix list
+    here only when a new template extension actually ships in
+    ``cps/templates`` — extras don't belong in the regex regression."""
     found = []
     for dirpath, _, filenames in os.walk(TEMPLATES_DIR):
         for fn in filenames:
-            if fn.endswith((".html", ".htm", ".j2", ".jinja", ".jinja2")):
+            if fn.endswith((".html", ".htm", ".j2", ".jinja", ".jinja2", ".xml")):
                 found.append(os.path.join(dirpath, fn))
     return sorted(found)
 
