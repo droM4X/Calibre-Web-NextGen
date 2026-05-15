@@ -306,7 +306,8 @@ VOLUME /cwa-book-ingest
 VOLUME /calibre-library
 
 # Health check for container orchestration
-# Uses shell form to support environment variable substitution for CWA_PORT_OVERRIDE
-# -L follows redirects so the 302 to /login on the root path is treated as healthy
+# Uses the /health endpoint which verifies the app is responding and core
+# services (cwa-ingest-service, metadata-change-detector) are running.
+# Shell form is used to support environment variable substitution for CWA_PORT_OVERRIDE.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=120s --retries=3 \
-  CMD curl -fsL http://localhost:${CWA_PORT_OVERRIDE:-8083}/ || curl -fsL -k https://localhost:${CWA_PORT_OVERRIDE:-8083}/ || exit 1
+  CMD curl -fsS http://127.0.0.1:${CWA_PORT_OVERRIDE:-8083}/health || exit 1

@@ -10,8 +10,9 @@ __package__ = "cps"
 import sys
 import os
 import mimetypes
+import subprocess
 
-from flask import Flask, g, session
+from flask import Flask, g, session, jsonify
 from .MyLoginManager import MyLoginManager
 from flask_principal import Principal
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -384,6 +385,30 @@ def create_app():
     from .schedule import register_scheduled_tasks, register_startup_tasks
     register_scheduled_tasks(config.schedule_reconnect)
     register_startup_tasks()
+
+    @app.route('/health')
+    def health():
+        try:
+            result = subprocess.run(
+                ['s6-rc', '-a', 'list'],
+                capture_output=True, text=True, timeout=5
+            )
+            services = result.stdout.splitlines()
+            ingest_running = 'cwa-ingest-service' in services
+            detector_running = 'metadata-change-detector' in services
+
+            if ingest_running and detector_running:
+                return jsonify({"status": "ok"}), 200
+            else:
+                return jsonify({
+                    "status": "degraded",
+                    "services": {
+                        "ingest": ingest_running,
+                        "metadata_change_detector": detector_running
+                    }
+                }), 503
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 503
 
     return app
 
